@@ -5,12 +5,15 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useQuantaStore } from '../state/quantaStore'
 import { BohrAtom } from './BohrAtom'
 import { QuantumCloud } from './QuantumCloud'
+import { HeliumShell } from './HeliumShell'
+import { HeliumQuantumCloud } from './HeliumQuantumCloud'
 
 interface SceneManagerProps {
   resetCameraTrigger?: number
 }
 
 function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
+  const activeElement = useQuantaStore((s) => s.activeElement)
   const orbital = useQuantaStore((s) => s.orbital)
   const controlsRef = useRef<OrbitControlsImpl>(null!)
   const { camera } = useThree()
@@ -38,9 +41,18 @@ function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
       <directionalLight position={[10, 15, 12]} intensity={0.65} color="#f1f5f9" />
       <directionalLight position={[-10, -5, -8]} intensity={0.25} color="#60a5fa" />
 
-      {/* Persistent Logical Model Layers with Frame-Driven Opacity Dampening */}
-      <BohrAtom />
-      <QuantumCloud orbital={orbital} />
+      {/* Element-Driven 3D Model Layers */}
+      {activeElement === 'hydrogen' ? (
+        <>
+          <BohrAtom />
+          <QuantumCloud orbital={orbital} />
+        </>
+      ) : (
+        <>
+          <HeliumShell />
+          <HeliumQuantumCloud />
+        </>
+      )}
 
       {/* Restrained Orbit Controls */}
       <OrbitControls

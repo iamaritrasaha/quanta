@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
 import { useQuantaStore } from '../state/quantaStore'
 import { hydrogenEnergy, safeHydrogenTransition } from '../physics/hydrogen'
-
-function easeInOutCubic(x: number): number {
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
-}
+import { ScientificInstrumentHeader } from './science/ScientificInstrumentHeader'
+import { IonizationLimitRow } from './science/IonizationLimitRow'
+import { TransitionStatusCard } from './science/TransitionStatusCard'
+import { AxisBreakBar } from './science/AxisBreakBar'
+import { EnergyLevelRow } from './science/EnergyLevelRow'
+import { InstrumentFooter } from './science/InstrumentFooter'
 
 export function LevelDiagram() {
   const currentLevel = useQuantaStore((s) => s.level)
@@ -19,13 +21,8 @@ export function LevelDiagram() {
     return activeTransition?.physics ?? safeHydrogenTransition(initialLevel, targetLevel)
   }, [activeTransition, initialLevel, targetLevel])
 
-  const levels = [6, 5, 4, 3, 2, 1]
-
-  // Physically proportioned vertical positions (mapped from -13.6 eV at bottom to 0 eV at top)
-  const getLevelBottomPercent = (n: number) => {
-    const energy = hydrogenEnergy(n)
-    return 6 + ((energy - -13.598) / 13.598) * 86
-  }
+  const upperLevels = [6, 5, 4, 3, 2]
+  const groundN = 1
 
   const handleSelectLevel = (n: number) => {
     if (activeTransition) return
@@ -36,109 +33,107 @@ export function LevelDiagram() {
     }
   }
 
-  const fromPercent = transition ? getLevelBottomPercent(transition.initialN) : 0
-  const toPercent = transition ? getLevelBottomPercent(transition.finalN) : 0
-  const isUpward = transition ? transition.finalN > transition.initialN : false
-
-  // Compute synchronized progress for transition vector animation
-  let visualProgress = 1.0
-  if (activeTransition) {
-    if (activeTransition.type === 'absorption') {
-      if (activeTransition.progress < 0.54) {
-        visualProgress = 0
-      } else if (activeTransition.progress < 0.94) {
-        visualProgress = easeInOutCubic((activeTransition.progress - 0.54) / 0.4)
-      } else {
-        visualProgress = 1.0
-      }
-    } else {
-      if (activeTransition.progress < 0.46) {
-        visualProgress = easeInOutCubic(activeTransition.progress / 0.46)
-      } else {
-        visualProgress = 1.0
-      }
-    }
+  const isTransitionLower = (n: number) => {
+    if (!transition) return false
+    const lowerN = Math.min(transition.initialN, transition.finalN)
+    return n === lowerN
   }
 
-  const dynamicToPercent = THREE_lerp(fromPercent, toPercent, visualProgress)
-  const transitionBottom = Math.min(fromPercent, dynamicToPercent)
-  const transitionHeight = Math.max(2, Math.abs(dynamicToPercent - fromPercent))
-
-  function THREE_lerp(a: number, b: number, t: number): number {
-    return a + (b - a) * t
+  const isTransitionUpper = (n: number) => {
+    if (!transition) return false
+    const upperN = Math.max(transition.initialN, transition.finalN)
+    return n === upperN
   }
 
   return (
-    <div className="levels-diagram glass-instrument" aria-label="Hydrogen Energy Levels">
-      <div className="levels-header">
-        <span className="levels-title">ENERGY LEVELS</span>
-        <span className="levels-unit">Eₙ = -13.6/n² eV</span>
-      </div>
+    <div
+      className="levels-diagram hydrogen-levels-instrument glass-instrument"
+      aria-label="Hydrogen Energy Levels Diagram"
+    >
+      {/* 1. Header Row */}
+      <ScientificInstrumentHeader
+        title="ENERGY LEVELS"
+        badgeText="CALCULATED"
+        unitLabel="H I · Energy (eV)"
+      />
 
-      <div className="levels-ladder">
-        {/* Ionization boundary (0 eV) */}
-        <div className="ionization-line">
-          <span className="ionization-label">0.000 eV (Ionization Limit)</span>
-          <div className="ladder-rule dashed" />
+      {/* 2. Ionization Limit Row (0.000 eV) */}
+      <IonizationLimitRow
+        reactionText="H I → H II + e⁻"
+        energyEv={0.0}
+        subNote="13.598 eV above ground"
+        title="Hydrogen Ionization Limit (0.000 eV Binding Energy)"
+      />
+
+      {/* 3. Transition Status Card (when active or selected) */}
+      {transition && (
+        <TransitionStatusCard
+          direction={transition.direction}
+          wavelengthNm={transition.wavelengthNm}
+          wavelengthMedium="vacuum"
+          photonEnergyEv={transition.photonEnergyEv}
+          bandOrRegion={transition.band}
+          lineName={transition.lineName}
+          seriesOrDetail={transition.series}
+          displayColor={transition.displayColor}
+        />
+      )}
+
+      {/* 4. Upper Rydberg Manifold Container (Single Wide Column) */}
+      <div className="hydrogen-manifold-container">
+        <header className="hydrogen-manifold-header">
+          <span className="system-title">BOUND RYDBERG MANIFOLD</span>
+          <span className="system-spin-badge">n = 2 … 6</span>
+        </header>
+
+        <div className="level-rows-stack">
+          {upperLevels.map((n) => {
+            const energy = hydrogenEnergy(n)
+            const isActive = n === currentLevel
+            const isLower = isTransitionLower(n)
+            const isUpper = isTransitionUpper(n)
+
+            return (
+              <EnergyLevelRow
+                key={n}
+                stateLabel={`n = ${n}`}
+                termOrDetail={n === 2 ? 'Balmer lower' : undefined}
+                energyEv={energy}
+                isActive={isActive}
+                isTransitionLower={isLower}
+                isTransitionUpper={isUpper}
+                transitionColor={transition?.displayColor}
+                accessibleLabel={`Hydrogen level n equals ${n}, binding energy ${energy.toFixed(3)} electron volts`}
+                onClick={() => handleSelectLevel(n)}
+              />
+            )
+          })}
         </div>
-
-        {/* Dynamic Transition Vector Indicator */}
-        {transition && (
-          <div
-            className={`transition-vector ${isUpward ? 'upward' : 'downward'}`}
-            style={{
-              bottom: `${transitionBottom}%`,
-              height: `${transitionHeight}%`,
-              borderColor: transition.displayColor,
-              opacity: activeTransition && visualProgress === 0 ? 0.35 : 1.0,
-            }}
-          >
-            <div
-              className="vector-arrowhead"
-              style={{
-                [isUpward ? 'top' : 'bottom']: '-4px',
-                borderColor: transition.displayColor,
-              }}
-            />
-            {visualProgress > 0.3 && (
-              <div
-                className="vector-badge"
-                style={{ backgroundColor: '#090a0f', borderColor: transition.displayColor }}
-              >
-                <span>{Math.abs(transition.deltaEnergyEv).toFixed(2)} eV</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Energy Rungs */}
-        {levels.map((n) => {
-          const energy = hydrogenEnergy(n)
-          const isCurrent = n === currentLevel
-          const isInitial = transition?.initialN === n
-          const isTarget = transition?.finalN === n
-          const bottomPos = getLevelBottomPercent(n)
-
-          return (
-            <div
-              key={n}
-              className={`ladder-rung ${isCurrent ? 'active-rung' : ''} ${isInitial ? 'initial-rung' : ''} ${
-                isTarget ? 'target-rung' : ''
-              }`}
-              style={{ bottom: `${bottomPos}%` }}
-              onClick={() => handleSelectLevel(n)}
-            >
-              <span className="rung-n">n = {n}</span>
-              <div className="ladder-rule" />
-              <span className="rung-ev">{energy.toFixed(3)} eV</span>
-            </div>
-          )
-        })}
       </div>
 
-      <div className="levels-footer">
-        <span>Click any level to set state</span>
-      </div>
+      {/* 5. Disclosed Axis Break */}
+      <AxisBreakBar
+        subtitle="Upper Rydberg states expanded near ionization limit"
+        subNote="ΔE gap = 10.198 eV"
+      />
+
+      {/* 6. Dedicated Ground State Row (n = 1) */}
+      <EnergyLevelRow
+        stateLabel={`n = ${groundN}`}
+        termOrDetail="Lyman ground"
+        badge="GROUND"
+        energyEv={hydrogenEnergy(groundN)}
+        isActive={groundN === currentLevel}
+        isTransitionLower={isTransitionLower(groundN)}
+        isTransitionUpper={isTransitionUpper(groundN)}
+        transitionColor={transition?.displayColor}
+        accessibleLabel={`Hydrogen level n equals 1, ground state binding energy ${hydrogenEnergy(groundN).toFixed(3)} electron volts`}
+        onClick={() => handleSelectLevel(groundN)}
+        className="ground-level-row"
+      />
+
+      {/* 7. Footer Microcopy */}
+      <InstrumentFooter text="Click any level to set state · Transition card reflects physical interaction · Exact Bohr/Rydberg model" />
     </div>
   )
 }

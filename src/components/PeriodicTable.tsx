@@ -2,21 +2,26 @@ import { useState } from 'react'
 import { elements, type Element } from '../data/elements'
 
 interface PeriodicTableProps {
-  onSelectHydrogen: () => void
+  onSelectElement: (elementKey: 'hydrogen' | 'helium') => void
+  onSelectHydrogen?: () => void
 }
 
 const categoryClass = (c: Element['category']) => c.replace(/\s+/g, '-')
 
-export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
+export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTableProps) {
   const [selectedNoticeElement, setSelectedNoticeElement] = useState<Element | null>(null)
-  const [isEntering, setIsEntering] = useState(false)
+  const [enteringSymbol, setEnteringSymbol] = useState<string | null>(null)
 
   const handleElementClick = (element: Element) => {
     if (element.available) {
-      setIsEntering(true)
-      // Smooth choreography before navigating to Explorer
+      setEnteringSymbol(element.symbol)
       setTimeout(() => {
-        onSelectHydrogen()
+        if (element.symbol === 'H') {
+          if (onSelectElement) onSelectElement('hydrogen')
+          else if (onSelectHydrogen) onSelectHydrogen()
+        } else if (element.symbol === 'He') {
+          if (onSelectElement) onSelectElement('helium')
+        }
       }, 550)
     } else {
       setSelectedNoticeElement(element)
@@ -24,7 +29,7 @@ export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
   }
 
   return (
-    <main className={`welcome-screen ${isEntering ? 'welcome-entering' : ''}`}>
+    <main className={`welcome-screen ${enteringSymbol ? 'welcome-entering' : ''}`}>
       {/* Ambient optical background */}
       <div className="optical-background" />
 
@@ -33,7 +38,7 @@ export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
         <div className="masthead-brand">
           <div className="brand-eyebrow">
             <span className="dot-indicator live" />
-            <span>OPTICAL SCIENTIFIC INSTRUMENT · INSTRUMENT 01</span>
+            <span>OPTICAL SCIENTIFIC INSTRUMENT · INSTRUMENTS 01 & 02 ACTIVE</span>
           </div>
           <h1 className="brand-title">QUANTA</h1>
           <p className="brand-tagline">Matter, visualized.</p>
@@ -41,12 +46,12 @@ export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
         <div className="masthead-info">
           <p className="masthead-intro">
             Explore quantized atomic physics from historical orbital models to modern Schrödinger
-            eigenfunctions. Hydrogen is the foundational exact instrument.
+            eigenfunctions and many-electron quantum mechanics.
           </p>
           <div className="masthead-stats">
-            <span>118 ELEMENTS STAGED</span>
+            <span className="active-stat">2 ELEMENTS ACTIVE (H · He)</span>
             <span>·</span>
-            <span className="active-stat">HYDROGEN ACTIVE</span>
+            <span>116 STAGED</span>
           </div>
         </div>
       </header>
@@ -56,7 +61,7 @@ export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
         <div className="table-stage-header">
           <div className="stage-title-wrap">
             <span className="stage-kicker">INTERACTIVE PERIODIC TABLE</span>
-            <span className="stage-hint">Select Hydrogen (H) to initialize the 3D atomic instrument</span>
+            <span className="stage-hint">Select Hydrogen (H) or Helium (He) to initialize the 3D atomic instrument</span>
           </div>
           <div className="mobile-scroll-hint">
             <span>← Swipe to explore 18 groups →</span>
@@ -67,22 +72,30 @@ export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
           <div className="periodic-table-grid">
             {elements.map((el) => {
               const isH = el.symbol === 'H'
+              const isHe = el.symbol === 'He'
+              const isAvailable = el.available
+              const isEnteringThis = enteringSymbol === el.symbol
+
+              let tileSpecificClass = 'unsupported-tile'
+              if (isH) tileSpecificClass = 'hydrogen-tile'
+              if (isHe) tileSpecificClass = 'helium-tile'
+
               return (
                 <button
                   key={el.symbol}
-                  className={`element-tile ${categoryClass(el.category)} ${isH ? 'hydrogen-tile' : 'unsupported-tile'} ${
-                    isEntering && isH ? 'entering-focus' : ''
+                  className={`element-tile ${categoryClass(el.category)} ${tileSpecificClass} ${
+                    isEnteringThis ? 'entering-focus' : ''
                   }`}
                   style={{
                     gridColumn: el.gridColumn,
                     gridRow: el.gridRow,
                   }}
                   onClick={() => handleElementClick(el)}
-                  aria-label={`${el.name}, atomic number ${el.number}${isH ? ', available' : ', coming soon'}`}
+                  aria-label={`${el.name}, atomic number ${el.number}${isAvailable ? ', available' : ', coming soon'}`}
                 >
                   <div className="tile-top-row">
                     <span className="atomic-number">{el.number}</span>
-                    {isH && <span className="explore-tag">EXPLORE</span>}
+                    {isAvailable && <span className="explore-tag">EXPLORE</span>}
                   </div>
                   <strong className="element-symbol">{el.symbol}</strong>
                   <span className="element-name">{el.name}</span>
@@ -95,13 +108,16 @@ export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
         <footer className="table-stage-footer">
           <div className="legend-items">
             <span className="legend-item">
-              <b className="legend-dot hydrogen-dot" /> Hydrogen (Fully Modeled)
+              <b className="legend-dot hydrogen-dot" /> Hydrogen (Z = 1, Exact Analytic)
             </span>
             <span className="legend-item">
-              <b className="legend-dot upcoming-dot" /> 117 Elements (Staged Library)
+              <b className="legend-dot helium-dot" /> Helium (Z = 2, Many-Electron)
+            </span>
+            <span className="legend-item">
+              <b className="legend-dot upcoming-dot" /> 116 Elements (Staged Library)
             </span>
           </div>
-          <span className="table-nav-note">Calculations executed entirely client-side via exact SI physics.</span>
+          <span className="table-nav-note">Calculations executed entirely client-side via exact SI physics & authoritative NIST ASD data.</span>
         </footer>
       </section>
 
@@ -131,20 +147,29 @@ export function PeriodicTable({ onSelectHydrogen }: PeriodicTableProps) {
                   release.
                 </p>
                 <p className="notice-sub-text">
-                  Multi-electron atoms require Hartree-Fock or density functional approximations. Hydrogen
-                  remains our exact analytic baseline.
+                  Multi-electron atoms beyond Helium require Hartree-Fock or density functional approximations.
+                  Hydrogen and Helium are our active instruments.
                 </p>
               </div>
             </div>
-            <div className="notice-actions">
+            <div className="notice-actions dual-notice-actions">
               <button
-                className="primary-notice-btn"
+                className="secondary-notice-btn"
                 onClick={() => {
                   setSelectedNoticeElement(null)
                   handleElementClick(elements[0]) // Select Hydrogen
                 }}
               >
-                OPEN HYDROGEN INSTRUMENT →
+                OPEN HYDROGEN (H) →
+              </button>
+              <button
+                className="primary-notice-btn"
+                onClick={() => {
+                  setSelectedNoticeElement(null)
+                  handleElementClick(elements[1]) // Select Helium
+                }}
+              >
+                OPEN HELIUM (He) →
               </button>
             </div>
           </div>

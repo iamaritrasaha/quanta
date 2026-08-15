@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { useQuantaStore } from './state/quantaStore'
+import { useQuantaStore, type ElementKey } from './state/quantaStore'
 import { bohrRadius, hydrogenEnergy } from './physics/hydrogen'
+import { getHeliumLevel } from './physics/helium'
 import { PeriodicTable } from './components/PeriodicTable'
 import { ModeNavigation } from './components/ModeNavigation'
 import { LevelDiagram } from './components/LevelDiagram'
@@ -8,6 +9,13 @@ import { TransitionControls } from './components/TransitionControls'
 import { SpectrumVisualizer } from './components/SpectrumVisualizer'
 import { QuantumControls } from './components/QuantumControls'
 import { EquationInspector } from './components/EquationInspector'
+import { HeliumOverview } from './components/HeliumOverview'
+import { HeliumShellControls } from './components/HeliumShellControls'
+import { HeliumQuantumControls } from './components/HeliumQuantumControls'
+import { HeliumLevelDiagram } from './components/HeliumLevelDiagram'
+import { HeliumSpectrumVisualizer } from './components/HeliumSpectrumVisualizer'
+import { HeliumTransitionControls } from './components/HeliumTransitionControls'
+import { HeliumEquationInspector } from './components/HeliumEquationInspector'
 import './styles.css'
 
 const AtomScene = lazy(() =>
@@ -15,9 +23,11 @@ const AtomScene = lazy(() =>
 )
 
 function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
+  const activeElement = useQuantaStore((s) => s.activeElement)
   const mode = useQuantaStore((s) => s.mode)
   const level = useQuantaStore((s) => s.level)
   const orbital = useQuantaStore((s) => s.orbital)
+  const heliumState = useQuantaStore((s) => s.helium)
   const playing = useQuantaStore((s) => s.playing)
   const speed = useQuantaStore((s) => s.animationSpeed)
   const togglePlaying = useQuantaStore((s) => s.togglePlaying)
@@ -26,11 +36,13 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
 
   const [resetCameraCount, setResetCameraCount] = useState(0)
 
-  const modeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
+  const isHydrogen = activeElement === 'hydrogen'
+
+  const hydrogenModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
     overview: {
       title: 'HYDROGEN OVERVIEW',
       subtitle: 'Fundamental constants and baseline properties of the simplest atom',
-      badge: 'ELEMENT 01',
+      badge: 'ELEMENT 01 / AVAILABLE',
     },
     bohr: {
       title: 'BOHR QUANTIZATION MODEL',
@@ -59,9 +71,45 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
     },
   }
 
-  const currentModeInfo = modeDescriptions[mode] ?? modeDescriptions.overview
-  const energyEv = hydrogenEnergy(level)
-  const radiusPm = bohrRadius(level) * 1e12
+  const heliumModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
+    overview: {
+      title: 'HELIUM OVERVIEW',
+      subtitle: 'Helium is where the one-electron picture ends · Many-body quantum physics',
+      badge: 'ELEMENT 02 / AVAILABLE',
+    },
+    bohr: {
+      title: 'SHELL OCCUPANCY MODEL',
+      subtitle: 'Paired electrons in quantized energy shells — illustrative point markers',
+      badge: 'PEDAGOGICAL ELECTRON-SHELL REPRESENTATION',
+    },
+    quantum: {
+      title: 'SCHRÖDINGER MANY-BODY DENSITY',
+      subtitle: 'Reduced one-electron density ρ(r) derived from effective-charge approximation',
+      badge: 'REDUCED PROBABILITY DENSITY',
+    },
+    energy: {
+      title: 'HELIUM I TERM EIGENVALUES',
+      subtitle: 'Singlet (S=0) and Triplet (S=1) levels approaching the 24.587 eV ionization threshold',
+      badge: 'NIST ASD TERM DIAGRAM',
+    },
+    spectra: {
+      title: 'EMISSION SPECTROSCOPY',
+      subtitle: 'Continuous EUV-UV-Visible-IR spectrum mapping and authoritative NIST line transitions',
+      badge: 'HELIUM I SPECTROSCOPY',
+    },
+    equations: {
+      title: 'MATHEMATICAL DERIVATION INSPECTOR',
+      subtitle: 'Two-electron Hamiltonian with r₁₂ Coulomb repulsion and Pauli singlet spin coupling',
+      badge: 'TWO-ELECTRON DERIVATION',
+    },
+  }
+
+  const currentModeInfo = isHydrogen
+    ? hydrogenModeDescriptions[mode] ?? hydrogenModeDescriptions.overview
+    : heliumModeDescriptions[mode] ?? heliumModeDescriptions.overview
+
+  const hydrogenEnergyEv = hydrogenEnergy(level)
+  const currentHeliumLevel = getHeliumLevel(heliumState.selectedLevelId) ?? getHeliumLevel('1s2_1S0')!
 
   return (
     <main className="explorer-screen">
@@ -72,12 +120,15 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             ← PERIODIC TABLE
           </button>
           <div className="element-heading">
-            <span className="element-atomic-badge">1</span>
+            <span className="element-atomic-badge">{isHydrogen ? '1' : '2'}</span>
             <div className="element-title-group">
               <h2 className="element-name-heading">
-                Hydrogen <span className="element-symbol-tag">H</span>
+                {isHydrogen ? 'Hydrogen' : 'Helium'}{' '}
+                <span className="element-symbol-tag">{isHydrogen ? 'H' : 'He'}</span>
               </h2>
-              <span className="element-sub-heading">Protium · 1p⁺ 1e⁻ · ~1.008 u</span>
+              <span className="element-sub-heading">
+                {isHydrogen ? 'Protium · 1p⁺ 1e⁻ · ~1.008 u' : '⁴He · 2p⁺ 2n⁰ 2e⁻ · ~4.0026 u'}
+              </span>
             </div>
           </div>
         </div>
@@ -89,10 +140,21 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
         <div className="bar-right">
           <div className="quick-state-card">
             <span className="quick-state-label">CURRENT STATE</span>
-            <strong className="quick-state-val">
-              {mode === 'quantum' ? (orbital ? `${orbital} State` : `n = ${level}`) : `n = ${level}`}
-            </strong>
-            <span className="quick-state-sub">{energyEv.toFixed(3)} eV</span>
+            {isHydrogen ? (
+              <>
+                <strong className="quick-state-val">
+                  {mode === 'quantum' ? (orbital ? `${orbital} State` : `n = ${level}`) : `n = ${level}`}
+                </strong>
+                <span className="quick-state-sub">{hydrogenEnergyEv.toFixed(3)} eV</span>
+              </>
+            ) : (
+              <>
+                <strong className="quick-state-val">
+                  {currentHeliumLevel.configuration} {currentHeliumLevel.termSymbol}
+                </strong>
+                <span className="quick-state-sub">{currentHeliumLevel.energyEv.toFixed(3)} eV</span>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -121,7 +183,11 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
 
           {/* Scale Disclaimer Note */}
           <div className="scene-scale-disclaimer">
-            <span>VISUAL SCALE COMPRESSED · PHOTON WAVE PACKET IS A PEDAGOGICAL VISUALIZATION</span>
+            <span>
+              {isHydrogen
+                ? 'VISUAL SCALE COMPRESSED · PHOTON WAVE PACKET IS A PEDAGOGICAL VISUALIZATION'
+                : 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁴He (2p⁺ 2n⁰)'}
+            </span>
           </div>
 
           {/* Floating Interactive Scene Controls */}
@@ -177,91 +243,124 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
 
         {/* Dynamic Contextual Scientific Rail */}
         <aside className="contextual-rail" aria-label="Scientific Context and Controls">
-          {mode === 'overview' && (
-            <div className="overview-pane">
-              <div className="overview-card glass-instrument">
-                <span className="card-kicker">ELEMENT IDENTITY</span>
-                <h3 className="card-title">Hydrogen (H · 1)</h3>
-                <p className="card-desc">
-                  Hydrogen is the most abundant chemical substance in the universe, constituting roughly
-                  75% of all baryonic mass. It serves as the exact analytic testing ground for quantum
-                  mechanics because its single-electron potential has exact mathematical solutions.
-                </p>
-                <div className="data-table">
-                  <div className="data-row">
-                    <span className="data-key">Atomic Number</span>
-                    <strong className="data-val">1</strong>
+          {isHydrogen ? (
+            /* Hydrogen Exploration Rail */
+            <>
+              {mode === 'overview' && (
+                <div className="overview-pane">
+                  <div className="overview-card glass-instrument">
+                    <span className="card-kicker">ELEMENT IDENTITY</span>
+                    <h3 className="card-title">Hydrogen (H · 1)</h3>
+                    <p className="card-desc">
+                      Hydrogen is the most abundant chemical substance in the universe, constituting roughly
+                      75% of all baryonic mass. It serves as the exact analytic testing ground for quantum
+                      mechanics because its single-electron potential has exact mathematical solutions.
+                    </p>
+                    <div className="data-table">
+                      <div className="data-row">
+                        <span className="data-key">Atomic Number</span>
+                        <strong className="data-val">1</strong>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-key">Standard Mass</span>
+                        <strong className="data-val">1.0080 u</strong>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-key">Ground State</span>
+                        <strong className="data-val">1s¹</strong>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-key">Bohr Radius (a₀)</span>
+                        <strong className="data-val">52.9177 pm</strong>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-key">Ionization Energy</span>
+                        <strong className="data-val">13.5984 eV</strong>
+                      </div>
+                    </div>
                   </div>
-                  <div className="data-row">
-                    <span className="data-key">Standard Mass</span>
-                    <strong className="data-val">1.0080 u</strong>
-                  </div>
-                  <div className="data-row">
-                    <span className="data-key">Ground State</span>
-                    <strong className="data-val">1s¹</strong>
-                  </div>
-                  <div className="data-row">
-                    <span className="data-key">Bohr Radius (a₀)</span>
-                    <strong className="data-val">52.9177 pm</strong>
-                  </div>
-                  <div className="data-row">
-                    <span className="data-key">Ionization Energy</span>
-                    <strong className="data-val">13.5984 eV</strong>
-                  </div>
+                  <TransitionControls />
                 </div>
-              </div>
-              <TransitionControls />
-            </div>
-          )}
+              )}
 
-          {mode === 'bohr' && (
-            <div className="bohr-pane">
-              <div className="bohr-state-card glass-instrument">
-                <span className="card-kicker">STATIONARY ORBIT STATUS</span>
-                <div className="bohr-metrics-grid">
-                  <div className="b-metric">
-                    <span className="b-label">Orbit Level</span>
-                    <strong className="b-val">n = {level}</strong>
+              {mode === 'bohr' && (
+                <div className="bohr-pane">
+                  <div className="bohr-state-card glass-instrument">
+                    <span className="card-kicker">STATIONARY ORBIT STATUS</span>
+                    <div className="bohr-metrics-grid">
+                      <div className="b-metric">
+                        <span className="b-label">Orbit Level</span>
+                        <strong className="b-val">n = {level}</strong>
+                      </div>
+                      <div className="b-metric">
+                        <span className="b-label">Binding Energy</span>
+                        <strong className="b-val">{hydrogenEnergyEv.toFixed(3)} eV</strong>
+                      </div>
+                      <div className="b-metric">
+                        <span className="b-label">Bohr Radius</span>
+                        <strong className="b-val">{(bohrRadius(level) * 1e12).toFixed(1)} pm</strong>
+                      </div>
+                    </div>
                   </div>
-                  <div className="b-metric">
-                    <span className="b-label">Binding Energy</span>
-                    <strong className="b-val">{energyEv.toFixed(3)} eV</strong>
-                  </div>
-                  <div className="b-metric">
-                    <span className="b-label">Bohr Radius</span>
-                    <strong className="b-val">{radiusPm.toFixed(1)} pm</strong>
-                  </div>
+                  <TransitionControls />
+                  <LevelDiagram />
                 </div>
-              </div>
-              <TransitionControls />
-              <LevelDiagram />
-            </div>
-          )}
+              )}
 
-          {mode === 'quantum' && (
-            <div className="quantum-pane">
-              <QuantumControls />
-            </div>
-          )}
+              {mode === 'quantum' && (
+                <div className="quantum-pane">
+                  <QuantumControls />
+                </div>
+              )}
 
-          {mode === 'energy' && (
-            <div className="energy-pane">
-              <LevelDiagram />
-              <TransitionControls />
-            </div>
-          )}
+              {mode === 'energy' && (
+                <div className="energy-pane">
+                  <LevelDiagram />
+                  <TransitionControls />
+                </div>
+              )}
 
-          {mode === 'spectra' && (
-            <div className="spectra-pane">
-              <SpectrumVisualizer />
-              <TransitionControls />
-            </div>
-          )}
+              {mode === 'spectra' && (
+                <div className="spectra-pane">
+                  <SpectrumVisualizer />
+                  <TransitionControls />
+                </div>
+              )}
 
-          {mode === 'equations' && (
-            <div className="equations-pane">
-              <EquationInspector />
-            </div>
+              {mode === 'equations' && (
+                <div className="equations-pane">
+                  <EquationInspector />
+                </div>
+              )}
+            </>
+          ) : (
+            /* Helium Exploration Rail */
+            <>
+              {mode === 'overview' && <HeliumOverview />}
+              {mode === 'bohr' && <HeliumShellControls />}
+              {mode === 'quantum' && (
+                <div className="quantum-pane">
+                  <HeliumQuantumControls />
+                </div>
+              )}
+              {mode === 'energy' && (
+                <div className="energy-pane">
+                  <HeliumLevelDiagram />
+                  <HeliumTransitionControls />
+                </div>
+              )}
+              {mode === 'spectra' && (
+                <div className="spectra-pane">
+                  <HeliumSpectrumVisualizer />
+                  <HeliumTransitionControls />
+                </div>
+              )}
+              {mode === 'equations' && (
+                <div className="equations-pane">
+                  <HeliumEquationInspector />
+                </div>
+              )}
+            </>
           )}
         </aside>
       </div>
@@ -284,7 +383,11 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
           </span>
         </div>
         <div className="footer-right">
-          <span>Bohr orbits represent conceptual quantization · Wavefunctions represent exact |ψ|² densities</span>
+          <span>
+            {isHydrogen
+              ? 'Bohr orbits represent conceptual quantization · Wavefunctions represent exact |ψ|² densities'
+              : 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD He I data'}
+          </span>
           <span className="footer-copyright">© 2026 Aritra Saha</span>
         </div>
       </footer>
@@ -293,29 +396,48 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
 }
 
 export default function App() {
-  const [view, setView] = useState<'table' | 'hydrogen'>(() =>
-    window.location.hash.includes('/element/hydrogen') ? 'hydrogen' : 'table'
-  )
+  const setActiveElement = useQuantaStore((s) => s.setActiveElement)
+
+  const [view, setView] = useState<'table' | 'explorer'>(() => {
+    const hash = window.location.hash
+    if (hash.includes('/element/helium')) return 'explorer'
+    if (hash.includes('/element/hydrogen')) return 'explorer'
+    return 'table'
+  })
 
   useEffect(() => {
     const handleHashChange = () => {
-      setView(window.location.hash.includes('/element/hydrogen') ? 'hydrogen' : 'table')
+      const hash = window.location.hash
+      if (hash.includes('/element/helium')) {
+        setActiveElement('helium')
+        setView('explorer')
+      } else if (hash.includes('/element/hydrogen')) {
+        setActiveElement('hydrogen')
+        setView('explorer')
+      } else {
+        setView('table')
+      }
     }
+
+    // Set initial element based on hash
+    handleHashChange()
+
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
+  }, [setActiveElement])
 
-  const enterHydrogen = () => {
-    window.location.hash = '/element/hydrogen'
+  const selectElement = (elementKey: ElementKey) => {
+    setActiveElement(elementKey)
+    window.location.hash = `/element/${elementKey}`
   }
 
   const returnToTable = () => {
     window.location.hash = '/'
   }
 
-  return view === 'hydrogen' ? (
+  return view === 'explorer' ? (
     <Explorer onBackToTable={returnToTable} />
   ) : (
-    <PeriodicTable onSelectHydrogen={enterHydrogen} />
+    <PeriodicTable onSelectElement={selectElement} onSelectHydrogen={() => selectElement('hydrogen')} />
   )
 }

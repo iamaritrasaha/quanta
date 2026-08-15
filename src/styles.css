@@ -379,6 +379,20 @@ button:focus-visible, select:focus-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 28px rgba(147, 197, 253, 0.25) !important;
 }
 
+/* Helium Focal Tile (Optical Noble Accent) */
+.helium-tile {
+  background: rgba(255, 255, 255, 0.075) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 0 20px rgba(251, 191, 36, 0.14) !important;
+}
+
+.helium-tile:hover {
+  background: rgba(255, 255, 255, 0.11) !important;
+  border-color: rgba(255, 255, 255, 0.48) !important;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 0 28px rgba(251, 191, 36, 0.22) !important;
+}
+
 .explore-tag {
   font-family: var(--font-mono);
   font-size: 0.58rem;
@@ -422,6 +436,11 @@ button:focus-visible, select:focus-visible {
 .hydrogen-dot {
   background: var(--accent-optic);
   box-shadow: 0 0 8px var(--accent-optic);
+}
+
+.helium-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
 }
 
 .table-nav-note {
@@ -2028,6 +2047,937 @@ button:focus-visible, select:focus-visible {
   flex-wrap: wrap;
   gap: 0.75rem;
   z-index: 10;
+}
+
+/* --------------------------------------------------------------------------
+   Helium Specific Component Enhancements
+   -------------------------------------------------------------------------- */
+
+.card-kicker-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.provenance-tag {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--accent-optic);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.many-body-contrast-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  gap: 0.75rem;
+}
+
+.contrast-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.contrast-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.contrast-val {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.contrast-item.highlight .contrast-val {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.contrast-divider {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  padding: 0 0.5rem;
+}
+
+.overview-disclaimer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.shell-pedagogical-banner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  margin-top: 1rem;
+}
+
+.banner-icon {
+  font-size: 0.9rem;
+  color: var(--accent-optic);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.banner-text {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+.density-toggle-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.toggle-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.toggle-buttons {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.toggle-btn {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.toggle-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Global Scientific Instrument Layout & Shared Primitives (H & He)
+   -------------------------------------------------------------------------- */
+
+.scientific-number {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+}
+
+.levels-diagram.glass-instrument,
+.hydrogen-levels-instrument,
+.helium-levels-instrument {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem 1.4rem;
+  min-height: 480px;
+  box-sizing: border-box;
+  container-type: inline-size;
+  container-name: scientific-instrument;
+}
+
+.diagram-instrument-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  width: 100%;
+  min-width: 0;
+}
+
+.diagram-instrument-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.diagram-main-title {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.diagram-unit-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+/* Full-Width Ionization Limit Bar - Two-Line Protected Grid */
+.ionization-limit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.85rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ionization-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.ionization-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent-optic);
+  white-space: nowrap;
+}
+
+.ionization-value {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+  justify-self: end;
+}
+
+.ionization-row-bottom {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.ionization-sub {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ionization-sub-note {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  color: var(--text-muted);
+  padding-left: 0.35rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ionization-rule-track {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-top: 1px;
+}
+
+.ionization-rule-line {
+  width: 100%;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(56, 189, 248, 0.4),
+    rgba(56, 189, 248, 0.4) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* Compact Consolidated Transition Status Card */
+.transition-status-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.85rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.status-col-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.status-direction-badge {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.status-col-center {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.status-wl-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.status-wl-val {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.status-medium-tag {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+}
+
+.status-sub-name {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-col-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-energy-val {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.status-region-tag {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Hydrogen Manifold Container (Single Wide Column) */
+.hydrogen-manifold-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  box-sizing: border-box;
+}
+
+.hydrogen-manifold-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+}
+
+/* Helium Excited Manifold Container - Stacked by default, side-by-side above 760px container width */
+.excited-manifold-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  box-sizing: border-box;
+}
+
+.manifold-center-divider {
+  display: none;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+}
+
+.level-system-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.singlet-system,
+.triplet-system {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.system-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+}
+
+.system-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.system-spin-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.level-rows-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Two-Line Scientific Energy Level Row Architecture */
+.diagram-level-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "identity energy"
+    "rule     rule";
+  align-items: baseline;
+  row-gap: 4px;
+  column-gap: 12px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.diagram-level-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.diagram-level-row:focus-visible {
+  outline: 2px solid var(--accent-optic);
+  outline-offset: 1px;
+}
+
+.diagram-level-row.active-level {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.06);
+}
+
+.diagram-level-row.transition-lower,
+.diagram-level-row.transition-upper {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.level-identity {
+  grid-area: identity;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.level-config {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.level-term {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.level-meta {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ground-state-badge {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  color: var(--accent-optic);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.level-energy {
+  grid-area: energy;
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.diagram-level-row.active-level .level-energy {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.level-rule-wrap {
+  grid-area: rule;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-top: 1px;
+}
+
+.level-rule-line {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.22);
+  opacity: 0.45;
+  transition: all 0.2s ease;
+}
+
+.diagram-level-row:hover .level-rule-line {
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0.75;
+}
+
+.diagram-level-row.active-level .level-rule-line {
+  background: var(--accent-optic);
+  opacity: 0.95;
+  box-shadow: 0 0 8px var(--accent-optic);
+}
+
+.transition-accent-line {
+  opacity: 0.95 !important;
+}
+
+/* Simplified Axis Break Bar with clean wrapping */
+.energy-axis-break-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  background: rgba(255, 255, 255, 0.015);
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  user-select: none;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.break-center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-align: center;
+  width: 100%;
+}
+
+.break-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.break-glyph {
+  color: var(--accent-optic);
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.break-title {
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}
+
+.break-subtitle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.break-subtitle {
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.break-subnote {
+  color: var(--text-tertiary);
+  letter-spacing: 0.03em;
+  padding-left: 0.35rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Dedicated Ground State Row */
+.ground-level-row {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ground-level-row .level-rule-line {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Footer Microcopy */
+.diagram-instrument-footer {
+  padding-top: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Container Queries: Side-by-side mode only when the component has >= 760px inline width */
+@container scientific-instrument (min-width: 760px) {
+  .excited-manifold-container {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  .manifold-center-divider {
+    display: block;
+  }
+  .singlet-system {
+    padding-right: 0.6rem;
+  }
+  .triplet-system {
+    padding-left: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .transition-status-card {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+  .status-col-right {
+    align-items: flex-start;
+  }
+}
+
+.vee-highlight-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.vee-title {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--accent-optic);
+  margin-bottom: 0.35rem;
+}
+
+.vee-desc {
+  margin: 0.35rem 0 0 0;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.spin-formula-box {
+  margin: 0.5rem 0;
+  padding: 0.25rem 0;
+}
+
+.provenance-indicator-bar {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.dual-notice-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.secondary-notice-btn {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.secondary-notice-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.helium-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.selected-preset {
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+.helium-landmark {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.helium-landmark:hover {
+  transform: translateY(-2px);
+}
+
+.helium-landmark .landmark-label {
+  font-size: 0.58rem;
+}
+
+.active-landmark .landmark-line {
+  box-shadow: 0 0 10px currentColor;
+}
+
+.transition-summary-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.transition-detail-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.65rem;
+  font-size: 0.72rem;
+}
+
+.detail-meta {
+  color: var(--text-secondary);
+}
+
+.detail-meta strong {
+  color: var(--accent-optic);
+}
+
+.detail-color-note {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.fine-structure-toggle-row {
+  margin-top: 0.25rem;
+}
+
+.fine-structure-btn {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-optic);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0;
+  transition: opacity 0.2s ease;
+}
+
+.fine-structure-btn:hover {
+  opacity: 0.8;
+}
+
+.fine-structure-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+}
+
+.component-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.68rem;
+  gap: 0.5rem;
+}
+
+.component-transition {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.component-wl {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.component-rel {
+  color: var(--text-muted);
+  font-size: 0.6rem;
+}
+
+.trigger-row-dual {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.secondary-action-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.secondary-action-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
 }
 
 /* ==========================================================================

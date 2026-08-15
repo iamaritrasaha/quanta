@@ -6,7 +6,7 @@ interface ModeDef {
   shortDesc: string
 }
 
-const MODES: ModeDef[] = [
+const HYDROGEN_MODES: ModeDef[] = [
   { id: 'overview', label: 'Overview', shortDesc: 'Element Profile' },
   { id: 'bohr', label: 'Bohr Model', shortDesc: 'Quantized Orbit' },
   { id: 'quantum', label: 'Quantum', shortDesc: 'Wave Density' },
@@ -15,14 +15,26 @@ const MODES: ModeDef[] = [
   { id: 'equations', label: 'Equations', shortDesc: 'Mathematical Derivations' },
 ]
 
+const HELIUM_MODES: ModeDef[] = [
+  { id: 'overview', label: 'Overview', shortDesc: 'Many-Body Profile' },
+  { id: 'bohr', label: 'Shell Model', shortDesc: 'Pedagogical Shell' },
+  { id: 'quantum', label: 'Quantum', shortDesc: 'Reduced Density' },
+  { id: 'energy', label: 'Energy Levels', shortDesc: 'Term Diagram' },
+  { id: 'spectra', label: 'Spectra', shortDesc: 'Emission Lines' },
+  { id: 'equations', label: 'Equations', shortDesc: 'Two-Electron Math' },
+]
+
 export function ModeNavigation() {
   const mode = useQuantaStore((s) => s.mode)
+  const activeElement = useQuantaStore((s) => s.activeElement)
   const setMode = useQuantaStore((s) => s.setMode)
 
+  const modes = activeElement === 'hydrogen' ? HYDROGEN_MODES : HELIUM_MODES
+
   return (
-    <nav className="mode-navigation glass-capsule" aria-label="Hydrogen Exploration Modes">
+    <nav className="mode-navigation glass-capsule" aria-label={`${activeElement === 'hydrogen' ? 'Hydrogen' : 'Helium'} Exploration Modes`}>
       <div className="mode-capsule-track">
-        {MODES.map((m) => {
+        {modes.map((m) => {
           const isActive = mode === m.id
           return (
             <button
