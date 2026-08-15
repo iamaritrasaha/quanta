@@ -1,64 +1,321 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { elements, type Element } from './data/elements'
-import { useQuantaStore, type ViewMode } from './state/quantaStore'
-import { bohrRadius, formatFrequency, hydrogenEnergy, hydrogenTransition, wavelengthToDisplayColor } from './physics/hydrogen'
-import { ORBITALS } from './physics/quantum'
-import { Equation } from './components/Equation'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { useQuantaStore } from './state/quantaStore'
+import { bohrRadius, hydrogenEnergy } from './physics/hydrogen'
+import { PeriodicTable } from './components/PeriodicTable'
+import { ModeNavigation } from './components/ModeNavigation'
+import { LevelDiagram } from './components/LevelDiagram'
+import { TransitionControls } from './components/TransitionControls'
+import { SpectrumVisualizer } from './components/SpectrumVisualizer'
+import { QuantumControls } from './components/QuantumControls'
+import { EquationInspector } from './components/EquationInspector'
 import './styles.css'
 
-const AtomScene = lazy(() => import('./rendering/AtomScene').then(module => ({ default: module.AtomScene })))
-const modes: [ViewMode,string,string][] = [['overview','Overview','Hydrogen at a glance'],['bohr','Bohr','Historical / conceptual model'],['quantum','Quantum','Modern probability-based description'],['energy','Energy','Level structure'],['spectra','Spectra','Hydrogen emissions'],['equations','Equations','Calculation inspector']]
-const categoryClass=(c:Element['category'])=>c.replace(/ /g,'-')
+const AtomScene = lazy(() =>
+  import('./rendering/AtomScene').then((m) => ({ default: m.AtomScene }))
+)
 
-function Welcome({ enter }:{enter:()=>void}) {
- const [notice,setNotice]=useState<string|null>(null)
- const choose=(element:Element)=>{ if(element.available) enter(); else {setNotice(`${element.name} is coming to QUANTA`);window.setTimeout(()=>setNotice(null),2200)}}
- return <main className="welcome"><header className="masthead"><div><p className="eyebrow">ATOMIC VISUALIZATION / 01</p><h1>QUANTA</h1><p className="tagline">Matter, visualized.</p></div><p className="intro">Explore atomic structure from classical models to quantum mechanics. Hydrogen is the first instrument in a growing library.</p></header>
- <section className="table-shell" aria-label="Interactive periodic table"><div className="periodic-table">{elements.map(el=><button key={el.symbol} className={`element ${categoryClass(el.category)} ${el.available?'available':''}`} style={{gridColumn:el.gridColumn,gridRow:el.gridRow}} onClick={()=>choose(el)} aria-label={`${el.name}, atomic number ${el.number}${el.available?', available':''}`}><small>{el.number}</small><strong>{el.symbol}</strong><span>{el.name}</span>{el.available&&<i>Explore</i>}</button>)}</div>
- <div className="table-footer"><span><b className="dot hydrogen"/> Hydrogen available</span><span><b className="dot"/> 117 elements staged for future releases</span><span>Use the table as a map of what comes next.</span></div></section>
- {notice&&<div className="toast" role="status">{notice}<small>Atomic simulation staged for a future release.</small></div>}
- <footer className="welcome-foot">SCIENTIFIC INTERFACE · V1 / HYDROGEN <span>Visual scale is exaggerated for clarity.</span></footer></main>
+function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
+  const mode = useQuantaStore((s) => s.mode)
+  const level = useQuantaStore((s) => s.level)
+  const orbital = useQuantaStore((s) => s.orbital)
+  const playing = useQuantaStore((s) => s.playing)
+  const speed = useQuantaStore((s) => s.animationSpeed)
+  const togglePlaying = useQuantaStore((s) => s.togglePlaying)
+  const setAnimationSpeed = useQuantaStore((s) => s.setAnimationSpeed)
+  const reset = useQuantaStore((s) => s.reset)
+
+  const [resetCameraCount, setResetCameraCount] = useState(0)
+
+  const modeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
+    overview: {
+      title: 'HYDROGEN OVERVIEW',
+      subtitle: 'Fundamental constants and baseline properties of the simplest atom',
+      badge: 'ELEMENT 01',
+    },
+    bohr: {
+      title: 'BOHR QUANTIZATION MODEL',
+      subtitle: 'Quantized electron orbits with discrete radius rₙ = a₀·n² and electronic state transitions',
+      badge: 'HISTORICAL / CONCEPTUAL MODEL',
+    },
+    quantum: {
+      title: 'SCHRÖDINGER EIGENFUNCTIONS',
+      subtitle: 'Exact wave function probability distributions |ψ(r,θ,φ)|² — not classical electron orbits',
+      badge: 'MODERN QUANTUM MECHANICS',
+    },
+    energy: {
+      title: 'ENERGY LEVEL EIGENVALUES',
+      subtitle: 'Quantized energy rungs approaching the 0 eV ionization boundary',
+      badge: 'SPECTRAL STRUCTURE',
+    },
+    spectra: {
+      title: 'EMISSION SPECTROSCOPY',
+      subtitle: 'Continuous UV-Visible-IR spectrum mapping and Rydberg series line classification',
+      badge: 'SPECTRAL SIGNAL',
+    },
+    equations: {
+      title: 'MATHEMATICAL DERIVATION INSPECTOR',
+      subtitle: 'Step-by-step physical equations, state substitutions, and exact numerical results',
+      badge: 'ANALYTIC ENGINE',
+    },
+  }
+
+  const currentModeInfo = modeDescriptions[mode] ?? modeDescriptions.overview
+  const energyEv = hydrogenEnergy(level)
+  const radiusPm = bohrRadius(level) * 1e12
+
+  return (
+    <main className="explorer-screen">
+      {/* Top Header Bar */}
+      <header className="explorer-top-bar glass-surface">
+        <div className="bar-left">
+          <button className="back-to-table-btn" onClick={onBackToTable}>
+            ← PERIODIC TABLE
+          </button>
+          <div className="element-heading">
+            <span className="element-atomic-badge">1</span>
+            <div className="element-title-group">
+              <h2 className="element-name-heading">
+                Hydrogen <span className="element-symbol-tag">H</span>
+              </h2>
+              <span className="element-sub-heading">Protium · 1p⁺ 1e⁻ · ~1.008 u</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Central Mode Navigation Bar */}
+        <ModeNavigation />
+
+        {/* Right Info Metric */}
+        <div className="bar-right">
+          <div className="quick-state-card">
+            <span className="quick-state-label">CURRENT STATE</span>
+            <strong className="quick-state-val">
+              {mode === 'quantum' ? (orbital ? `${orbital} State` : `n = ${level}`) : `n = ${level}`}
+            </strong>
+            <span className="quick-state-sub">{energyEv.toFixed(3)} eV</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Scientific Visualization Workspace */}
+      <div className="explorer-workspace">
+        {/* 3D Scene Viewport */}
+        <section className="scene-container" aria-label="3D Atomic Visualization">
+          <Suspense
+            fallback={
+              <div className="scene-loader-fallback">
+                <div className="loader-spinner" />
+                <span>INITIALIZING QUANTUM ATOMIC FIELD…</span>
+              </div>
+            }
+          >
+            <AtomScene resetCameraTrigger={resetCameraCount} />
+          </Suspense>
+
+          {/* Floating Scene Header Caption */}
+          <div className="scene-overlay-caption glass-floating">
+            <span className="scene-mode-badge">{currentModeInfo.badge}</span>
+            <strong className="scene-caption-title">{currentModeInfo.title}</strong>
+            <p className="scene-caption-desc">{currentModeInfo.subtitle}</p>
+          </div>
+
+          {/* Scale Disclaimer Note */}
+          <div className="scene-scale-disclaimer">
+            <span>VISUAL SCALE COMPRESSED · PHOTON WAVE PACKET IS A PEDAGOGICAL VISUALIZATION</span>
+          </div>
+
+          {/* Floating Interactive Scene Controls */}
+          <div className="floating-scene-controls glass-floating">
+            {/* Speed Multiplier Pill */}
+            <div className="speed-selector" title="Animation time scale">
+              <button
+                className={`speed-btn ${speed === 0.5 ? 'active' : ''}`}
+                onClick={() => setAnimationSpeed(0.5)}
+              >
+                0.5×
+              </button>
+              <button
+                className={`speed-btn ${speed === 1.0 ? 'active' : ''}`}
+                onClick={() => setAnimationSpeed(1.0)}
+              >
+                1×
+              </button>
+              <button
+                className={`speed-btn ${speed === 2.0 ? 'active' : ''}`}
+                onClick={() => setAnimationSpeed(2.0)}
+              >
+                2×
+              </button>
+            </div>
+
+            <div className="ctrl-separator" />
+
+            {/* Play / Pause Toggle */}
+            <button
+              className={`scene-ctrl-btn ${playing ? 'playing' : 'paused'}`}
+              onClick={togglePlaying}
+              title={playing ? 'Pause motion' : 'Play motion'}
+            >
+              {playing ? 'PAUSE' : 'PLAY'}
+            </button>
+
+            {/* Reset Camera */}
+            <button
+              className="scene-ctrl-btn"
+              onClick={() => setResetCameraCount((c) => c + 1)}
+              title="Reset camera viewpoint"
+            >
+              RESET VIEW
+            </button>
+
+            {/* Reset Full State */}
+            <button className="scene-ctrl-btn reset-btn" onClick={reset} title="Reset to ground state">
+              RESET ATOM
+            </button>
+          </div>
+        </section>
+
+        {/* Dynamic Contextual Scientific Rail */}
+        <aside className="contextual-rail" aria-label="Scientific Context and Controls">
+          {mode === 'overview' && (
+            <div className="overview-pane">
+              <div className="overview-card glass-instrument">
+                <span className="card-kicker">ELEMENT IDENTITY</span>
+                <h3 className="card-title">Hydrogen (H · 1)</h3>
+                <p className="card-desc">
+                  Hydrogen is the most abundant chemical substance in the universe, constituting roughly
+                  75% of all baryonic mass. It serves as the exact analytic testing ground for quantum
+                  mechanics because its single-electron potential has exact mathematical solutions.
+                </p>
+                <div className="data-table">
+                  <div className="data-row">
+                    <span className="data-key">Atomic Number</span>
+                    <strong className="data-val">1</strong>
+                  </div>
+                  <div className="data-row">
+                    <span className="data-key">Standard Mass</span>
+                    <strong className="data-val">1.0080 u</strong>
+                  </div>
+                  <div className="data-row">
+                    <span className="data-key">Ground State</span>
+                    <strong className="data-val">1s¹</strong>
+                  </div>
+                  <div className="data-row">
+                    <span className="data-key">Bohr Radius (a₀)</span>
+                    <strong className="data-val">52.9177 pm</strong>
+                  </div>
+                  <div className="data-row">
+                    <span className="data-key">Ionization Energy</span>
+                    <strong className="data-val">13.5984 eV</strong>
+                  </div>
+                </div>
+              </div>
+              <TransitionControls />
+            </div>
+          )}
+
+          {mode === 'bohr' && (
+            <div className="bohr-pane">
+              <div className="bohr-state-card glass-instrument">
+                <span className="card-kicker">STATIONARY ORBIT STATUS</span>
+                <div className="bohr-metrics-grid">
+                  <div className="b-metric">
+                    <span className="b-label">Orbit Level</span>
+                    <strong className="b-val">n = {level}</strong>
+                  </div>
+                  <div className="b-metric">
+                    <span className="b-label">Binding Energy</span>
+                    <strong className="b-val">{energyEv.toFixed(3)} eV</strong>
+                  </div>
+                  <div className="b-metric">
+                    <span className="b-label">Bohr Radius</span>
+                    <strong className="b-val">{radiusPm.toFixed(1)} pm</strong>
+                  </div>
+                </div>
+              </div>
+              <TransitionControls />
+              <LevelDiagram />
+            </div>
+          )}
+
+          {mode === 'quantum' && (
+            <div className="quantum-pane">
+              <QuantumControls />
+            </div>
+          )}
+
+          {mode === 'energy' && (
+            <div className="energy-pane">
+              <LevelDiagram />
+              <TransitionControls />
+            </div>
+          )}
+
+          {mode === 'spectra' && (
+            <div className="spectra-pane">
+              <SpectrumVisualizer />
+              <TransitionControls />
+            </div>
+          )}
+
+          {mode === 'equations' && (
+            <div className="equations-pane">
+              <EquationInspector />
+            </div>
+          )}
+        </aside>
+      </div>
+
+      {/* Global Explorer Footer */}
+      <footer className="explorer-bottom-footer glass-surface">
+        <div className="footer-left">
+          <span className="footer-brand">QUANTA — Matter, visualized.</span>
+          <span className="footer-meta">
+            Created by{' '}
+            <a
+              href="https://github.com/iamaritrasaha"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-author-link"
+            >
+              Aritra Saha
+            </a>{' '}
+            · A Foresight Labs project
+          </span>
+        </div>
+        <div className="footer-right">
+          <span>Bohr orbits represent conceptual quantization · Wavefunctions represent exact |ψ|² densities</span>
+          <span className="footer-copyright">© 2026 Aritra Saha</span>
+        </div>
+      </footer>
+    </main>
+  )
 }
 
-function LevelDiagram() {
- const level=useQuantaStore(s=>s.level), setLevel=useQuantaStore(s=>s.setLevel)
- return <div className="levels" aria-label="Hydrogen energy levels">{[6,5,4,3,2,1].map(n=><button className={n===level?'selected':''} key={n} onClick={()=>setLevel(n)}><span>n = {n}</span><i/ ><em>{hydrogenEnergy(n).toFixed(3)} eV</em></button>)}<div className="ionization"><span>0 eV</span><i/> ionization limit</div></div>
-}
-function TransitionPanel() {
- const initial=useQuantaStore(s=>s.initialLevel), target=useQuantaStore(s=>s.targetLevel), setInitial=useQuantaStore(s=>s.setInitialLevel), setTarget=useQuantaStore(s=>s.setTargetLevel), excite=useQuantaStore(s=>s.excite), emit=useQuantaStore(s=>s.emit)
- const transition=useMemo(()=>initial===target?null:hydrogenTransition(initial,target),[initial,target])
- return <section className="panel transition-panel"><p className="panel-kicker">STATE TRANSITION</p><div className="select-row"><label>From<select value={initial} onChange={e=>setInitial(Number(e.target.value))}>{[1,2,3,4,5,6].map(n=><option key={n}>{n}</option>)}</select></label><span>→</span><label>To<select value={target} onChange={e=>setTarget(Number(e.target.value))}>{[1,2,3,4,5,6].map(n=><option key={n}>{n}</option>)}</select></label></div>
- {transition?<><div className="metric"><span>ΔE</span><strong>{transition.deltaEnergyEv.toFixed(3)} eV</strong><small>{transition.direction}</small></div><div className="actions">{transition.direction==='absorption'?<button className="primary" onClick={excite}>ABSORB PHOTON</button>:<button className="primary" onClick={emit}>EMIT PHOTON</button>}</div></>:<p className="muted">Choose two different levels.</p>}</section>
-}
-function SpectralReadout() {
- const initial=useQuantaStore(s=>s.initialLevel), final=useQuantaStore(s=>s.targetLevel)
- if(initial===final) return <section className="panel"><p className="panel-kicker">SPECTRAL SIGNAL</p><p className="muted">Select a valid transition to resolve a spectral line.</p></section>
- const t=hydrogenTransition(initial,final), color=wavelengthToDisplayColor(t.wavelengthNm)
- const x=Math.max(3,Math.min(97,(t.wavelengthNm-250)/750*100))
- return <section className="panel spectrum"><p className="panel-kicker">SPECTRAL SIGNAL</p><div className="spectrum-strip"><span className="line" style={{left:`${x}%`,background:color,boxShadow:`0 0 16px ${color}`}}/></div><div className="spectrum-labels"><span>UV</span><span>VISIBLE</span><span>IR</span></div><div className="spectra-value"><strong>{t.wavelengthNm.toFixed(1)} nm</strong><span>{t.series} series · {t.band}</span></div><p className="fine-print">{t.band==='visible'?'Approximate visible-light colour.':'Visualization colour — this radiation is not visible to human vision.'}</p></section>
-}
-function Equations() {
- const initial=useQuantaStore(s=>s.initialLevel), final=useQuantaStore(s=>s.targetLevel), level=useQuantaStore(s=>s.level)
- const t=initial===final?null:hydrogenTransition(initial,final)
- return <section className="panel equations"><p className="panel-kicker">LIVE EQUATION INSPECTOR</p><div><Equation block>{String.raw`E_n = -\\frac{13.598}{n^2}\\,\\mathrm{eV}`}</Equation><p>Current state <b>n = {level}</b> → <b>{hydrogenEnergy(level).toFixed(3)} eV</b></p></div>{t&&<><div><Equation block>{String.raw`\\Delta E = E_f-E_i = ${t.deltaEnergyEv.toFixed(3)}\\,\\mathrm{eV}`}</Equation></div><div><Equation block>{String.raw`\\lambda = \\frac{hc}{|\\Delta E|} = ${t.wavelengthNm.toFixed(2)}\\,\\mathrm{nm}`}</Equation><p>{formatFrequency(t.frequencyHz)} · Rydberg check: {t.rydbergWavelengthNm.toFixed(2)} nm</p></div></>}</section>
-}
-function QuantumPanel() {
- const orbital=useQuantaStore(s=>s.orbital), setOrbital=useQuantaStore(s=>s.setOrbital)
- const q=ORBITALS[orbital]
- return <section className="panel quantum-panel"><p className="panel-kicker">QUANTUM STATE</p><div className="orbital-pills">{(Object.keys(ORBITALS) as (keyof typeof ORBITALS)[]).map(o=><button key={o} className={o===orbital?'active':''} onClick={()=>setOrbital(o)}>{o}</button>)}</div><div className="quantum-numbers"><span><b>n</b>{q.n}<small>principal</small></span><span><b>l</b>{q.l}<small>{q.l===0?'s orbital':q.l===1?'p orbital':'d orbital'}</small></span><span><b>mₗ</b>{q.m}<small>orientation</small></span><span><b>mₛ</b>+½<small>spin state</small></span></div><Equation block>{String.raw`P(r,\\theta,\\phi)=|\\psi_{nlm}|^2`}</Equation><p className="fine-print">Probability-density visualization — finite display threshold. Points are sampled from the Hydrogenic density, not electron trajectories.</p></section>
-}
-function Explorer({back}:{back:()=>void}) {
- const mode=useQuantaStore(s=>s.mode), setMode=useQuantaStore(s=>s.setMode), level=useQuantaStore(s=>s.level), playing=useQuantaStore(s=>s.playing), toggle=useQuantaStore(s=>s.togglePlaying), reset=useQuantaStore(s=>s.reset)
- const selected=modes.find(m=>m[0]===mode)!
- return <main className="explorer"><header className="explorer-head"><button className="back" onClick={back}>← TABLE</button><div><p className="eyebrow">ELEMENT 01 / AVAILABLE</p><h2>Hydrogen <span>H</span></h2></div><div className="head-state">ATOMIC NUMBER <b>1</b><small>Protium · 1 proton · 1 electron</small></div></header>
- <nav className="mode-nav" aria-label="Hydrogen exploration mode">{modes.map(([id,label,desc])=><button key={id} className={mode===id?'active':''} onClick={()=>setMode(id)}><span>{label}</span><small>{desc}</small></button>)}</nav>
- <div className="workspace"><section className="scene-wrap"><Suspense fallback={<div className="scene-loading">Preparing atomic field…</div>}><AtomScene/></Suspense><div className="scene-caption"><b>{selected[1]}</b><span>{selected[2]}</span></div><div className="scale-note">VISUAL SCALE EXAGGERATED FOR CLARITY</div><div className="scene-controls"><button onClick={toggle}>{playing?'PAUSE':'PLAY'}</button><button onClick={reset}>RESET</button></div></section>
- <aside className="right-rail">{mode==='quantum'?<QuantumPanel/>:<><section className="panel state-panel"><p className="panel-kicker">CURRENT LEVEL</p><strong>n = {level}</strong><span>{hydrogenEnergy(level).toFixed(3)} eV</span><small>rₙ = {(bohrRadius(level)*1e12).toFixed(1)} pm</small></section><LevelDiagram/><TransitionPanel/></>}{(mode==='spectra'||mode==='bohr'||mode==='energy')&&<SpectralReadout/>}{(mode==='equations'||mode==='bohr'||mode==='energy'||mode==='spectra')&&<Equations/>}{mode==='overview'&&<section className="panel overview"><p className="panel-kicker">HYDROGEN / H</p><p>The simplest atom, and the exact analytic foundation for QUANTA’s first scientific instrument.</p><dl><div><dt>Atomic mass</dt><dd>~1.008 u</dd></div><div><dt>Ground state</dt><dd>1s¹</dd></div><div><dt>Valence electrons</dt><dd>1</dd></div></dl><p className="fine-print">Protium is shown. Deuterium and tritium are planned as isotope extensions.</p></section>}</aside></div>
- <footer className="explorer-foot"><span>Bohr motion is an educational time-expanded illustration.</span><span>Hydrogen is exact; future multi-electron models will use different approximations.</span></footer></main>
-}
 export default function App() {
- const [view,setView]=useState(()=>location.hash.includes('/element/hydrogen')?'hydrogen':'table')
- useEffect(()=>{const listener=()=>setView(location.hash.includes('/element/hydrogen')?'hydrogen':'table');addEventListener('hashchange',listener);return()=>removeEventListener('hashchange',listener)},[])
- const enter=()=>location.hash='/element/hydrogen'; const back=()=>location.hash='/'
- return view==='hydrogen'?<Explorer back={back}/>:<Welcome enter={enter}/>
+  const [view, setView] = useState<'table' | 'hydrogen'>(() =>
+    window.location.hash.includes('/element/hydrogen') ? 'hydrogen' : 'table'
+  )
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setView(window.location.hash.includes('/element/hydrogen') ? 'hydrogen' : 'table')
+    }
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  const enterHydrogen = () => {
+    window.location.hash = '/element/hydrogen'
+  }
+
+  const returnToTable = () => {
+    window.location.hash = '/'
+  }
+
+  return view === 'hydrogen' ? (
+    <Explorer onBackToTable={returnToTable} />
+  ) : (
+    <PeriodicTable onSelectHydrogen={enterHydrogen} />
+  )
 }

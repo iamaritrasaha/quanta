@@ -1,7 +1,10 @@
 {
   "name": "quanta",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "description": "QUANTA — Matter, visualized. An interactive atomic physics visualization instrument by Aritra Saha.",
+  "author": "Aritra Saha",
+  "homepage": "https://iamaritrasaha.github.io/quanta/",
   "type": "module",
   "scripts": {
     "dev": "vite",

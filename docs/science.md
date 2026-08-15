@@ -1,23 +1,30 @@
-# QUANTA scientific notes
+# QUANTA Scientific Notes
 
-## Hydrogen scope
+## Hydrogen Scope
 
-V1 models ordinary Hydrogen / protium: one proton and one electron. The level energy is calculated as \(E_n=-13.5984346/n^2\) eV. Photon frequency and wavelength are derived from the transition energy with Planck’s constant and the speed of light. A Rydberg-relation result is also displayed as a numerical cross-check.
+QUANTA models ordinary Hydrogen (protium: $1\text{p}^+, 1\text{e}^-$). Binding energy levels follow the exact analytic SI relation:
 
-The spectral family is determined by the lower level: Lyman (1), Balmer (2), and Paschen (3), with Brackett and Pfund classifications already supported in the calculation layer.
+$$E_n = -\frac{13.5984346}{n^2}\text{ eV}$$
 
-## Models and visual language
+Photon frequencies $\nu$ and wavelengths $\lambda$ are derived from discrete energy differences via $\Delta E = h\nu = \frac{hc}{\lambda}$, with numerical Rydberg relations serving as analytic cross-checks.
 
-The Bohr model is historical and conceptual. Its orbiting dot is not a claim about a quantum electron’s literal path. Its timing is deliberately expanded for interaction.
+Spectral series are determined by the lower terminal state $n_f$:
+- **Lyman Series** ($n_f = 1$): Vacuum Ultraviolet ($\lambda \approx 91.2 - 121.6\text{ nm}$)
+- **Balmer Series** ($n_f = 2$): Visible spectrum ($\lambda \approx 364.6 - 656.5\text{ nm}$)
+- **Paschen Series** ($n_f = 3$): Near Infrared ($\lambda \approx 820.4 - 1875.6\text{ nm}$)
+- **Brackett & Pfund Series** ($n_f = 4, 5$): Mid/Far Infrared
 
-Quantum mode uses analytic, unnormalised Hydrogenic relative density functions to rejection-sample a point field. This makes the 1s concentration, 2s radial node, and 2p angular node visible. The display has a finite threshold because orbitals have no hard outer edge. It conveys relative probability density, not instantaneous electron locations.
+## Models & Visual Representations
 
-The displayed nucleus and orbital sizes are intentionally not to physical scale. At literal scale, the nucleus would be nearly invisible.
+- **Bohr Quantization**: Historical and conceptual model illustrating quantized angular momentum $L = n\hbar$ and orbital radii $r_n = a_0 \cdot n^2$. The point electron is a pedagogical representation of discrete energy states; electron velocities and orbital scales are time-expanded for educational clarity.
+- **Quantum Mechanics**: Renders exact analytic Hydrogenic probability densities $|\psi_{nlm}(r,\theta,\phi)|^2$, derived from the wavefunction $\psi$. Points represent sampled spatial probability amplitude distributions without classical trajectories.
+- **Photon Wave Packets**: Compact transverse wave packet representations illustrating quantum energy exchange; spatial wavelength is not to scale.
+- **Scale Adjustments**: Nuclear and electronic visual dimensions are compressed non-linearly to allow simultaneous observation of the dense proton core and extended outer shells.
 
-## Colour
+## Future Elements
 
-Visible spectral lines use an approximate wavelength-to-display-colour mapping. Ultraviolet and infrared are labelled as visualization colours because people cannot see those wavelengths. Orbital colours are also visualization choices, not measured hues.
+Hydrogen serves as the foundational testing ground due to its exact analytic single-electron potential. Multi-electron elements require electron-electron correlation approximations (such as Hartree-Fock or DFT) and will be added as validated instruments.
 
-## Future elements
+---
 
-Hydrogen has an exact analytic one-electron solution. Multi-electron atoms do not simply reuse it: they require approximations that account for electron-electron interactions. QUANTA will add elements only when their models can be documented with equivalent care.
+© 2026 Aritra Saha. All rights reserved.

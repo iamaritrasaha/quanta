@@ -1,42 +1,80 @@
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars } from '@react-three/drei'
-import * as THREE from 'three'
-import { useMemo, useRef } from 'react'
-import { sampleOrbital, type OrbitalKey } from '../physics/quantum'
+import { Canvas, useThree } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
+import { useEffect, useRef } from 'react'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useQuantaStore } from '../state/quantaStore'
-import { hydrogenTransition, wavelengthToDisplayColor } from '../physics/hydrogen'
+import { BohrAtom } from './BohrAtom'
+import { QuantumCloud } from './QuantumCloud'
 
-function Nucleus() {
- return <group><mesh><sphereGeometry args={[.65,48,48]}/><meshStandardMaterial color="#ff7d6c" emissive="#d52d52" emissiveIntensity={1.5} roughness={.35}/></mesh><pointLight color="#ff8d7a" intensity={9} distance={9}/></group>
+interface SceneManagerProps {
+  resetCameraTrigger?: number
 }
-function BohrAtom() {
- const level=useQuantaStore(s=>s.level), playing=useQuantaStore(s=>s.playing), phase=useQuantaStore(s=>s.phase)
- const electron=useRef<THREE.Mesh>(null!), angle=useRef(0); const radius=2.2 + level * 0.75
- useFrame((_,delta)=>{ if(playing) angle.current+=delta*.9; if(electron.current) electron.current.position.set(Math.cos(angle.current)*radius,Math.sin(angle.current)*radius*.42,Math.sin(angle.current)*radius*.13) })
- const rings=Array.from({length:6},(_,i)=>i+1)
- return <group>
-   <Nucleus/>
-   {rings.map(n=><mesh key={n} rotation={[Math.PI/2,0,0]}><torusGeometry args={[2.2+n*.75,.012,8,128]}/><meshBasicMaterial color={n===level?'#76e6ff':'#24455c'} transparent opacity={n===level?.9:.32}/></mesh>)}
-   <mesh ref={electron}><sphereGeometry args={[.18,24,24]}/><meshStandardMaterial color="#b9f5ff" emissive="#40bfe9" emissiveIntensity={phase==='absorbing'?6:3}/></mesh>
- </group>
+
+function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
+  const orbital = useQuantaStore((s) => s.orbital)
+  const controlsRef = useRef<OrbitControlsImpl>(null!)
+  const { camera } = useThree()
+
+  // Smoothly reset camera when requested
+  useEffect(() => {
+    if (resetCameraTrigger && resetCameraTrigger > 0) {
+      camera.position.set(0, 2.2, 13.5)
+      camera.lookAt(0, 0, 0)
+      if (controlsRef.current) {
+        controlsRef.current.target.set(0, 0, 0)
+        controlsRef.current.update()
+      }
+    }
+  }, [resetCameraTrigger, camera])
+
+  return (
+    <>
+      {/* Cold optical graphite background & subtle depth fog */}
+      <color attach="background" args={['#080a0f']} />
+      <fog attach="fog" args={['#080a0f', 16, 38]} />
+
+      {/* Scientific Instrument Lighting */}
+      <ambientLight intensity={0.4} color="#f8fafc" />
+      <directionalLight position={[10, 15, 12]} intensity={0.65} color="#f1f5f9" />
+      <directionalLight position={[-10, -5, -8]} intensity={0.25} color="#60a5fa" />
+
+      {/* Persistent Logical Model Layers with Frame-Driven Opacity Dampening */}
+      <BohrAtom />
+      <QuantumCloud orbital={orbital} />
+
+      {/* Restrained Orbit Controls */}
+      <OrbitControls
+        ref={controlsRef}
+        enablePan={false}
+        enableDamping={true}
+        dampingFactor={0.06}
+        minDistance={5.0}
+        maxDistance={26.0}
+        rotateSpeed={0.65}
+        zoomSpeed={0.8}
+      />
+    </>
+  )
 }
-function QuantumCloud({ orbital }: { orbital:OrbitalKey }) {
- const points=useMemo(()=>sampleOrbital(orbital, window.innerWidth < 700 ? 3500 : 9000),[orbital])
- const ref=useRef<THREE.Points>(null!)
- useFrame(({clock})=>{if(ref.current){ref.current.rotation.y=clock.elapsedTime*.06; ref.current.rotation.z=Math.sin(clock.elapsedTime*.13)*.09}})
- return <points ref={ref}><bufferGeometry><bufferAttribute attach="attributes-position" args={[points,3]}/></bufferGeometry><pointsMaterial color={orbital==='2p'?'#bb8cff':'#61dcff'} size={.045} transparent opacity={.65} depthWrite={false} blending={THREE.AdditiveBlending}/></points>
+
+export function AtomScene({ resetCameraTrigger }: { resetCameraTrigger?: number }) {
+  return (
+    <Canvas
+      dpr={[1, typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 1.8) : 1]}
+      camera={{ position: [0, 2.2, 13.5], fov: 42 }}
+      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      fallback={
+        <div className="webgl-fallback">
+          <h3>WebGL Unsupported</h3>
+          <p>
+            Your browser environment does not currently support WebGL rendering.
+            QUANTA’s scientific equation engine, level derivations, and spectroscopic calculations
+            remain fully operational.
+          </p>
+        </div>
+      }
+    >
+      <SceneManager resetCameraTrigger={resetCameraTrigger} />
+    </Canvas>
+  )
 }
-function Photon() {
- const tick=useQuantaStore(s=>s.photonTick), initial=useQuantaStore(s=>s.initialLevel), final=useQuantaStore(s=>s.targetLevel)
- const ref=useRef<THREE.Group>(null!); const born=useRef(0); const active=useRef(0)
- if(active.current!==tick){active.current=tick;born.current=performance.now()}
- const transition=hydrogenTransition(initial,final), color=wavelengthToDisplayColor(transition.wavelengthNm)
- useFrame(()=>{if(ref.current){const t=Math.min(1,(performance.now()-born.current)/1500);ref.current.visible=t<1;ref.current.position.x=1.8+t*12;ref.current.scale.setScalar(.7+t*.8)}})
- return <group ref={ref} visible={false}><mesh><sphereGeometry args={[.16,18,18]}/><meshBasicMaterial color={color}/></mesh><pointLight color={color} intensity={5} distance={5}/></group>
-}
-function Scene() {
- const mode=useQuantaStore(s=>s.mode), orbital=useQuantaStore(s=>s.orbital)
- const quantum=mode==='quantum'
- return <><color attach="background" args={['#060a12']}/><fog attach="fog" args={['#060a12',16,36]}/><ambientLight intensity={.35}/><Stars radius={75} depth={40} count={700} factor={1.4} saturation={0}/>{quantum?<QuantumCloud orbital={orbital}/>:<BohrAtom/>}<Photon/><OrbitControls enablePan={false} minDistance={6} maxDistance={26} autoRotate={false}/></>
-}
-export function AtomScene(){ return <Canvas dpr={[1,Math.min(window.devicePixelRatio,1.7)]} camera={{position:[0,2,12],fov:42}} gl={{antialias:true,alpha:false}} fallback={<div className="webgl-fallback">This browser cannot render WebGL. QUANTA’s calculations and controls remain available.</div>}><Scene/></Canvas> }

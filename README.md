@@ -2,51 +2,57 @@
 
 **Matter, visualized.**
 
-QUANTA is a browser-native scientific visualization instrument for exploring atoms from historical and quantum perspectives. V1 implements Hydrogen deeply; the periodic table is a map for elements that will be added individually.
+QUANTA is an interactive atomic physics visualization instrument for exploring atomic structure from historical Bohr quantization to modern quantum-mechanical probability distributions. V2 deeply implements Hydrogen with exact analytical solutions, dynamic Rydberg transitions, emission spectroscopy, and step-by-step mathematical derivations.
 
-## Current scope
+## Scope & Features
 
-- Glass interactive periodic table with all 118 named elements
-- Hydrogen overview, Bohr model, energy levels, excitation/emission, spectroscopy, equations, and quantum probability-density visualization
-- Local, tested TypeScript physics calculations — no API, server, database, or runtime secrets
-- Hash-based navigation (\`#/element/hydrogen\`) for GitHub Pages refresh safety
+- **Interactive Periodic Table**: Glass interface staging all 118 named elements, with Hydrogen active as the foundational instrument.
+- **Bohr Quantization Model**: Historical/conceptual model showing discrete electron orbits ($r_n = a_0 \cdot n^2$), orbital velocity scaling, and electronic state transitions.
+- **Schrödinger Eigenfunctions**: Exact wave function probability distributions ($|\psi(r,\theta,\phi)|^2$) for $1s$, $2s$, and $2p$ eigenstates with physical nodal surfaces.
+- **Quantum State Transitions**: Discrete absorption and emission of photons with dynamic Rydberg wavelength calculations across Lyman, Balmer, and Paschen series.
+- **Mathematical Derivation Inspector**: Step-by-step physical equations, exact parameter substitutions, and physical state outputs rendered via KaTeX.
+- **Calibrated Spectroscopy**: Continuous UV-Visible-IR spectral band visualizer with physical spectral line markers.
+- **Client-Side SI Physics Engine**: Standalone TypeScript calculation layer with zero external API dependencies, servers, or runtime secrets.
 
-## Technology
+## Technology Stack
 
-React, TypeScript, Vite, Three.js / React Three Fiber, Zustand, KaTeX, and Vitest.
+- **Framework**: React 19, TypeScript
+- **3D Graphics & Physics**: Three.js, React Three Fiber, Drei
+- **State Architecture**: Zustand
+- **Typography & Math**: KaTeX
+- **Build & Test**: Vite, Vitest
 
-## Local development
+## Local Development
 
-\`\`\`bash
+```bash
 npm install
 npm run dev
 npm run test
 npm run build
 npm run preview
-\`\`\`
+```
 
-## GitHub Pages deployment
+## GitHub Pages Deployment
 
-The included workflow builds and deploys on pushes to \`main\`. In the repository settings, set **Pages → Build and deployment → GitHub Actions**. The Vite build uses relative asset paths, so it works under a repository URL such as \`username.github.io/quanta/\`, as well as a custom domain.
+The included GitHub Actions workflow automatically builds and deploys on pushes to `main`. The build uses relative asset paths (`base: './'`), operating seamlessly on GitHub Pages at [https://iamaritrasaha.github.io/quanta/](https://iamaritrasaha.github.io/quanta/).
 
-## Architecture
+## Scientific Model Notes
 
-- \`src/physics/\`: framework-independent constants, Hydrogen transitions, spectral classification, quantum-number validation, and analytic orbital density sampling
-- \`src/rendering/\`: Three.js atom / probability-density renderer
-- \`src/state/\`: one shared visualization state for panels and scene
-- \`src/data/\`: bundled periodic-table metadata
+- **Bohr Model**: Presented as a historical and conceptual representation of quantized states. Electron motion is time-expanded for educational clarity.
+- **Quantum Mechanics**: Renders exact analytical Hydrogenic probability densities ($|\psi|^2$), derived from the wave function $\psi$. No classical trajectories are drawn through probability clouds.
+- **Photon Wave Packets**: Pedagogical visualizations of quantum energy exchange; spatial wavelength is not to physical scale.
 
-Hydrogen’s exact one-electron equations are deliberately not presented as a direct model for future multi-electron atoms; those require their own approximations and renderers.
+For detailed notes on physical formulas and assumptions, refer to [`docs/science.md`](docs/science.md).
 
-## Scientific model
+## Author
 
-The Bohr model is presented as a historical / conceptual model. Electron motion is only shown in that mode and is time-expanded for educational readability. Quantum mode renders a sampled finite probability-density field; it is not an electron path or a hard orbital boundary. Nuclear and atomic display scales are exaggerated for clarity. Read [the scientific notes](docs/science.md) for scope and assumptions.
+**Aritra Saha**<br />
+Founder & Product Builder, Foresight Labs
 
-## Roadmap
+QUANTA is an original interactive scientific visualization project exploring atomic structure from historical Bohr models to quantum-mechanical probability descriptions.
 
-- V1 — Hydrogen
-- V2 — Helium
-- V3 — Lithium
-- V4 — Carbon
+GitHub: [https://github.com/iamaritrasaha](https://github.com/iamaritrasaha)
 
-Future work may include isotopes, multi-electron filling, richer spectroscopy, nuclear structure, and comparative model history.
+## Copyright
+
+Copyright © 2026 Aritra Saha. All rights reserved.
