@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useQuantaStore } from '../state/quantaStore'
 import { HELIUM_TRANSITIONS, getHeliumTransition } from '../physics/helium'
+import { SpectrumInstrumentHeader, SpectralHeroResult } from './science'
 
 function heliumWavelengthToPercent(wavelengthNm: number): number {
   if (wavelengthNm <= 40) return 2
@@ -33,15 +34,12 @@ export function HeliumSpectrumVisualizer() {
 
   return (
     <div className="spectrum-visualizer glass-instrument" aria-label="Helium Emission Spectrum">
-      <div className="spectrum-header">
-        <div className="spectrum-title-wrap">
-          <span className="spectrum-title">HELIUM I EMISSION SPECTROSCOPY</span>
-          <span className="provenance-tag">NIST ASD DATA</span>
-        </div>
-        <span className="spectrum-series-badge">
-          {transition ? transition.classification.toUpperCase() : 'SELECT LINE'}
-        </span>
-      </div>
+      <SpectrumInstrumentHeader
+        title="HELIUM I EMISSION SPECTROSCOPY"
+        badgeText="NIST ASD DATA"
+        classificationOrSeries={transition ? transition.classification.toUpperCase() : 'SELECT LINE'}
+        classificationColor={transition?.displayColor}
+      />
 
       {/* Multi-Band Spectral Strip */}
       <div className="spectrum-strip-container">
@@ -97,21 +95,20 @@ export function HeliumSpectrumVisualizer() {
         <span className="band-label">INFRARED (&gt; 740 nm)</span>
       </div>
 
-      {/* Spectral Readout Card */}
+      {/* Spectral Readout Card using shared SpectralHeroResult */}
       {transition ? (
-        <div className="spectrum-readout-card">
-          <div className="readout-primary">
-            <span className="readout-value" style={{ color: transition.displayColor }}>
-              {transition.wavelengthNm.toFixed(3)} nm
-            </span>
-            <span className="readout-sub">
-              {transition.classification} · {transition.region} · {transition.wavelengthMedium.toUpperCase()} MEDIUM · Eγ = {transition.photonEnergyEv.toFixed(3)} eV
-            </span>
-          </div>
-          <p className="spectrum-microcopy">
-            {transition.description} {transition.colorDescription}.
-          </p>
-        </div>
+        <SpectralHeroResult
+          wavelengthNm={transition.wavelengthNm}
+          wavelengthPrecision={3}
+          wavelengthMedium={transition.wavelengthMedium}
+          displayColor={transition.displayColor}
+          classificationOrSeries={transition.classification}
+          region={transition.region}
+          photonEnergyEv={transition.photonEnergyEv}
+          description={transition.description}
+          colorDescription={transition.colorDescription}
+          isTrueColor={transition.isTrueColor}
+        />
       ) : null}
     </div>
   )

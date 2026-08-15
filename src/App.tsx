@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { useQuantaStore, type ElementKey } from './state/quantaStore'
 import { bohrRadius, hydrogenEnergy } from './physics/hydrogen'
 import { getHeliumLevel } from './physics/helium'
+import { getLithiumLevel } from './physics/lithium'
 import { PeriodicTable } from './components/PeriodicTable'
 import { ModeNavigation } from './components/ModeNavigation'
 import { LevelDiagram } from './components/LevelDiagram'
@@ -16,6 +17,13 @@ import { HeliumLevelDiagram } from './components/HeliumLevelDiagram'
 import { HeliumSpectrumVisualizer } from './components/HeliumSpectrumVisualizer'
 import { HeliumTransitionControls } from './components/HeliumTransitionControls'
 import { HeliumEquationInspector } from './components/HeliumEquationInspector'
+import { LithiumOverview } from './components/LithiumOverview'
+import { LithiumShellControls } from './components/LithiumShellControls'
+import { LithiumQuantumControls } from './components/LithiumQuantumControls'
+import { LithiumLevelDiagram } from './components/LithiumLevelDiagram'
+import { LithiumSpectrumVisualizer } from './components/LithiumSpectrumVisualizer'
+import { LithiumTransitionControls } from './components/LithiumTransitionControls'
+import { LithiumEquationInspector } from './components/LithiumEquationInspector'
 import './styles.css'
 
 const AtomScene = lazy(() =>
@@ -28,6 +36,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const level = useQuantaStore((s) => s.level)
   const orbital = useQuantaStore((s) => s.orbital)
   const heliumState = useQuantaStore((s) => s.helium)
+  const lithiumState = useQuantaStore((s) => s.lithium)
   const playing = useQuantaStore((s) => s.playing)
   const speed = useQuantaStore((s) => s.animationSpeed)
   const togglePlaying = useQuantaStore((s) => s.togglePlaying)
@@ -37,6 +46,8 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const [resetCameraCount, setResetCameraCount] = useState(0)
 
   const isHydrogen = activeElement === 'hydrogen'
+  const isHelium = activeElement === 'helium'
+  const isLithium = activeElement === 'lithium'
 
   const hydrogenModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
     overview: {
@@ -104,12 +115,48 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
     },
   }
 
+  const lithiumModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
+    overview: {
+      title: 'LITHIUM OVERVIEW',
+      subtitle: 'Closed 1s² core + 1 outer valence electron · Alkali metal physics',
+      badge: 'ELEMENT 03 / AVAILABLE',
+    },
+    bohr: {
+      title: 'SHELL OCCUPANCY MODEL',
+      subtitle: 'K-shell (1s²) core pair + L/M/N-shell outer valence electron transitions',
+      badge: 'PEDAGOGICAL ELECTRON-SHELL REPRESENTATION',
+    },
+    quantum: {
+      title: 'SCHRÖDINGER REDUCED DENSITY & QUANTUM DEFECT',
+      subtitle: 'Reduced one-electron density ρ(r) with core screening and penetration analysis',
+      badge: 'REDUCED PROBABILITY DENSITY',
+    },
+    energy: {
+      title: 'LITHIUM I TERM EIGENVALUES',
+      subtitle: '²S, ²P°, ²D, ²F° series approaching the 5.392 eV ionization threshold',
+      badge: 'NIST ASD TERM DIAGRAM',
+    },
+    spectra: {
+      title: 'EMISSION SPECTROSCOPY',
+      subtitle: '670.8 nm resonance doublet and persistent spectral transitions in air',
+      badge: 'LITHIUM I SPECTROSCOPY',
+    },
+    equations: {
+      title: 'MATHEMATICAL DERIVATION INSPECTOR',
+      subtitle: 'Three-electron Hamiltonian with r₁₂, r₁₃, r₂₃ pair repulsions and core screening',
+      badge: 'THREE-ELECTRON DERIVATION',
+    },
+  }
+
   const currentModeInfo = isHydrogen
     ? hydrogenModeDescriptions[mode] ?? hydrogenModeDescriptions.overview
-    : heliumModeDescriptions[mode] ?? heliumModeDescriptions.overview
+    : isHelium
+    ? heliumModeDescriptions[mode] ?? heliumModeDescriptions.overview
+    : lithiumModeDescriptions[mode] ?? lithiumModeDescriptions.overview
 
   const hydrogenEnergyEv = hydrogenEnergy(level)
   const currentHeliumLevel = getHeliumLevel(heliumState.selectedLevelId) ?? getHeliumLevel('1s2_1S0')!
+  const currentLithiumLevel = getLithiumLevel(lithiumState.selectedLevelId) ?? getLithiumLevel('1s2_2s_2S1_2')!
 
   return (
     <main className="explorer-screen">
@@ -120,14 +167,18 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             ← PERIODIC TABLE
           </button>
           <div className="element-heading">
-            <span className="element-atomic-badge">{isHydrogen ? '1' : '2'}</span>
+            <span className="element-atomic-badge">{isHydrogen ? '1' : isHelium ? '2' : '3'}</span>
             <div className="element-title-group">
               <h2 className="element-name-heading">
-                {isHydrogen ? 'Hydrogen' : 'Helium'}{' '}
-                <span className="element-symbol-tag">{isHydrogen ? 'H' : 'He'}</span>
+                {isHydrogen ? 'Hydrogen' : isHelium ? 'Helium' : 'Lithium'}{' '}
+                <span className="element-symbol-tag">{isHydrogen ? 'H' : isHelium ? 'He' : 'Li'}</span>
               </h2>
               <span className="element-sub-heading">
-                {isHydrogen ? 'Protium · 1p⁺ 1e⁻ · ~1.008 u' : '⁴He · 2p⁺ 2n⁰ 2e⁻ · ~4.0026 u'}
+                {isHydrogen
+                  ? 'Protium · 1p⁺ 1e⁻ · ~1.008 u'
+                  : isHelium
+                  ? '⁴He · 2p⁺ 2n⁰ 2e⁻ · ~4.0026 u'
+                  : '⁷Li · 3p⁺ 4n⁰ 3e⁻ · [6.938, 6.997] u'}
               </span>
             </div>
           </div>
@@ -147,12 +198,19 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 </strong>
                 <span className="quick-state-sub">{hydrogenEnergyEv.toFixed(3)} eV</span>
               </>
-            ) : (
+            ) : isHelium ? (
               <>
                 <strong className="quick-state-val">
                   {currentHeliumLevel.configuration} {currentHeliumLevel.termSymbol}
                 </strong>
                 <span className="quick-state-sub">{currentHeliumLevel.energyEv.toFixed(3)} eV</span>
+              </>
+            ) : (
+              <>
+                <strong className="quick-state-val">
+                  {currentLithiumLevel.configuration} {currentLithiumLevel.termSymbol}
+                </strong>
+                <span className="quick-state-sub">{currentLithiumLevel.energyEv.toFixed(3)} eV</span>
               </>
             )}
           </div>
@@ -186,7 +244,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             <span>
               {isHydrogen
                 ? 'VISUAL SCALE COMPRESSED · PHOTON WAVE PACKET IS A PEDAGOGICAL VISUALIZATION'
-                : 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁴He (2p⁺ 2n⁰)'}
+                : isHelium
+                ? 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁴He (2p⁺ 2n⁰)'
+                : 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁷Li (3p⁺ 4n⁰)'}
             </span>
           </div>
 
@@ -333,7 +393,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 </div>
               )}
             </>
-          ) : (
+          ) : isHelium ? (
             /* Helium Exploration Rail */
             <>
               {mode === 'overview' && <HeliumOverview />}
@@ -358,6 +418,34 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
               {mode === 'equations' && (
                 <div className="equations-pane">
                   <HeliumEquationInspector />
+                </div>
+              )}
+            </>
+          ) : (
+            /* Lithium Exploration Rail */
+            <>
+              {mode === 'overview' && <LithiumOverview />}
+              {mode === 'bohr' && <LithiumShellControls />}
+              {mode === 'quantum' && (
+                <div className="quantum-pane">
+                  <LithiumQuantumControls />
+                </div>
+              )}
+              {mode === 'energy' && (
+                <div className="energy-pane">
+                  <LithiumLevelDiagram />
+                  <LithiumTransitionControls />
+                </div>
+              )}
+              {mode === 'spectra' && (
+                <div className="spectra-pane">
+                  <LithiumSpectrumVisualizer />
+                  <LithiumTransitionControls />
+                </div>
+              )}
+              {mode === 'equations' && (
+                <div className="equations-pane">
+                  <LithiumEquationInspector />
                 </div>
               )}
             </>
@@ -386,7 +474,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
           <span>
             {isHydrogen
               ? 'Bohr orbits represent conceptual quantization · Wavefunctions represent exact |ψ|² densities'
-              : 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD He I data'}
+              : isHelium
+              ? 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD He I data'
+              : 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD Li I compilation'}
           </span>
           <span className="footer-copyright">© 2026 Aritra Saha</span>
         </div>
@@ -400,6 +490,7 @@ export default function App() {
 
   const [view, setView] = useState<'table' | 'explorer'>(() => {
     const hash = window.location.hash
+    if (hash.includes('/element/lithium')) return 'explorer'
     if (hash.includes('/element/helium')) return 'explorer'
     if (hash.includes('/element/hydrogen')) return 'explorer'
     return 'table'
@@ -408,7 +499,10 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash
-      if (hash.includes('/element/helium')) {
+      if (hash.includes('/element/lithium')) {
+        setActiveElement('lithium')
+        setView('explorer')
+      } else if (hash.includes('/element/helium')) {
         setActiveElement('helium')
         setView('explorer')
       } else if (hash.includes('/element/hydrogen')) {

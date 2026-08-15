@@ -6,6 +6,7 @@ import {
   getHeliumTransition,
   calculateStateEnergyDelta,
 } from '../physics/helium'
+import { FineStructureComponentRow } from './science'
 
 export function HeliumTransitionControls() {
   const selectedTransitionId = useQuantaStore((s) => s.helium.selectedTransitionId)
@@ -199,13 +200,14 @@ export function HeliumTransitionControls() {
               {showComponents && (
                 <div className="fine-structure-list">
                   {transition.components.map((c, i) => (
-                    <div key={i} className="component-item">
-                      <span className="component-transition">{c.comment ?? `J=${c.lowerJ} ↔ J=${c.upperJ}`}</span>
-                      <strong className="component-wl">{c.wavelengthNm.toFixed(4)} nm ({c.wavelengthMedium})</strong>
-                      {c.relativeIntensity && (
-                        <span className="component-rel">Rel. Int: {c.relativeIntensity}</span>
-                      )}
-                    </div>
+                    <FineStructureComponentRow
+                      key={i}
+                      comment={c.comment ?? `J=${c.lowerJ} ↔ J=${c.upperJ}`}
+                      wavelengthNm={c.wavelengthNm}
+                      wavelengthPrecision={4}
+                      wavelengthMedium={c.wavelengthMedium}
+                      relativeIntensity={c.relativeIntensity}
+                    />
                   ))}
                 </div>
               )}

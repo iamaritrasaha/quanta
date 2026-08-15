@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useQuantaStore } from '../state/quantaStore'
 import { safeHydrogenTransition } from '../physics/hydrogen'
+import { SpectrumInstrumentHeader, SpectralHeroResult } from './science'
 
 // Map physical wavelength to visual percentage on the non-linear spectrum strip
 function wavelengthToPercent(wavelengthNm: number): number {
@@ -40,21 +41,20 @@ export function SpectrumVisualizer() {
 
   return (
     <div className="spectrum-visualizer glass-instrument" aria-label="Hydrogen Emission Spectrum">
-      <div className="spectrum-header">
-        <span className="spectrum-title">EMISSION SPECTROSCOPY</span>
-        <span className="spectrum-series-badge">
-          {transition ? `${transition.series.toUpperCase()} SERIES` : 'SELECT TRANSITION'}
-        </span>
-      </div>
+      <SpectrumInstrumentHeader
+        title="HYDROGEN I EMISSION SPECTROSCOPY"
+        badgeText="ANALYTIC RYDBERG"
+        classificationOrSeries={
+          transition ? `${transition.series.toUpperCase()} SERIES` : 'SELECT TRANSITION'
+        }
+        classificationColor={transition?.displayColor}
+      />
 
       {/* Main Multi-Band Spectral Strip */}
       <div className="spectrum-strip-container">
         <div className="spectrum-strip">
-          {/* UV section */}
           <div className="strip-zone uv-zone" />
-          {/* Visible rainbow section */}
           <div className="strip-zone visible-zone" />
-          {/* IR section */}
           <div className="strip-zone ir-zone" />
         </div>
 
@@ -99,24 +99,24 @@ export function SpectrumVisualizer() {
 
       {/* Spectral metadata and classification */}
       {transition ? (
-        <div className="spectrum-readout-card">
-          <div className="readout-primary">
-            <span className="readout-value" style={{ color: transition.displayColor }}>
-              {transition.wavelengthNm.toFixed(2)} nm
-            </span>
-            <span className="readout-sub">
-              {transition.series} Series · {transition.lineName} · {transition.band.toUpperCase()}
-            </span>
-          </div>
-          <p className="spectrum-microcopy">
-            {transition.isTrueColor
-              ? 'Color rendered in true visible spectrum approximation.'
-              : 'False-color visualization — radiation lies outside the human visible spectrum.'}
-          </p>
-        </div>
+        <SpectralHeroResult
+          wavelengthNm={transition.wavelengthNm}
+          wavelengthPrecision={2}
+          wavelengthMedium="vacuum"
+          displayColor={transition.displayColor}
+          classificationOrSeries={`${transition.series} Series · ${transition.lineName}`}
+          region={transition.band.toUpperCase()}
+          photonEnergyEv={transition.photonEnergyEv}
+          description={
+            transition.isTrueColor
+              ? 'Wavelength-derived display color (approximate human vision representation).'
+              : 'False-color visualization — radiation lies outside the human visible spectrum.'
+          }
+          isTrueColor={transition.isTrueColor}
+        />
       ) : (
-        <div className="spectrum-readout-card placeholder-card">
-          <p className="spectrum-microcopy">
+        <div className="spectral-hero-result glass-surface placeholder-card">
+          <p className="hero-result-description">
             Select two differing quantum levels (n_i ≠ n_f) to resolve spectral wavelength and series identification.
           </p>
         </div>

@@ -7,8 +7,14 @@ import {
   getHeliumTransition,
   type HeliumTransition,
 } from '../physics/helium'
+import {
+  findLithiumTransition,
+  getLithiumLevel,
+  getLithiumTransition,
+  type LithiumTransition,
+} from '../physics/lithium'
 
-export type ElementKey = 'hydrogen' | 'helium'
+export type ElementKey = 'hydrogen' | 'helium' | 'lithium'
 
 export type ViewMode = 'overview' | 'bohr' | 'quantum' | 'energy' | 'spectra' | 'equations'
 
@@ -42,6 +48,17 @@ export interface ActiveHeliumTransition {
   physics: HeliumTransition
 }
 
+export interface ActiveLithiumTransition {
+  type: 'absorption' | 'emission'
+  initialLevelId: string
+  targetLevelId: string
+  startTime: number
+  durationMs: number
+  progress: number
+  phase: TransitionPhase
+  physics: LithiumTransition
+}
+
 // Backwards-compatible alias for existing Hydrogen components
 export type ActiveTransition = ActiveHydrogenTransition
 
@@ -62,6 +79,15 @@ export interface HeliumState {
   activeTransition: ActiveHeliumTransition | null
 }
 
+export interface LithiumState {
+  selectedLevelId: string
+  initialLevelId: string
+  targetLevelId: string
+  selectedTransitionId: string | null
+  densityView: 'total' | 'components'
+  activeTransition: ActiveLithiumTransition | null
+}
+
 interface QuantaState {
   activeElement: ElementKey
   mode: ViewMode
@@ -73,6 +99,8 @@ interface QuantaState {
   hydrogen: HydrogenState
   // Helium Sub-State
   helium: HeliumState
+  // Lithium Sub-State
+  lithium: LithiumState
 
   // Legacy/Direct Accessors for Hydrogen (Preserves regression benchmark)
   level: number
@@ -110,6 +138,18 @@ interface QuantaState {
   completeHeliumTransition: () => void
   cancelHeliumTransition: () => void
   resetHelium: () => void
+
+  // Lithium Actions
+  setLithiumLevel: (levelId: string) => void
+  setLithiumInitialLevel: (levelId: string) => void
+  setLithiumTargetLevel: (levelId: string) => void
+  setLithiumTransition: (transitionId: string) => void
+  setLithiumDensityView: (view: 'total' | 'components') => void
+  startLithiumTransition: (transitionId?: string, overrideType?: 'absorption' | 'emission') => boolean
+  updateLithiumTransitionProgress: (progress: number, phase: TransitionPhase) => void
+  completeLithiumTransition: () => void
+  cancelLithiumTransition: () => void
+  resetLithium: () => void
 
   // Context-aware reset
   reset: () => void
@@ -152,6 +192,15 @@ const defaultHeliumState: HeliumState = {
   activeTransition: null,
 }
 
+const defaultLithiumState: LithiumState = {
+  selectedLevelId: '1s2_2s_2S1_2',
+  initialLevelId: '1s2_2s_2S1_2',
+  targetLevelId: '1s2_2p_2P3_2',
+  selectedTransitionId: '670.8nm',
+  densityView: 'total',
+  activeTransition: null,
+}
+
 export const useQuantaStore = create<QuantaState>((set, get) => ({
   activeElement: 'hydrogen',
   mode: 'overview',
@@ -161,6 +210,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
 
   hydrogen: { ...defaultHydrogenState },
   helium: { ...defaultHeliumState },
+  lithium: { ...defaultLithiumState },
 
   // Mirror legacy Hydrogen accessors to prevent any breaking changes
   level: defaultHydrogenState.level,
@@ -180,6 +230,9 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     if (current.helium.activeTransition) {
       current.cancelHeliumTransition()
     }
+    if (current.lithium.activeTransition) {
+      current.cancelLithiumTransition()
+    }
 
     set({ activeElement: element })
   },
@@ -193,6 +246,9 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
     if (current.helium.activeTransition) {
       current.cancelHeliumTransition()
+    }
+    if (current.lithium.activeTransition) {
+      current.cancelLithiumTransition()
     }
 
     if (current.activeElement === 'hydrogen') {
@@ -535,6 +591,167 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
   },
 
   // --------------------------------------------------------------------------
+  // Lithium State Actions (Isolated scope & NIST model driven)
+  // --------------------------------------------------------------------------
+
+  setLithiumLevel: (levelId) => {
+    const level = getLithiumLevel(levelId)
+    if (!level) return
+    set((state) => ({
+      lithium: {
+        ...state.lithium,
+        selectedLevelId: levelId,
+      },
+    }))
+  },
+
+  setLithiumInitialLevel: (levelId) => {
+    set((state) => {
+      const match = findLithiumTransition(levelId, state.lithium.targetLevelId)
+      return {
+        lithium: {
+          ...state.lithium,
+          initialLevelId: levelId,
+          selectedTransitionId: match ? match.id : state.lithium.selectedTransitionId,
+        },
+      }
+    })
+  },
+
+  setLithiumTargetLevel: (levelId) => {
+    set((state) => {
+      const match = findLithiumTransition(state.lithium.initialLevelId, levelId)
+      return {
+        lithium: {
+          ...state.lithium,
+          targetLevelId: levelId,
+          selectedTransitionId: match ? match.id : state.lithium.selectedTransitionId,
+        },
+      }
+    })
+  },
+
+  setLithiumTransition: (transitionId) => {
+    const t = getLithiumTransition(transitionId)
+    if (!t) return
+    set((state) => ({
+      lithium: {
+        ...state.lithium,
+        selectedTransitionId: transitionId,
+        initialLevelId: t.lowerLevelId,
+        targetLevelId: t.upperLevelId,
+        selectedLevelId: t.lowerLevelId,
+      },
+    }))
+  },
+
+  setLithiumDensityView: (densityView) => {
+    set((state) => ({
+      lithium: {
+        ...state.lithium,
+        densityView,
+      },
+    }))
+  },
+
+  startLithiumTransition: (transitionId, overrideType) => {
+    const state = get()
+    if (state.lithium.activeTransition) return false
+
+    const targetTransitionId = transitionId ?? state.lithium.selectedTransitionId
+    let physics = targetTransitionId ? getLithiumTransition(targetTransitionId) : undefined
+
+    if (!physics) {
+      physics = findLithiumTransition(state.lithium.initialLevelId, state.lithium.targetLevelId)
+    }
+    if (!physics) return false
+
+    const lower = getLithiumLevel(physics.lowerLevelId)
+    const upper = getLithiumLevel(physics.upperLevelId)
+    if (!lower || !upper) return false
+
+    // Determine direction
+    const currentIsUpper = state.lithium.selectedLevelId === upper.id
+    const type = overrideType ?? (currentIsUpper ? 'emission' : 'absorption')
+
+    const initialId = type === 'absorption' ? lower.id : upper.id
+    const targetId = type === 'absorption' ? upper.id : lower.id
+
+    const baseDurationMs = 2000
+    const durationMs = baseDurationMs / state.animationSpeed
+
+    const activeTransition: ActiveLithiumTransition = {
+      type,
+      initialLevelId: initialId,
+      targetLevelId: targetId,
+      startTime: performance.now(),
+      durationMs,
+      progress: 0,
+      phase: type === 'absorption' ? 'photonIncoming' : 'electronTransition',
+      physics,
+    }
+
+    set((s) => ({
+      transitionEventSeq: s.transitionEventSeq + 1,
+      lithium: {
+        ...s.lithium,
+        selectedLevelId: initialId,
+        initialLevelId: initialId,
+        targetLevelId: targetId,
+        selectedTransitionId: physics.id,
+        activeTransition,
+      },
+    }))
+    return true
+  },
+
+  updateLithiumTransitionProgress: (progress, phase) => {
+    set((state) => {
+      if (!state.lithium.activeTransition) return state
+      return {
+        lithium: {
+          ...state.lithium,
+          activeTransition: {
+            ...state.lithium.activeTransition,
+            progress: Math.min(1, Math.max(0, progress)),
+            phase,
+          },
+        },
+      }
+    })
+  },
+
+  completeLithiumTransition: () => {
+    set((state) => {
+      if (!state.lithium.activeTransition) return state
+      const finalId = state.lithium.activeTransition.targetLevelId
+      return {
+        lithium: {
+          ...state.lithium,
+          selectedLevelId: finalId,
+          initialLevelId: finalId,
+          activeTransition: null,
+        },
+      }
+    })
+  },
+
+  cancelLithiumTransition: () => {
+    set((state) => ({
+      lithium: {
+        ...state.lithium,
+        activeTransition: null,
+      },
+    }))
+  },
+
+  resetLithium: () => {
+    set({
+      lithium: { ...defaultLithiumState },
+    })
+  },
+
+  // --------------------------------------------------------------------------
   // Context-Aware Global Reset
   // --------------------------------------------------------------------------
 
@@ -542,8 +759,10 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     const element = get().activeElement
     if (element === 'hydrogen') {
       get().resetHydrogen()
-    } else {
+    } else if (element === 'helium') {
       get().resetHelium()
+    } else {
+      get().resetLithium()
     }
   },
 }))

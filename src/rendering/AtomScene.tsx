@@ -7,6 +7,8 @@ import { BohrAtom } from './BohrAtom'
 import { QuantumCloud } from './QuantumCloud'
 import { HeliumShell } from './HeliumShell'
 import { HeliumQuantumCloud } from './HeliumQuantumCloud'
+import { LithiumShell } from './LithiumShell'
+import { LithiumQuantumCloud } from './LithiumQuantumCloud'
 
 interface SceneManagerProps {
   resetCameraTrigger?: number
@@ -47,10 +49,15 @@ function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
           <BohrAtom />
           <QuantumCloud orbital={orbital} />
         </>
-      ) : (
+      ) : activeElement === 'helium' ? (
         <>
           <HeliumShell />
           <HeliumQuantumCloud />
+        </>
+      ) : (
+        <>
+          <LithiumShell />
+          <LithiumQuantumCloud />
         </>
       )}
 

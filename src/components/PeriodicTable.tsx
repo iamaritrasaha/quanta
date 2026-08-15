@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { elements, type Element } from '../data/elements'
+import type { ElementKey } from '../state/quantaStore'
 
 interface PeriodicTableProps {
-  onSelectElement: (elementKey: 'hydrogen' | 'helium') => void
+  onSelectElement: (elementKey: ElementKey) => void
   onSelectHydrogen?: () => void
 }
 
@@ -21,6 +22,8 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
           else if (onSelectHydrogen) onSelectHydrogen()
         } else if (element.symbol === 'He') {
           if (onSelectElement) onSelectElement('helium')
+        } else if (element.symbol === 'Li') {
+          if (onSelectElement) onSelectElement('lithium')
         }
       }, 550)
     } else {
@@ -38,7 +41,7 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
         <div className="masthead-brand">
           <div className="brand-eyebrow">
             <span className="dot-indicator live" />
-            <span>OPTICAL SCIENTIFIC INSTRUMENT · INSTRUMENTS 01 & 02 ACTIVE</span>
+            <span>OPTICAL SCIENTIFIC INSTRUMENT · INSTRUMENTS 01, 02 & 03 ACTIVE</span>
           </div>
           <h1 className="brand-title">QUANTA</h1>
           <p className="brand-tagline">Matter, visualized.</p>
@@ -49,9 +52,9 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
             eigenfunctions and many-electron quantum mechanics.
           </p>
           <div className="masthead-stats">
-            <span className="active-stat">2 ELEMENTS ACTIVE (H · He)</span>
+            <span className="active-stat">3 ELEMENTS ACTIVE (H · He · Li)</span>
             <span>·</span>
-            <span>116 STAGED</span>
+            <span>115 STAGED</span>
           </div>
         </div>
       </header>
@@ -61,7 +64,7 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
         <div className="table-stage-header">
           <div className="stage-title-wrap">
             <span className="stage-kicker">INTERACTIVE PERIODIC TABLE</span>
-            <span className="stage-hint">Select Hydrogen (H) or Helium (He) to initialize the 3D atomic instrument</span>
+            <span className="stage-hint">Select Hydrogen (H), Helium (He), or Lithium (Li) to initialize the 3D atomic instrument</span>
           </div>
           <div className="mobile-scroll-hint">
             <span>← Swipe to explore 18 groups →</span>
@@ -73,12 +76,14 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
             {elements.map((el) => {
               const isH = el.symbol === 'H'
               const isHe = el.symbol === 'He'
+              const isLi = el.symbol === 'Li'
               const isAvailable = el.available
               const isEnteringThis = enteringSymbol === el.symbol
 
               let tileSpecificClass = 'unsupported-tile'
               if (isH) tileSpecificClass = 'hydrogen-tile'
               if (isHe) tileSpecificClass = 'helium-tile'
+              if (isLi) tileSpecificClass = 'lithium-tile'
 
               return (
                 <button
@@ -114,10 +119,13 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
               <b className="legend-dot helium-dot" /> Helium (Z = 2, Many-Electron)
             </span>
             <span className="legend-item">
-              <b className="legend-dot upcoming-dot" /> 116 Elements (Staged Library)
+              <b className="legend-dot lithium-dot" /> Lithium (Z = 3, Closed Core + Valence)
+            </span>
+            <span className="legend-item">
+              <b className="legend-dot upcoming-dot" /> 115 Elements (Staged Library)
             </span>
           </div>
-          <span className="table-nav-note">Calculations executed entirely client-side via exact SI physics & authoritative NIST ASD data.</span>
+          <span className="table-nav-note">Calculations executed entirely client-side via exact SI physics & NIST ASD reference data.</span>
         </footer>
       </section>
 
@@ -147,12 +155,12 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
                   release.
                 </p>
                 <p className="notice-sub-text">
-                  Multi-electron atoms beyond Helium require Hartree-Fock or density functional approximations.
-                  Hydrogen and Helium are our active instruments.
+                  Multi-electron atoms beyond Lithium require Hartree-Fock or density functional approximations.
+                  Hydrogen, Helium, and Lithium are our active instruments.
                 </p>
               </div>
             </div>
-            <div className="notice-actions dual-notice-actions">
+            <div className="notice-actions triple-notice-actions">
               <button
                 className="secondary-notice-btn"
                 onClick={() => {
@@ -163,13 +171,22 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
                 OPEN HYDROGEN (H) →
               </button>
               <button
-                className="primary-notice-btn"
+                className="secondary-notice-btn"
                 onClick={() => {
                   setSelectedNoticeElement(null)
                   handleElementClick(elements[1]) // Select Helium
                 }}
               >
                 OPEN HELIUM (He) →
+              </button>
+              <button
+                className="primary-notice-btn"
+                onClick={() => {
+                  setSelectedNoticeElement(null)
+                  handleElementClick(elements[2]) // Select Lithium
+                }}
+              >
+                OPEN LITHIUM (Li) →
               </button>
             </div>
           </div>

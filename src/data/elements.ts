@@ -26,5 +26,5 @@ rows.forEach((row, rowIndex) => row.forEach((symbol, col) => { if(symbol) locati
 lanthanides.forEach((s,i)=>locations.set(s,[6,3,8,4+i])); actinides.forEach((s,i)=>locations.set(s,[7,3,9,4+i]))
 export const elements: Element[] = entries.map(([symbol,name], i) => {
  const [period,group,gridRow,gridColumn] = locations.get(symbol)!
- return { number:i+1,symbol,name,group,period,gridRow,gridColumn,category:category(symbol,group,period),available:symbol==='H'||symbol==='He' }
+ return { number:i+1,symbol,name,group,period,gridRow,gridColumn,category:category(symbol,group,period),available:symbol==='H'||symbol==='He'||symbol==='Li' }
 })

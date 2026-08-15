@@ -10,6 +10,7 @@ describe('Quanta Store and Model Transitions', () => {
   beforeEach(() => {
     useQuantaStore.getState().resetHydrogen()
     useQuantaStore.getState().resetHelium()
+    useQuantaStore.getState().resetLithium()
     useQuantaStore.getState().setActiveElement('hydrogen')
     useQuantaStore.getState().setMode('overview')
   })
@@ -221,17 +222,118 @@ describe('Quanta Store and Model Transitions', () => {
   })
 
   it('resets only the active element when calling reset()', () => {
-    // Set both to custom states
+    // Set all to custom states
     useQuantaStore.getState().setLevel(5)
     useQuantaStore.getState().setHeliumDensityView('components')
     useQuantaStore.getState().setHeliumLevel('1s2s_3S1')
+    useQuantaStore.getState().setLithiumLevel('1s2_3d_2D5_2')
+    useQuantaStore.getState().setLithiumDensityView('components')
 
     // Reset while activeElement is hydrogen
     useQuantaStore.getState().setActiveElement('hydrogen')
     useQuantaStore.getState().reset()
 
     expect(useQuantaStore.getState().hydrogen.level).toBe(1)
-    // Helium densityView was untouched
+    // Helium & Lithium state were untouched
     expect(useQuantaStore.getState().helium.densityView).toBe('components')
+    expect(useQuantaStore.getState().lithium.selectedLevelId).toBe('1s2_3d_2D5_2')
+    expect(useQuantaStore.getState().lithium.densityView).toBe('components')
+
+    // Reset while activeElement is lithium
+    useQuantaStore.getState().setActiveElement('lithium')
+    useQuantaStore.getState().reset()
+    expect(useQuantaStore.getState().lithium.selectedLevelId).toBe('1s2_2s_2S1_2')
+    expect(useQuantaStore.getState().lithium.densityView).toBe('total')
+  })
+
+  // --------------------------------------------------------------------------
+  // LITHIUM STATE ISOLATION & LIFECYCLE TESTS
+  // --------------------------------------------------------------------------
+
+  it('preserves Lithium state cleanly across H -> He -> Li -> Table -> Li transitions', () => {
+    // Modify Hydrogen
+    useQuantaStore.getState().setActiveElement('hydrogen')
+    useQuantaStore.getState().setLevel(3)
+
+    // Modify Helium
+    useQuantaStore.getState().setActiveElement('helium')
+    useQuantaStore.getState().setHeliumLevel('1s2s_1S0')
+
+    // Modify Lithium
+    useQuantaStore.getState().setActiveElement('lithium')
+    useQuantaStore.getState().setLithiumLevel('1s2_3s_2S1_2')
+    useQuantaStore.getState().setLithiumTransition('812.6nm')
+    useQuantaStore.getState().setLithiumDensityView('components')
+
+    expect(useQuantaStore.getState().lithium.selectedLevelId).toBe('1s2_2p_2P3_2')
+    expect(useQuantaStore.getState().lithium.selectedTransitionId).toBe('812.6nm')
+    expect(useQuantaStore.getState().lithium.densityView).toBe('components')
+
+    // Switch to Hydrogen
+    useQuantaStore.getState().setActiveElement('hydrogen')
+    expect(useQuantaStore.getState().hydrogen.level).toBe(3)
+
+    // Switch to Helium
+    useQuantaStore.getState().setActiveElement('helium')
+    expect(useQuantaStore.getState().helium.selectedLevelId).toBe('1s2s_1S0')
+
+    // Switch back to Lithium
+    useQuantaStore.getState().setActiveElement('lithium')
+    expect(useQuantaStore.getState().lithium.selectedTransitionId).toBe('812.6nm')
+    expect(useQuantaStore.getState().lithium.densityView).toBe('components')
+  })
+
+  it('manages Lithium transition lifecycle for 670.8 nm resonance doublet (absorption vs emission)', () => {
+    useQuantaStore.getState().setActiveElement('lithium')
+    useQuantaStore.getState().setLithiumTransition('670.8nm')
+
+    // 1. Start ABSORPTION transition (2s ²S₁/₂ -> 2p ²P°₃/₂)
+    const absorbStarted = useQuantaStore.getState().startLithiumTransition('670.8nm', 'absorption')
+    expect(absorbStarted).toBe(true)
+    expect(useQuantaStore.getState().lithium.activeTransition).not.toBeNull()
+    expect(useQuantaStore.getState().lithium.activeTransition?.physics.id).toBe('670.8nm')
+    expect(useQuantaStore.getState().lithium.activeTransition?.type).toBe('absorption')
+    expect(useQuantaStore.getState().lithium.activeTransition?.initialLevelId).toBe('1s2_2s_2S1_2')
+    expect(useQuantaStore.getState().lithium.activeTransition?.targetLevelId).toBe('1s2_2p_2P3_2')
+
+    // Update progress
+    useQuantaStore.getState().updateLithiumTransitionProgress(0.5, 'interaction')
+    expect(useQuantaStore.getState().lithium.activeTransition?.progress).toBe(0.5)
+    expect(useQuantaStore.getState().lithium.activeTransition?.phase).toBe('interaction')
+
+    // Complete absorption -> atom is in upper state 2p ²P°₃/₂
+    useQuantaStore.getState().completeLithiumTransition()
+    expect(useQuantaStore.getState().lithium.activeTransition).toBeNull()
+    expect(useQuantaStore.getState().lithium.selectedLevelId).toBe('1s2_2p_2P3_2')
+
+    // 2. Start EMISSION transition (2p ²P°₃/₂ -> 2s ²S₁/₂)
+    const emitStarted = useQuantaStore.getState().startLithiumTransition('670.8nm', 'emission')
+    expect(emitStarted).toBe(true)
+    expect(useQuantaStore.getState().lithium.activeTransition?.type).toBe('emission')
+    expect(useQuantaStore.getState().lithium.activeTransition?.initialLevelId).toBe('1s2_2p_2P3_2')
+    expect(useQuantaStore.getState().lithium.activeTransition?.targetLevelId).toBe('1s2_2s_2S1_2')
+
+    // Complete emission -> atom is back in ground state 2s ²S₁/₂
+    useQuantaStore.getState().completeLithiumTransition()
+    expect(useQuantaStore.getState().lithium.activeTransition).toBeNull()
+    expect(useQuantaStore.getState().lithium.selectedLevelId).toBe('1s2_2s_2S1_2')
+  })
+
+  it('cancels running Lithium transition when switching elements or modes', () => {
+    useQuantaStore.getState().setActiveElement('lithium')
+    useQuantaStore.getState().startLithiumTransition('670.8nm', 'absorption')
+    expect(useQuantaStore.getState().lithium.activeTransition).not.toBeNull()
+
+    // Switch element
+    useQuantaStore.getState().setActiveElement('helium')
+    expect(useQuantaStore.getState().lithium.activeTransition).toBeNull()
+
+    // Switch back and start transition, then switch mode
+    useQuantaStore.getState().setActiveElement('lithium')
+    useQuantaStore.getState().startLithiumTransition('670.8nm', 'absorption')
+    expect(useQuantaStore.getState().lithium.activeTransition).not.toBeNull()
+
+    useQuantaStore.getState().setMode('quantum')
+    expect(useQuantaStore.getState().lithium.activeTransition).toBeNull()
   })
 })
