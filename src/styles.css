@@ -407,6 +407,20 @@ button:focus-visible, select:focus-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 28px rgba(244, 63, 94, 0.26) !important;
 }
 
+/* Beryllium Focal Tile (Optical Alkaline-Earth Accent) */
+.beryllium-tile {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 0 20px rgba(168, 85, 247, 0.16) !important;
+}
+
+.beryllium-tile:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 28px rgba(168, 85, 247, 0.26) !important;
+}
+
 .explore-tag {
   font-family: var(--font-mono);
   font-size: 0.58rem;
@@ -461,6 +475,11 @@ button:focus-visible, select:focus-visible {
 .lithium-dot {
   background: #f43f5e;
   box-shadow: 0 0 8px #f43f5e;
+}
+
+.beryllium-dot {
+  background: #a855f7;
+  box-shadow: 0 0 8px #a855f7;
 }
 
 .table-nav-note {
@@ -1004,7 +1023,10 @@ button:focus-visible, select:focus-visible {
 
 .data-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  align-items: baseline;
+  gap: 0.2rem 0.75rem;
   padding: 0.4rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.8rem;
@@ -1016,11 +1038,16 @@ button:focus-visible, select:focus-visible {
 
 .data-key {
   color: var(--text-tertiary);
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .data-val {
   font-family: var(--font-mono);
   color: var(--text-primary);
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .bohr-metrics-grid {
@@ -1587,6 +1614,22 @@ button:focus-visible, select:focus-visible {
   white-space: nowrap;
   text-align: center;
   font-family: var(--font-mono);
+}
+
+/* Edge-aware alignment: prevents the callout from bleeding past the instrument's
+   own boundary when the marked wavelength sits near the left/right edge of the
+   spectrum strip (e.g. far-UV or NIR lines). */
+.marker-callout.callout-align-start {
+  left: 0;
+  transform: translateX(0);
+  text-align: left;
+}
+
+.marker-callout.callout-align-end {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
+  text-align: right;
 }
 
 .marker-callout strong {

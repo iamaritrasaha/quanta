@@ -33,6 +33,15 @@ const LITHIUM_MODES: ModeDef[] = [
   { id: 'equations', label: 'Equations', shortDesc: 'Many-Body Math' },
 ]
 
+const BERYLLIUM_MODES: ModeDef[] = [
+  { id: 'overview', label: 'Overview', shortDesc: 'Alkaline Earth Profile' },
+  { id: 'bohr', label: 'Shell Model', shortDesc: 'Core + 2 Valence' },
+  { id: 'quantum', label: 'Quantum', shortDesc: 'Reduced Density' },
+  { id: 'energy', label: 'Energy Levels', shortDesc: 'Singlet/Triplet Terms' },
+  { id: 'spectra', label: 'Spectra', shortDesc: 'Emission Lines' },
+  { id: 'equations', label: 'Equations', shortDesc: 'Four-Electron Math' },
+]
+
 export function ModeNavigation() {
   const mode = useQuantaStore((s) => s.mode)
   const activeElement = useQuantaStore((s) => s.activeElement)
@@ -43,7 +52,9 @@ export function ModeNavigation() {
       ? HYDROGEN_MODES
       : activeElement === 'helium'
       ? HELIUM_MODES
-      : LITHIUM_MODES
+      : activeElement === 'lithium'
+      ? LITHIUM_MODES
+      : BERYLLIUM_MODES
 
   return (
     <nav className="mode-navigation glass-capsule" aria-label={`${activeElement === 'hydrogen' ? 'Hydrogen' : 'Helium'} Exploration Modes`}>

@@ -9,6 +9,8 @@ import { HeliumShell } from './HeliumShell'
 import { HeliumQuantumCloud } from './HeliumQuantumCloud'
 import { LithiumShell } from './LithiumShell'
 import { LithiumQuantumCloud } from './LithiumQuantumCloud'
+import { BerylliumShell } from './BerylliumShell'
+import { BerylliumQuantumCloud } from './BerylliumQuantumCloud'
 
 interface SceneManagerProps {
   resetCameraTrigger?: number
@@ -54,10 +56,15 @@ function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
           <HeliumShell />
           <HeliumQuantumCloud />
         </>
-      ) : (
+      ) : activeElement === 'lithium' ? (
         <>
           <LithiumShell />
           <LithiumQuantumCloud />
+        </>
+      ) : (
+        <>
+          <BerylliumShell />
+          <BerylliumQuantumCloud />
         </>
       )}
 

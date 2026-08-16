@@ -13,8 +13,14 @@ import {
   getLithiumTransition,
   type LithiumTransition,
 } from '../physics/lithium'
+import {
+  findBerylliumTransition,
+  getBerylliumLevel,
+  getBerylliumTransition,
+  type BerylliumTransition,
+} from '../physics/beryllium'
 
-export type ElementKey = 'hydrogen' | 'helium' | 'lithium'
+export type ElementKey = 'hydrogen' | 'helium' | 'lithium' | 'beryllium'
 
 export type ViewMode = 'overview' | 'bohr' | 'quantum' | 'energy' | 'spectra' | 'equations'
 
@@ -59,6 +65,17 @@ export interface ActiveLithiumTransition {
   physics: LithiumTransition
 }
 
+export interface ActiveBerylliumTransition {
+  type: 'absorption' | 'emission'
+  initialLevelId: string
+  targetLevelId: string
+  startTime: number
+  durationMs: number
+  progress: number
+  phase: TransitionPhase
+  physics: BerylliumTransition
+}
+
 // Backwards-compatible alias for existing Hydrogen components
 export type ActiveTransition = ActiveHydrogenTransition
 
@@ -88,6 +105,15 @@ export interface LithiumState {
   activeTransition: ActiveLithiumTransition | null
 }
 
+export interface BerylliumState {
+  selectedLevelId: string
+  initialLevelId: string
+  targetLevelId: string
+  selectedTransitionId: string | null
+  densityView: 'total' | 'components'
+  activeTransition: ActiveBerylliumTransition | null
+}
+
 interface QuantaState {
   activeElement: ElementKey
   mode: ViewMode
@@ -101,6 +127,8 @@ interface QuantaState {
   helium: HeliumState
   // Lithium Sub-State
   lithium: LithiumState
+  // Beryllium Sub-State
+  beryllium: BerylliumState
 
   // Legacy/Direct Accessors for Hydrogen (Preserves regression benchmark)
   level: number
@@ -150,6 +178,18 @@ interface QuantaState {
   completeLithiumTransition: () => void
   cancelLithiumTransition: () => void
   resetLithium: () => void
+
+  // Beryllium Actions
+  setBerylliumLevel: (levelId: string) => void
+  setBerylliumInitialLevel: (levelId: string) => void
+  setBerylliumTargetLevel: (levelId: string) => void
+  setBerylliumTransition: (transitionId: string) => void
+  setBerylliumDensityView: (view: 'total' | 'components') => void
+  startBerylliumTransition: (transitionId?: string, overrideType?: 'absorption' | 'emission') => boolean
+  updateBerylliumTransitionProgress: (progress: number, phase: TransitionPhase) => void
+  completeBerylliumTransition: () => void
+  cancelBerylliumTransition: () => void
+  resetBeryllium: () => void
 
   // Context-aware reset
   reset: () => void
@@ -201,6 +241,15 @@ const defaultLithiumState: LithiumState = {
   activeTransition: null,
 }
 
+const defaultBerylliumState: BerylliumState = {
+  selectedLevelId: '2s2_1S0',
+  initialLevelId: '2s2_1S0',
+  targetLevelId: '2s2p_1P1',
+  selectedTransitionId: '234.9nm',
+  densityView: 'total',
+  activeTransition: null,
+}
+
 export const useQuantaStore = create<QuantaState>((set, get) => ({
   activeElement: 'hydrogen',
   mode: 'overview',
@@ -211,6 +260,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
   hydrogen: { ...defaultHydrogenState },
   helium: { ...defaultHeliumState },
   lithium: { ...defaultLithiumState },
+  beryllium: { ...defaultBerylliumState },
 
   // Mirror legacy Hydrogen accessors to prevent any breaking changes
   level: defaultHydrogenState.level,
@@ -233,6 +283,9 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     if (current.lithium.activeTransition) {
       current.cancelLithiumTransition()
     }
+    if (current.beryllium.activeTransition) {
+      current.cancelBerylliumTransition()
+    }
 
     set({ activeElement: element })
   },
@@ -249,6 +302,9 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
     if (current.lithium.activeTransition) {
       current.cancelLithiumTransition()
+    }
+    if (current.beryllium.activeTransition) {
+      current.cancelBerylliumTransition()
     }
 
     if (current.activeElement === 'hydrogen') {
@@ -752,6 +808,166 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
   },
 
   // --------------------------------------------------------------------------
+  // Beryllium State Actions (Isolated scope & NIST model driven)
+  // --------------------------------------------------------------------------
+
+  setBerylliumLevel: (levelId) => {
+    const level = getBerylliumLevel(levelId)
+    if (!level) return
+    set((state) => ({
+      beryllium: {
+        ...state.beryllium,
+        selectedLevelId: levelId,
+      },
+    }))
+  },
+
+  setBerylliumInitialLevel: (levelId) => {
+    set((state) => {
+      const match = findBerylliumTransition(levelId, state.beryllium.targetLevelId)
+      return {
+        beryllium: {
+          ...state.beryllium,
+          initialLevelId: levelId,
+          selectedTransitionId: match ? match.id : state.beryllium.selectedTransitionId,
+        },
+      }
+    })
+  },
+
+  setBerylliumTargetLevel: (levelId) => {
+    set((state) => {
+      const match = findBerylliumTransition(state.beryllium.initialLevelId, levelId)
+      return {
+        beryllium: {
+          ...state.beryllium,
+          targetLevelId: levelId,
+          selectedTransitionId: match ? match.id : state.beryllium.selectedTransitionId,
+        },
+      }
+    })
+  },
+
+  setBerylliumTransition: (transitionId) => {
+    const t = getBerylliumTransition(transitionId)
+    if (!t) return
+    set((state) => ({
+      beryllium: {
+        ...state.beryllium,
+        selectedTransitionId: transitionId,
+        initialLevelId: t.lowerLevelId,
+        targetLevelId: t.upperLevelId,
+        selectedLevelId: t.lowerLevelId,
+      },
+    }))
+  },
+
+  setBerylliumDensityView: (densityView) => {
+    set((state) => ({
+      beryllium: {
+        ...state.beryllium,
+        densityView,
+      },
+    }))
+  },
+
+  startBerylliumTransition: (transitionId, overrideType) => {
+    const state = get()
+    if (state.beryllium.activeTransition) return false
+
+    const targetTransitionId = transitionId ?? state.beryllium.selectedTransitionId
+    let physics = targetTransitionId ? getBerylliumTransition(targetTransitionId) : undefined
+
+    if (!physics) {
+      physics = findBerylliumTransition(state.beryllium.initialLevelId, state.beryllium.targetLevelId)
+    }
+    if (!physics) return false
+
+    const lower = getBerylliumLevel(physics.lowerLevelId)
+    const upper = getBerylliumLevel(physics.upperLevelId)
+    if (!lower || !upper) return false
+
+    const currentIsUpper = state.beryllium.selectedLevelId === upper.id
+    const type = overrideType ?? (currentIsUpper ? 'emission' : 'absorption')
+
+    const initialId = type === 'absorption' ? lower.id : upper.id
+    const targetId = type === 'absorption' ? upper.id : lower.id
+
+    const baseDurationMs = 2000
+    const durationMs = baseDurationMs / state.animationSpeed
+
+    const activeTransition: ActiveBerylliumTransition = {
+      type,
+      initialLevelId: initialId,
+      targetLevelId: targetId,
+      startTime: performance.now(),
+      durationMs,
+      progress: 0,
+      phase: type === 'absorption' ? 'photonIncoming' : 'electronTransition',
+      physics,
+    }
+
+    set((s) => ({
+      transitionEventSeq: s.transitionEventSeq + 1,
+      beryllium: {
+        ...s.beryllium,
+        selectedLevelId: initialId,
+        initialLevelId: initialId,
+        targetLevelId: targetId,
+        selectedTransitionId: physics.id,
+        activeTransition,
+      },
+    }))
+    return true
+  },
+
+  updateBerylliumTransitionProgress: (progress, phase) => {
+    set((state) => {
+      if (!state.beryllium.activeTransition) return state
+      return {
+        beryllium: {
+          ...state.beryllium,
+          activeTransition: {
+            ...state.beryllium.activeTransition,
+            progress: Math.min(1, Math.max(0, progress)),
+            phase,
+          },
+        },
+      }
+    })
+  },
+
+  completeBerylliumTransition: () => {
+    set((state) => {
+      if (!state.beryllium.activeTransition) return state
+      const finalId = state.beryllium.activeTransition.targetLevelId
+      return {
+        beryllium: {
+          ...state.beryllium,
+          selectedLevelId: finalId,
+          initialLevelId: finalId,
+          activeTransition: null,
+        },
+      }
+    })
+  },
+
+  cancelBerylliumTransition: () => {
+    set((state) => ({
+      beryllium: {
+        ...state.beryllium,
+        activeTransition: null,
+      },
+    }))
+  },
+
+  resetBeryllium: () => {
+    set({
+      beryllium: { ...defaultBerylliumState },
+    })
+  },
+
+  // --------------------------------------------------------------------------
   // Context-Aware Global Reset
   // --------------------------------------------------------------------------
 
@@ -761,8 +977,10 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
       get().resetHydrogen()
     } else if (element === 'helium') {
       get().resetHelium()
-    } else {
+    } else if (element === 'lithium') {
       get().resetLithium()
+    } else {
+      get().resetBeryllium()
     }
   },
 }))

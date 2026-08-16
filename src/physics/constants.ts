@@ -33,8 +33,25 @@ export const LITHIUM_7_ISOTOPE_FRACTION_RANGE = [0.922, 0.981] as const
 // Rydberg constant for infinite mass (cm⁻¹)
 export const RYDBERG_INF_CM1 = 109_737.315_681_60
 
-// Mass-adjusted Rydberg constant for ⁷Li (cm⁻¹): R_⁷Li = R_∞ / (1 + m_e / M(⁷Li))
+// Mass-adjusted Rydberg constant for ⁷Li (cm⁻¹): R_∞ / (1 + m_e / M(⁷Li))
 export const RYDBERG_LI7_CM1 = 109_728.718_45
+
+// Authoritative NIST Beryllium (Be I) constants (Source: NIST ASD Reference Data / Kramida et al., 2024)
+// First Ionization Energy: 9.322699 eV (Current NIST ASD uncertainty: ± 0.000007 eV)
+export const BERYLLIUM_IONIZATION_ENERGY_EV = 9.322_699
+export const BERYLLIUM_IONIZATION_ENERGY_UNCERTAINTY_EV = 0.000_007
+export const BERYLLIUM_IONIZATION_ENERGY_FORMATTED_EV = '9.322699(7) eV'
+
+// Reference NIST Handbook Be I → Be II (²S₁/₂) level-table ionization limit (cm⁻¹).
+// Provenance note: this value originates from the NIST level-table compilation, a DIFFERENT
+// dataset/era than the current NIST ASD ionization-energy result above. QUANTA keeps these
+// two provenances explicitly separate rather than presenting them as one identical measurement.
+export const BERYLLIUM_IONIZATION_LIMIT_CM1 = 75_192.64
+
+// CIAAW Standard Atomic Weight: Aᵣ(Be) = 9.0121831(5)
+export const BERYLLIUM_ATOMIC_WEIGHT = 9.012_183_1
+export const BERYLLIUM_ATOMIC_WEIGHT_UNCERTAINTY = 0.000_000_5
+export const BERYLLIUM_ATOMIC_WEIGHT_FORMATTED = '9.0121831(5)'
 
 export const joulesToEv = (joules: number) => joules / ELECTRON_VOLT
 export const evToJoules = (ev: number) => ev * ELECTRON_VOLT

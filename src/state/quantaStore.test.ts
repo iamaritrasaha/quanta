@@ -11,6 +11,7 @@ describe('Quanta Store and Model Transitions', () => {
     useQuantaStore.getState().resetHydrogen()
     useQuantaStore.getState().resetHelium()
     useQuantaStore.getState().resetLithium()
+    useQuantaStore.getState().resetBeryllium()
     useQuantaStore.getState().setActiveElement('hydrogen')
     useQuantaStore.getState().setMode('overview')
   })
@@ -335,5 +336,86 @@ describe('Quanta Store and Model Transitions', () => {
 
     useQuantaStore.getState().setMode('quantum')
     expect(useQuantaStore.getState().lithium.activeTransition).toBeNull()
+  })
+
+  // --------------------------------------------------------------------------
+  // BERYLLIUM STATE ISOLATION & LIFECYCLE TESTS
+  // --------------------------------------------------------------------------
+
+  it('preserves Beryllium state cleanly across H -> He -> Li -> Be -> Table -> Be transitions', () => {
+    useQuantaStore.getState().setActiveElement('hydrogen')
+    useQuantaStore.getState().setLevel(3)
+
+    useQuantaStore.getState().setActiveElement('helium')
+    useQuantaStore.getState().setHeliumLevel('1s2s_1S0')
+
+    useQuantaStore.getState().setActiveElement('lithium')
+    useQuantaStore.getState().setLithiumLevel('1s2_3s_2S1_2')
+
+    useQuantaStore.getState().setActiveElement('beryllium')
+    useQuantaStore.getState().setBerylliumLevel('2s3d_1D2')
+    useQuantaStore.getState().setBerylliumTransition('457.3nm')
+    useQuantaStore.getState().setBerylliumDensityView('components')
+
+    expect(useQuantaStore.getState().beryllium.selectedLevelId).toBe('2s2p_1P1')
+    expect(useQuantaStore.getState().beryllium.selectedTransitionId).toBe('457.3nm')
+    expect(useQuantaStore.getState().beryllium.densityView).toBe('components')
+
+    useQuantaStore.getState().setActiveElement('hydrogen')
+    expect(useQuantaStore.getState().hydrogen.level).toBe(3)
+
+    useQuantaStore.getState().setActiveElement('lithium')
+    expect(useQuantaStore.getState().lithium.selectedLevelId).toBe('1s2_3s_2S1_2')
+
+    useQuantaStore.getState().setActiveElement('beryllium')
+    expect(useQuantaStore.getState().beryllium.selectedTransitionId).toBe('457.3nm')
+    expect(useQuantaStore.getState().beryllium.densityView).toBe('components')
+  })
+
+  it('manages Beryllium transition lifecycle for 234.9 nm ground-state resonance (absorption vs emission)', () => {
+    useQuantaStore.getState().setActiveElement('beryllium')
+    useQuantaStore.getState().setBerylliumTransition('234.9nm')
+
+    const absorbStarted = useQuantaStore.getState().startBerylliumTransition('234.9nm', 'absorption')
+    expect(absorbStarted).toBe(true)
+    expect(useQuantaStore.getState().beryllium.activeTransition).not.toBeNull()
+    expect(useQuantaStore.getState().beryllium.activeTransition?.physics.id).toBe('234.9nm')
+    expect(useQuantaStore.getState().beryllium.activeTransition?.type).toBe('absorption')
+    expect(useQuantaStore.getState().beryllium.activeTransition?.initialLevelId).toBe('2s2_1S0')
+    expect(useQuantaStore.getState().beryllium.activeTransition?.targetLevelId).toBe('2s2p_1P1')
+
+    useQuantaStore.getState().updateBerylliumTransitionProgress(0.5, 'interaction')
+    expect(useQuantaStore.getState().beryllium.activeTransition?.progress).toBe(0.5)
+    expect(useQuantaStore.getState().beryllium.activeTransition?.phase).toBe('interaction')
+
+    useQuantaStore.getState().completeBerylliumTransition()
+    expect(useQuantaStore.getState().beryllium.activeTransition).toBeNull()
+    expect(useQuantaStore.getState().beryllium.selectedLevelId).toBe('2s2p_1P1')
+
+    const emitStarted = useQuantaStore.getState().startBerylliumTransition('234.9nm', 'emission')
+    expect(emitStarted).toBe(true)
+    expect(useQuantaStore.getState().beryllium.activeTransition?.type).toBe('emission')
+    expect(useQuantaStore.getState().beryllium.activeTransition?.initialLevelId).toBe('2s2p_1P1')
+    expect(useQuantaStore.getState().beryllium.activeTransition?.targetLevelId).toBe('2s2_1S0')
+
+    useQuantaStore.getState().completeBerylliumTransition()
+    expect(useQuantaStore.getState().beryllium.activeTransition).toBeNull()
+    expect(useQuantaStore.getState().beryllium.selectedLevelId).toBe('2s2_1S0')
+  })
+
+  it('cancels running Beryllium transition when switching elements or modes', () => {
+    useQuantaStore.getState().setActiveElement('beryllium')
+    useQuantaStore.getState().startBerylliumTransition('234.9nm', 'absorption')
+    expect(useQuantaStore.getState().beryllium.activeTransition).not.toBeNull()
+
+    useQuantaStore.getState().setActiveElement('lithium')
+    expect(useQuantaStore.getState().beryllium.activeTransition).toBeNull()
+
+    useQuantaStore.getState().setActiveElement('beryllium')
+    useQuantaStore.getState().startBerylliumTransition('234.9nm', 'absorption')
+    expect(useQuantaStore.getState().beryllium.activeTransition).not.toBeNull()
+
+    useQuantaStore.getState().setMode('quantum')
+    expect(useQuantaStore.getState().beryllium.activeTransition).toBeNull()
   })
 })

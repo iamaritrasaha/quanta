@@ -191,6 +191,58 @@ $$\rho(\mathbf{r}) = 3 \int |\Psi(\mathbf{r}, \mathbf{r}_2, \mathbf{r}_3)|^2 d^3
 
 ---
 
+## Beryllium Scope (Z = 4)
+
+Beryllium introduces QUANTA's first atom with **two mutually interacting valence electrons**. It is not "Lithium plus one more electron": the defining conceptual jump is a closed **1s² core** plus a **filled 2s² valence subshell** — the n = 2 shell is nonetheless incomplete because the 2p subshell remains entirely empty. Two valence electrons enable singlet/triplet spin coupling, exchange splitting, and metastable excited states, none of which exist for Lithium's single valence electron.
+
+### 1. Nuclear Architecture & Isotopy
+- **Default/Normal Isotope**: $^9\text{Be}$ ($4\text{p}^+, 5\text{n}^0$). Beryllium is essentially **monoisotopic** — normal terrestrial material is $^9\text{Be}$ with amount fraction 1; no isotope interval is modeled.
+- **Standard Atomic Weight [CIAAW]**: $A_r(\text{Be}) = 9.0121831(5)$.
+- Trace cosmogenic $^{10}\text{Be}$ is a radionuclide; it is **not resolved in V1** and does not affect the standard atomic-weight visualization.
+- **Nuclear Model**: Clustered 9-nucleon cluster (4 protons, 5 neutrons), same restrained pedagogical convention as H/He/Li. PEDAGOGICAL NUCLEAR REPRESENTATION — nucleon locations are illustrative, not a literal geometry claim.
+
+### 2. The Four-Electron Hamiltonian
+In the fixed-nucleus, non-relativistic approximation ($Z=4$):
+
+$$\hat{H} = \sum_{i=1}^{4}\left(-\frac{\hbar^2}{2m_e}\nabla_i^2 - \frac{4e^2}{4\pi\varepsilon_0 r_i}\right) + \sum_{1\le i<j\le 4}\frac{e^2}{4\pi\varepsilon_0 r_{ij}}$$
+
+Four electron-nucleus attraction terms and **six** unique electron-electron pair-repulsion terms ($C(4,2)=6$: $r_{12}, r_{13}, r_{14}, r_{23}, r_{24}, r_{34}$) prevent analytic separation. Neutral Be I energies never follow $E_n = -13.6\,Z^2/n^2$.
+
+### 3. Ground Configuration, Pauli Principle, and the Incomplete n=2 Shell
+- **Ground Configuration**: $1\text{s}^2 2\text{s}^2$. **Ground Term**: $^1\text{S}_0$.
+- Spin-orbital occupancy: $1\text{s}\uparrow, 1\text{s}\downarrow, 2\text{s}\uparrow, 2\text{s}\downarrow$ — no two electrons share a complete set of one-electron quantum numbers.
+- The 2s subshell is **filled**, but the n = 2 **shell** is not complete: the 2p subshell is empty in the ground state.
+
+### 4. Singlet/Triplet Physics & Exchange
+The low $2\text{s}2\text{p}$ manifold splits into $^3\text{P}^\circ$ (triplet) and $^1\text{P}^\circ$ (singlet). The antisymmetric spatial triplet wavefunction vanishes as the two valence electrons approach each other (exchange hole), reducing Coulomb repulsion — so **triplet 2s2p lies substantially below singlet 2s2p** ($21978$–$21981\ \text{cm}^{-1}$ vs. $42565.35\ \text{cm}^{-1}$). The $2\text{s}2\text{p}\ ^3\text{P}^\circ$ manifold is **E1 SPIN-FORBIDDEN / METASTABLE** relative to the $^1\text{S}_0$ ground state under ordinary electric-dipole selection rules ($\Delta S \ne 0$) — not strictly impossible; real weak channels can exist beyond the simplified E1 picture.
+
+### 5. Simplified E1 Selection Rules
+QUANTA applies a simplified LS-coupling teaching validator: parity must change, $\Delta J = 0, \pm 1$ (excluding $J{=}0\to J{=}0$), and $\Delta S = 0$ for an ordinary spin-allowed transition. $^1\text{S}_0 \to {}^1\text{P}^\circ_1$ is E1 allowed; $^1\text{S}_0 \leftrightarrow {}^3\text{P}^\circ$ is spin-forbidden.
+
+### 6. Reduced One-Electron Density & Visual Model
+The full four-electron wavefunction depends on 12 spatial coordinates and cannot be shown as one 3D object. QUANTA renders a REDUCED ONE-ELECTRON DENSITY $\rho(\mathbf{r}) = \rho_{1\text{s}^2}(\mathbf{r}) + \rho_{\text{valence}}(\mathbf{r})$, decomposed conceptually as $2\times$ 1s core + 2$\times$ valence contributions. Effective charges are derived via **Slater's Rules** for the ground configuration:
+
+$$Z_{\text{eff}}(1\text{s}) = 4 - 0.30 = 3.70,\qquad Z_{\text{eff}}(2\text{s}) = 4 - (0.35 + 2\times 0.85) = 1.95$$
+
+Excited-subshell (2p, 3s, 3p, 3d) parameters are approximate VISUAL MODEL PARAMETERS extrapolated from this trend, not individually Slater-derived. All are strictly decoupled from NIST ASD energy eigenvalues.
+
+### 7. Energy Levels & Ionization Provenance
+Curated Be I levels (2s2p, 2s3s, 2p², 2s3p, 2s3d singlet/triplet manifolds) are organized into SINGLET SYSTEM and TRIPLET SYSTEM columns, reusing the shared Energy architecture established for Helium. QUANTA keeps two ionization-related quantities explicitly separate:
+- **Current NIST ASD ionization energy**: $9.322699(7)\ \text{eV}$.
+- **Reference NIST Handbook level-table limit** (Be II $^2\text{S}_{1/2}$): $75192.64\ \text{cm}^{-1}$ — a different dataset/era, not silently equated with the ASD value.
+
+### 8. Spectroscopy & Air/Vacuum Handling
+Five curated Be I lines, reusing the shared spectroscopy components:
+1. **$234.8610\ \text{nm}$ (Air) Ground-State Resonance**: $2\text{s}^2\ ^1\text{S}_0 \leftrightarrow 2\text{s}2\text{p}\ ^1\text{P}^\circ_1$ — false-color UV hero transition.
+2. **$166.1478\ \text{nm}$ (Vacuum) Far-UV**: $2\text{s}^2\ ^1\text{S}_0 \leftrightarrow 2\text{s}3\text{p}\ ^1\text{P}^\circ_1$.
+3. **$332.1340\ \text{nm}$ (Air) Triplet UV**: $2\text{s}2\text{p}\ ^3\text{P}^\circ_2 \leftrightarrow 2\text{s}3\text{s}\ ^3\text{S}_1$.
+4. **$457.2664\ \text{nm}$ (Air) Blue Singlet**: $2\text{s}2\text{p}\ ^1\text{P}^\circ_1 \leftrightarrow 2\text{s}3\text{d}\ ^1\text{D}_2$ — approximate display color, not "true color".
+5. **$825.4070\ \text{nm}$ (Air) Near-IR**: $2\text{s}2\text{p}\ ^1\text{P}^\circ_1 \leftrightarrow 2\text{s}3\text{s}\ ^1\text{S}_0$ — false-color NIR.
+
+Reference persistent-line wavelengths remain architecturally separate from level-difference-derived vacuum/air wavelengths, following the same contract established for Lithium.
+
+---
+
 ## Pedagogical Models & Visual Disclaimers
 
 - **Shell Occupancy Model**: Pedagogical representation illustrating discrete shell occupancies ($K, L, M, N$). Electron markers and their classical orbits are illustrative; multi-electron atoms possess no fixed classical trajectories.
