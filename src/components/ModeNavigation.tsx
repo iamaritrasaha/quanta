@@ -42,6 +42,15 @@ const BERYLLIUM_MODES: ModeDef[] = [
   { id: 'equations', label: 'Equations', shortDesc: 'Four-Electron Math' },
 ]
 
+const BORON_MODES: ModeDef[] = [
+  { id: 'overview', label: 'Overview', shortDesc: 'Open p-Subshell Profile' },
+  { id: 'bohr', label: 'Shell Model', shortDesc: 'Core + 2p Valence' },
+  { id: 'quantum', label: 'Quantum', shortDesc: 'Reduced Density' },
+  { id: 'energy', label: 'Energy Levels', shortDesc: 'Doublet Fine Structure' },
+  { id: 'spectra', label: 'Spectra', shortDesc: 'Emission Lines' },
+  { id: 'equations', label: 'Equations', shortDesc: 'Five-Electron Math' },
+]
+
 export function ModeNavigation() {
   const mode = useQuantaStore((s) => s.mode)
   const activeElement = useQuantaStore((s) => s.activeElement)
@@ -54,7 +63,9 @@ export function ModeNavigation() {
       ? HELIUM_MODES
       : activeElement === 'lithium'
       ? LITHIUM_MODES
-      : BERYLLIUM_MODES
+      : activeElement === 'beryllium'
+      ? BERYLLIUM_MODES
+      : BORON_MODES
 
   const elementName =
     activeElement === 'hydrogen'
@@ -63,7 +74,9 @@ export function ModeNavigation() {
       ? 'Helium'
       : activeElement === 'lithium'
       ? 'Lithium'
-      : 'Beryllium'
+      : activeElement === 'beryllium'
+      ? 'Beryllium'
+      : 'Boron'
 
   return (
     <nav className="mode-navigation glass-capsule" aria-label={`${elementName} Exploration Modes`}>

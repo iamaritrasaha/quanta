@@ -12,6 +12,7 @@ describe('Quanta Store and Model Transitions', () => {
     useQuantaStore.getState().resetHelium()
     useQuantaStore.getState().resetLithium()
     useQuantaStore.getState().resetBeryllium()
+    useQuantaStore.getState().resetBoron()
     useQuantaStore.getState().setActiveElement('hydrogen')
     useQuantaStore.getState().setMode('overview')
   })
@@ -417,5 +418,83 @@ describe('Quanta Store and Model Transitions', () => {
 
     useQuantaStore.getState().setMode('quantum')
     expect(useQuantaStore.getState().beryllium.activeTransition).toBeNull()
+  })
+
+  // --------------------------------------------------------------------------
+  // BORON STATE ISOLATION & LIFECYCLE TESTS
+  // --------------------------------------------------------------------------
+
+  it('preserves Boron state cleanly across B -> H -> B and B -> Be -> Li -> B transitions', () => {
+    useQuantaStore.getState().setActiveElement('boron')
+    useQuantaStore.getState().setBoronLevel('3d_2D5_2')
+    useQuantaStore.getState().setBoronTransition('182.64nm')
+    useQuantaStore.getState().setBoronDensityView('components')
+
+    expect(useQuantaStore.getState().boron.selectedTransitionId).toBe('182.64nm')
+    expect(useQuantaStore.getState().boron.densityView).toBe('components')
+
+    useQuantaStore.getState().setActiveElement('hydrogen')
+    useQuantaStore.getState().setLevel(4)
+    useQuantaStore.getState().setActiveElement('boron')
+    expect(useQuantaStore.getState().boron.selectedTransitionId).toBe('182.64nm')
+    expect(useQuantaStore.getState().boron.densityView).toBe('components')
+
+    useQuantaStore.getState().setActiveElement('beryllium')
+    useQuantaStore.getState().setBerylliumLevel('2s3s_3S1')
+    useQuantaStore.getState().setActiveElement('lithium')
+    useQuantaStore.getState().setLithiumLevel('1s2_3p_2P3_2')
+
+    useQuantaStore.getState().setActiveElement('boron')
+    expect(useQuantaStore.getState().boron.selectedTransitionId).toBe('182.64nm')
+    expect(useQuantaStore.getState().boron.densityView).toBe('components')
+    expect(useQuantaStore.getState().beryllium.selectedLevelId).toBe('2s3s_3S1')
+    expect(useQuantaStore.getState().lithium.selectedLevelId).toBe('1s2_3p_2P3_2')
+  })
+
+  it('manages Boron transition lifecycle for the 249.77 nm hero line (absorption vs emission)', () => {
+    useQuantaStore.getState().setActiveElement('boron')
+    useQuantaStore.getState().setBoronTransition('249.77nm')
+
+    const absorbStarted = useQuantaStore.getState().startBoronTransition('249.77nm', 'absorption')
+    expect(absorbStarted).toBe(true)
+    expect(useQuantaStore.getState().boron.activeTransition).not.toBeNull()
+    expect(useQuantaStore.getState().boron.activeTransition?.physics.id).toBe('249.77nm')
+    expect(useQuantaStore.getState().boron.activeTransition?.type).toBe('absorption')
+    expect(useQuantaStore.getState().boron.activeTransition?.initialLevelId).toBe('2p_2P3_2')
+    expect(useQuantaStore.getState().boron.activeTransition?.targetLevelId).toBe('3s_2S1_2')
+
+    useQuantaStore.getState().updateBoronTransitionProgress(0.5, 'interaction')
+    expect(useQuantaStore.getState().boron.activeTransition?.progress).toBe(0.5)
+    expect(useQuantaStore.getState().boron.activeTransition?.phase).toBe('interaction')
+
+    useQuantaStore.getState().completeBoronTransition()
+    expect(useQuantaStore.getState().boron.activeTransition).toBeNull()
+    expect(useQuantaStore.getState().boron.selectedLevelId).toBe('3s_2S1_2')
+
+    const emitStarted = useQuantaStore.getState().startBoronTransition('249.77nm', 'emission')
+    expect(emitStarted).toBe(true)
+    expect(useQuantaStore.getState().boron.activeTransition?.type).toBe('emission')
+    expect(useQuantaStore.getState().boron.activeTransition?.initialLevelId).toBe('3s_2S1_2')
+    expect(useQuantaStore.getState().boron.activeTransition?.targetLevelId).toBe('2p_2P3_2')
+
+    useQuantaStore.getState().completeBoronTransition()
+    expect(useQuantaStore.getState().boron.activeTransition).toBeNull()
+    expect(useQuantaStore.getState().boron.selectedLevelId).toBe('2p_2P3_2')
+  })
+
+  it('cancels running Boron transition when switching elements or modes', () => {
+    useQuantaStore.getState().setActiveElement('boron')
+    useQuantaStore.getState().startBoronTransition('249.77nm', 'absorption')
+    expect(useQuantaStore.getState().boron.activeTransition).not.toBeNull()
+
+    useQuantaStore.getState().setActiveElement('helium')
+    expect(useQuantaStore.getState().boron.activeTransition).toBeNull()
+
+    useQuantaStore.getState().setActiveElement('boron')
+    useQuantaStore.getState().startBoronTransition('249.77nm', 'absorption')
+    expect(useQuantaStore.getState().boron.activeTransition).not.toBeNull()
+
+    useQuantaStore.getState().setMode('quantum')
+    expect(useQuantaStore.getState().boron.activeTransition).toBeNull()
   })
 })

@@ -26,6 +26,8 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
           if (onSelectElement) onSelectElement('lithium')
         } else if (element.symbol === 'Be') {
           if (onSelectElement) onSelectElement('beryllium')
+        } else if (element.symbol === 'B') {
+          if (onSelectElement) onSelectElement('boron')
         }
       }, 550)
     } else {
@@ -43,7 +45,7 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
         <div className="masthead-brand">
           <div className="brand-eyebrow">
             <span className="dot-indicator live" />
-            <span>OPTICAL SCIENTIFIC INSTRUMENT · INSTRUMENTS 01–04 ACTIVE</span>
+            <span>OPTICAL SCIENTIFIC INSTRUMENT · INSTRUMENTS 01–05 ACTIVE</span>
           </div>
           <h1 className="brand-title">QUANTA</h1>
           <p className="brand-tagline">Matter, visualized.</p>
@@ -54,9 +56,9 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
             eigenfunctions and many-electron quantum mechanics.
           </p>
           <div className="masthead-stats">
-            <span className="active-stat">4 ELEMENTS ACTIVE (H · He · Li · Be)</span>
+            <span className="active-stat">5 ELEMENTS ACTIVE (H · He · Li · Be · B)</span>
             <span>·</span>
-            <span>114 STAGED</span>
+            <span>113 STAGED</span>
           </div>
         </div>
       </header>
@@ -66,7 +68,7 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
         <div className="table-stage-header">
           <div className="stage-title-wrap">
             <span className="stage-kicker">INTERACTIVE PERIODIC TABLE</span>
-            <span className="stage-hint">Select Hydrogen (H), Helium (He), Lithium (Li), or Beryllium (Be) to initialize the 3D atomic instrument</span>
+            <span className="stage-hint">Select Hydrogen (H), Helium (He), Lithium (Li), Beryllium (Be), or Boron (B) to initialize the 3D atomic instrument</span>
           </div>
           <div className="mobile-scroll-hint">
             <span>← Swipe to explore 18 groups →</span>
@@ -80,6 +82,7 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
               const isHe = el.symbol === 'He'
               const isLi = el.symbol === 'Li'
               const isBe = el.symbol === 'Be'
+              const isB = el.symbol === 'B'
               const isAvailable = el.available
               const isEnteringThis = enteringSymbol === el.symbol
 
@@ -88,6 +91,7 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
               if (isHe) tileSpecificClass = 'helium-tile'
               if (isLi) tileSpecificClass = 'lithium-tile'
               if (isBe) tileSpecificClass = 'beryllium-tile'
+              if (isB) tileSpecificClass = 'boron-tile'
 
               return (
                 <button
@@ -129,7 +133,10 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
               <b className="legend-dot beryllium-dot" /> Beryllium (Z = 4, Two Valence Electrons)
             </span>
             <span className="legend-item">
-              <b className="legend-dot upcoming-dot" /> 114 Elements (Staged Library)
+              <b className="legend-dot boron-dot" /> Boron (Z = 5, Open p Subshell)
+            </span>
+            <span className="legend-item">
+              <b className="legend-dot upcoming-dot" /> 113 Elements (Staged Library)
             </span>
           </div>
           <span className="table-nav-note">Calculations executed entirely client-side via exact SI physics & NIST ASD reference data.</span>
@@ -162,8 +169,8 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
                   release.
                 </p>
                 <p className="notice-sub-text">
-                  Multi-electron atoms beyond Beryllium require Hartree-Fock or density functional approximations.
-                  Hydrogen, Helium, Lithium, and Beryllium are our active instruments.
+                  Multi-electron atoms beyond Boron require Hartree-Fock or density functional approximations.
+                  Hydrogen, Helium, Lithium, Beryllium, and Boron are our active instruments.
                 </p>
               </div>
             </div>
@@ -196,13 +203,22 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
                 OPEN LITHIUM (Li) →
               </button>
               <button
-                className="primary-notice-btn"
+                className="secondary-notice-btn"
                 onClick={() => {
                   setSelectedNoticeElement(null)
                   handleElementClick(elements[3]) // Select Beryllium
                 }}
               >
                 OPEN BERYLLIUM (Be) →
+              </button>
+              <button
+                className="primary-notice-btn"
+                onClick={() => {
+                  setSelectedNoticeElement(null)
+                  handleElementClick(elements[4]) // Select Boron
+                }}
+              >
+                OPEN BORON (B) →
               </button>
             </div>
           </div>

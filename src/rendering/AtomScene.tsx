@@ -11,6 +11,8 @@ import { LithiumShell } from './LithiumShell'
 import { LithiumQuantumCloud } from './LithiumQuantumCloud'
 import { BerylliumShell } from './BerylliumShell'
 import { BerylliumQuantumCloud } from './BerylliumQuantumCloud'
+import { BoronShell } from './BoronShell'
+import { BoronQuantumCloud } from './BoronQuantumCloud'
 
 interface SceneManagerProps {
   resetCameraTrigger?: number
@@ -61,10 +63,15 @@ function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
           <LithiumShell />
           <LithiumQuantumCloud />
         </>
-      ) : (
+      ) : activeElement === 'beryllium' ? (
         <>
           <BerylliumShell />
           <BerylliumQuantumCloud />
+        </>
+      ) : (
+        <>
+          <BoronShell />
+          <BoronQuantumCloud />
         </>
       )}
 

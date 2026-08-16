@@ -19,8 +19,14 @@ import {
   getBerylliumTransition,
   type BerylliumTransition,
 } from '../physics/beryllium'
+import {
+  findBoronTransition,
+  getBoronLevel,
+  getBoronTransition,
+  type BoronTransition,
+} from '../physics/boron'
 
-export type ElementKey = 'hydrogen' | 'helium' | 'lithium' | 'beryllium'
+export type ElementKey = 'hydrogen' | 'helium' | 'lithium' | 'beryllium' | 'boron'
 
 export type ViewMode = 'overview' | 'bohr' | 'quantum' | 'energy' | 'spectra' | 'equations'
 
@@ -76,6 +82,17 @@ export interface ActiveBerylliumTransition {
   physics: BerylliumTransition
 }
 
+export interface ActiveBoronTransition {
+  type: 'absorption' | 'emission'
+  initialLevelId: string
+  targetLevelId: string
+  startTime: number
+  durationMs: number
+  progress: number
+  phase: TransitionPhase
+  physics: BoronTransition
+}
+
 // Backwards-compatible alias for existing Hydrogen components
 export type ActiveTransition = ActiveHydrogenTransition
 
@@ -114,6 +131,15 @@ export interface BerylliumState {
   activeTransition: ActiveBerylliumTransition | null
 }
 
+export interface BoronState {
+  selectedLevelId: string
+  initialLevelId: string
+  targetLevelId: string
+  selectedTransitionId: string | null
+  densityView: 'total' | 'components'
+  activeTransition: ActiveBoronTransition | null
+}
+
 interface QuantaState {
   activeElement: ElementKey
   mode: ViewMode
@@ -129,6 +155,8 @@ interface QuantaState {
   lithium: LithiumState
   // Beryllium Sub-State
   beryllium: BerylliumState
+  // Boron Sub-State
+  boron: BoronState
 
   // Legacy/Direct Accessors for Hydrogen (Preserves regression benchmark)
   level: number
@@ -191,6 +219,18 @@ interface QuantaState {
   cancelBerylliumTransition: () => void
   resetBeryllium: () => void
 
+  // Boron Actions
+  setBoronLevel: (levelId: string) => void
+  setBoronInitialLevel: (levelId: string) => void
+  setBoronTargetLevel: (levelId: string) => void
+  setBoronTransition: (transitionId: string) => void
+  setBoronDensityView: (view: 'total' | 'components') => void
+  startBoronTransition: (transitionId?: string, overrideType?: 'absorption' | 'emission') => boolean
+  updateBoronTransitionProgress: (progress: number, phase: TransitionPhase) => void
+  completeBoronTransition: () => void
+  cancelBoronTransition: () => void
+  resetBoron: () => void
+
   // Context-aware reset
   reset: () => void
 }
@@ -250,6 +290,15 @@ const defaultBerylliumState: BerylliumState = {
   activeTransition: null,
 }
 
+const defaultBoronState: BoronState = {
+  selectedLevelId: '2p_2P1_2',
+  initialLevelId: '2p_2P3_2',
+  targetLevelId: '3s_2S1_2',
+  selectedTransitionId: '249.77nm',
+  densityView: 'total',
+  activeTransition: null,
+}
+
 export const useQuantaStore = create<QuantaState>((set, get) => ({
   activeElement: 'hydrogen',
   mode: 'overview',
@@ -261,6 +310,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
   helium: { ...defaultHeliumState },
   lithium: { ...defaultLithiumState },
   beryllium: { ...defaultBerylliumState },
+  boron: { ...defaultBoronState },
 
   // Mirror legacy Hydrogen accessors to prevent any breaking changes
   level: defaultHydrogenState.level,
@@ -286,6 +336,9 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     if (current.beryllium.activeTransition) {
       current.cancelBerylliumTransition()
     }
+    if (current.boron.activeTransition) {
+      current.cancelBoronTransition()
+    }
 
     set({ activeElement: element })
   },
@@ -305,6 +358,9 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
     if (current.beryllium.activeTransition) {
       current.cancelBerylliumTransition()
+    }
+    if (current.boron.activeTransition) {
+      current.cancelBoronTransition()
     }
 
     if (current.activeElement === 'hydrogen') {
@@ -968,6 +1024,166 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
   },
 
   // --------------------------------------------------------------------------
+  // Boron State Actions (Isolated scope & NIST model driven)
+  // --------------------------------------------------------------------------
+
+  setBoronLevel: (levelId) => {
+    const level = getBoronLevel(levelId)
+    if (!level) return
+    set((state) => ({
+      boron: {
+        ...state.boron,
+        selectedLevelId: levelId,
+      },
+    }))
+  },
+
+  setBoronInitialLevel: (levelId) => {
+    set((state) => {
+      const match = findBoronTransition(levelId, state.boron.targetLevelId)
+      return {
+        boron: {
+          ...state.boron,
+          initialLevelId: levelId,
+          selectedTransitionId: match ? match.id : state.boron.selectedTransitionId,
+        },
+      }
+    })
+  },
+
+  setBoronTargetLevel: (levelId) => {
+    set((state) => {
+      const match = findBoronTransition(state.boron.initialLevelId, levelId)
+      return {
+        boron: {
+          ...state.boron,
+          targetLevelId: levelId,
+          selectedTransitionId: match ? match.id : state.boron.selectedTransitionId,
+        },
+      }
+    })
+  },
+
+  setBoronTransition: (transitionId) => {
+    const t = getBoronTransition(transitionId)
+    if (!t) return
+    set((state) => ({
+      boron: {
+        ...state.boron,
+        selectedTransitionId: transitionId,
+        initialLevelId: t.lowerLevelId,
+        targetLevelId: t.upperLevelId,
+        selectedLevelId: t.lowerLevelId,
+      },
+    }))
+  },
+
+  setBoronDensityView: (densityView) => {
+    set((state) => ({
+      boron: {
+        ...state.boron,
+        densityView,
+      },
+    }))
+  },
+
+  startBoronTransition: (transitionId, overrideType) => {
+    const state = get()
+    if (state.boron.activeTransition) return false
+
+    const targetTransitionId = transitionId ?? state.boron.selectedTransitionId
+    let physics = targetTransitionId ? getBoronTransition(targetTransitionId) : undefined
+
+    if (!physics) {
+      physics = findBoronTransition(state.boron.initialLevelId, state.boron.targetLevelId)
+    }
+    if (!physics) return false
+
+    const lower = getBoronLevel(physics.lowerLevelId)
+    const upper = getBoronLevel(physics.upperLevelId)
+    if (!lower || !upper) return false
+
+    const currentIsUpper = state.boron.selectedLevelId === upper.id
+    const type = overrideType ?? (currentIsUpper ? 'emission' : 'absorption')
+
+    const initialId = type === 'absorption' ? lower.id : upper.id
+    const targetId = type === 'absorption' ? upper.id : lower.id
+
+    const baseDurationMs = 2000
+    const durationMs = baseDurationMs / state.animationSpeed
+
+    const activeTransition: ActiveBoronTransition = {
+      type,
+      initialLevelId: initialId,
+      targetLevelId: targetId,
+      startTime: performance.now(),
+      durationMs,
+      progress: 0,
+      phase: type === 'absorption' ? 'photonIncoming' : 'electronTransition',
+      physics,
+    }
+
+    set((s) => ({
+      transitionEventSeq: s.transitionEventSeq + 1,
+      boron: {
+        ...s.boron,
+        selectedLevelId: initialId,
+        initialLevelId: initialId,
+        targetLevelId: targetId,
+        selectedTransitionId: physics.id,
+        activeTransition,
+      },
+    }))
+    return true
+  },
+
+  updateBoronTransitionProgress: (progress, phase) => {
+    set((state) => {
+      if (!state.boron.activeTransition) return state
+      return {
+        boron: {
+          ...state.boron,
+          activeTransition: {
+            ...state.boron.activeTransition,
+            progress: Math.min(1, Math.max(0, progress)),
+            phase,
+          },
+        },
+      }
+    })
+  },
+
+  completeBoronTransition: () => {
+    set((state) => {
+      if (!state.boron.activeTransition) return state
+      const finalId = state.boron.activeTransition.targetLevelId
+      return {
+        boron: {
+          ...state.boron,
+          selectedLevelId: finalId,
+          initialLevelId: finalId,
+          activeTransition: null,
+        },
+      }
+    })
+  },
+
+  cancelBoronTransition: () => {
+    set((state) => ({
+      boron: {
+        ...state.boron,
+        activeTransition: null,
+      },
+    }))
+  },
+
+  resetBoron: () => {
+    set({
+      boron: { ...defaultBoronState },
+    })
+  },
+
+  // --------------------------------------------------------------------------
   // Context-Aware Global Reset
   // --------------------------------------------------------------------------
 
@@ -979,8 +1195,10 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
       get().resetHelium()
     } else if (element === 'lithium') {
       get().resetLithium()
-    } else {
+    } else if (element === 'beryllium') {
       get().resetBeryllium()
+    } else {
+      get().resetBoron()
     }
   },
 }))

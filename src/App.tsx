@@ -4,6 +4,7 @@ import { bohrRadius, hydrogenEnergy } from './physics/hydrogen'
 import { getHeliumLevel } from './physics/helium'
 import { getLithiumLevel } from './physics/lithium'
 import { getBerylliumLevel } from './physics/beryllium'
+import { getBoronLevel } from './physics/boron'
 import { PeriodicTable } from './components/PeriodicTable'
 import { ModeNavigation } from './components/ModeNavigation'
 import { LevelDiagram } from './components/LevelDiagram'
@@ -32,6 +33,13 @@ import { BerylliumLevelDiagram } from './components/BerylliumLevelDiagram'
 import { BerylliumSpectrumVisualizer } from './components/BerylliumSpectrumVisualizer'
 import { BerylliumTransitionControls } from './components/BerylliumTransitionControls'
 import { BerylliumEquationInspector } from './components/BerylliumEquationInspector'
+import { BoronOverview } from './components/BoronOverview'
+import { BoronShellControls } from './components/BoronShellControls'
+import { BoronQuantumControls } from './components/BoronQuantumControls'
+import { BoronLevelDiagram } from './components/BoronLevelDiagram'
+import { BoronSpectrumVisualizer } from './components/BoronSpectrumVisualizer'
+import { BoronTransitionControls } from './components/BoronTransitionControls'
+import { BoronEquationInspector } from './components/BoronEquationInspector'
 import './styles.css'
 
 const AtomScene = lazy(() =>
@@ -46,6 +54,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const heliumState = useQuantaStore((s) => s.helium)
   const lithiumState = useQuantaStore((s) => s.lithium)
   const berylliumState = useQuantaStore((s) => s.beryllium)
+  const boronState = useQuantaStore((s) => s.boron)
   const playing = useQuantaStore((s) => s.playing)
   const speed = useQuantaStore((s) => s.animationSpeed)
   const togglePlaying = useQuantaStore((s) => s.togglePlaying)
@@ -58,6 +67,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const isHelium = activeElement === 'helium'
   const isLithium = activeElement === 'lithium'
   const isBeryllium = activeElement === 'beryllium'
+  const isBoron = activeElement === 'boron'
 
   const hydrogenModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
     overview: {
@@ -191,18 +201,54 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
     },
   }
 
+  const boronModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
+    overview: {
+      title: 'BORON OVERVIEW',
+      subtitle: 'Closed 1s²2s² core + one open-subshell 2p valence electron · Metalloid physics',
+      badge: 'ELEMENT 05 / AVAILABLE',
+    },
+    bohr: {
+      title: 'SHELL & SUBSHELL OCCUPANCY MODEL',
+      subtitle: 'K-shell (1s²) core + 2s² anchor pair + one visually distinct open-subshell 2p electron',
+      badge: 'PEDAGOGICAL ELECTRON-SHELL REPRESENTATION',
+    },
+    quantum: {
+      title: 'SCHRÖDINGER REDUCED DENSITY (5-ELECTRON)',
+      subtitle: 'Reduced one-electron density ρ(r) with a directional p-like valence lobe, not spherically symmetric',
+      badge: 'REDUCED PROBABILITY DENSITY',
+    },
+    energy: {
+      title: 'BORON I TERM EIGENVALUES',
+      subtitle: '²S, ²P°, ²D, ²F° series approaching the reference ionization limit',
+      badge: 'NIST ASD TERM DIAGRAM',
+    },
+    spectra: {
+      title: 'EMISSION SPECTROSCOPY',
+      subtitle: '~249.7 nm UV ground-state multiplet and curated B I reference-line transitions',
+      badge: 'BORON I SPECTROSCOPY',
+    },
+    equations: {
+      title: 'MATHEMATICAL DERIVATION INSPECTOR',
+      subtitle: 'Five-electron Hamiltonian with ten pairwise Coulomb repulsion terms',
+      badge: 'FIVE-ELECTRON DERIVATION',
+    },
+  }
+
   const currentModeInfo = isHydrogen
     ? hydrogenModeDescriptions[mode] ?? hydrogenModeDescriptions.overview
     : isHelium
     ? heliumModeDescriptions[mode] ?? heliumModeDescriptions.overview
     : isLithium
     ? lithiumModeDescriptions[mode] ?? lithiumModeDescriptions.overview
-    : berylliumModeDescriptions[mode] ?? berylliumModeDescriptions.overview
+    : isBeryllium
+    ? berylliumModeDescriptions[mode] ?? berylliumModeDescriptions.overview
+    : boronModeDescriptions[mode] ?? boronModeDescriptions.overview
 
   const hydrogenEnergyEv = hydrogenEnergy(level)
   const currentHeliumLevel = getHeliumLevel(heliumState.selectedLevelId) ?? getHeliumLevel('1s2_1S0')!
   const currentLithiumLevel = getLithiumLevel(lithiumState.selectedLevelId) ?? getLithiumLevel('1s2_2s_2S1_2')!
   const currentBerylliumLevel = getBerylliumLevel(berylliumState.selectedLevelId) ?? getBerylliumLevel('2s2_1S0')!
+  const currentBoronLevel = getBoronLevel(boronState.selectedLevelId) ?? getBoronLevel('2p_2P1_2')!
 
   return (
     <main className="explorer-screen">
@@ -213,11 +259,11 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             ← PERIODIC TABLE
           </button>
           <div className="element-heading">
-            <span className="element-atomic-badge">{isHydrogen ? '1' : isHelium ? '2' : isLithium ? '3' : '4'}</span>
+            <span className="element-atomic-badge">{isHydrogen ? '1' : isHelium ? '2' : isLithium ? '3' : isBeryllium ? '4' : '5'}</span>
             <div className="element-title-group">
               <h2 className="element-name-heading">
-                {isHydrogen ? 'Hydrogen' : isHelium ? 'Helium' : isLithium ? 'Lithium' : 'Beryllium'}{' '}
-                <span className="element-symbol-tag">{isHydrogen ? 'H' : isHelium ? 'He' : isLithium ? 'Li' : 'Be'}</span>
+                {isHydrogen ? 'Hydrogen' : isHelium ? 'Helium' : isLithium ? 'Lithium' : isBeryllium ? 'Beryllium' : 'Boron'}{' '}
+                <span className="element-symbol-tag">{isHydrogen ? 'H' : isHelium ? 'He' : isLithium ? 'Li' : isBeryllium ? 'Be' : 'B'}</span>
               </h2>
               <span className="element-sub-heading">
                 {isHydrogen
@@ -226,7 +272,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                   ? '⁴He · 2p⁺ 2n⁰ 2e⁻ · ~4.0026 u'
                   : isLithium
                   ? '⁷Li · 3p⁺ 4n⁰ 3e⁻ · [6.938, 6.997] u'
-                  : '⁹Be · 4p⁺ 5n⁰ 4e⁻ · 9.0121831(5) u'}
+                  : isBeryllium
+                  ? '⁹Be · 4p⁺ 5n⁰ 4e⁻ · 9.0121831(5) u'
+                  : '¹¹B · 5p⁺ 6n⁰ 5e⁻ · [10.806, 10.821] u'}
               </span>
             </div>
           </div>
@@ -260,12 +308,19 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 </strong>
                 <span className="quick-state-sub">{currentLithiumLevel.energyEv.toFixed(3)} eV</span>
               </>
-            ) : (
+            ) : isBeryllium ? (
               <>
                 <strong className="quick-state-val">
                   {currentBerylliumLevel.configuration} {currentBerylliumLevel.termSymbol}
                 </strong>
                 <span className="quick-state-sub">{currentBerylliumLevel.energyEv.toFixed(3)} eV</span>
+              </>
+            ) : (
+              <>
+                <strong className="quick-state-val">
+                  {currentBoronLevel.configuration} {currentBoronLevel.termSymbol}
+                </strong>
+                <span className="quick-state-sub">{currentBoronLevel.energyEv.toFixed(3)} eV</span>
               </>
             )}
           </div>
@@ -303,7 +358,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 ? 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁴He (2p⁺ 2n⁰)'
                 : isLithium
                 ? 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁷Li (3p⁺ 4n⁰)'
-                : 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁹Be (4p⁺ 5n⁰) · PEDAGOGICAL NUCLEAR REPRESENTATION'}
+                : isBeryllium
+                ? 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁹Be (4p⁺ 5n⁰) · PEDAGOGICAL NUCLEAR REPRESENTATION'
+                : 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ¹¹B (5p⁺ 6n⁰) DEFAULT ISOTOPE VISUALIZATION · PEDAGOGICAL NUCLEAR REPRESENTATION'}
             </span>
           </div>
 
@@ -506,7 +563,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 </div>
               )}
             </>
-          ) : (
+          ) : isBeryllium ? (
             /* Beryllium Exploration Rail */
             <>
               {mode === 'overview' && <BerylliumOverview />}
@@ -531,6 +588,34 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
               {mode === 'equations' && (
                 <div className="equations-pane">
                   <BerylliumEquationInspector />
+                </div>
+              )}
+            </>
+          ) : (
+            /* Boron Exploration Rail */
+            <>
+              {mode === 'overview' && <BoronOverview />}
+              {mode === 'bohr' && <BoronShellControls />}
+              {mode === 'quantum' && (
+                <div className="quantum-pane">
+                  <BoronQuantumControls />
+                </div>
+              )}
+              {mode === 'energy' && (
+                <div className="energy-pane">
+                  <BoronLevelDiagram />
+                  <BoronTransitionControls />
+                </div>
+              )}
+              {mode === 'spectra' && (
+                <div className="spectra-pane">
+                  <BoronSpectrumVisualizer />
+                  <BoronTransitionControls />
+                </div>
+              )}
+              {mode === 'equations' && (
+                <div className="equations-pane">
+                  <BoronEquationInspector />
                 </div>
               )}
             </>
@@ -563,7 +648,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
               ? 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD He I data'
               : isLithium
               ? 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD Li I compilation'
-              : 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD Be I data'}
+              : isBeryllium
+              ? 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD Be I data'
+              : 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD B I data'}
           </span>
           <span className="footer-copyright">© 2026 Aritra Saha</span>
         </div>
@@ -577,6 +664,7 @@ export default function App() {
 
   const [view, setView] = useState<'table' | 'explorer'>(() => {
     const hash = window.location.hash
+    if (hash.includes('/element/boron')) return 'explorer'
     if (hash.includes('/element/beryllium')) return 'explorer'
     if (hash.includes('/element/lithium')) return 'explorer'
     if (hash.includes('/element/helium')) return 'explorer'
@@ -587,7 +675,10 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash
-      if (hash.includes('/element/beryllium')) {
+      if (hash.includes('/element/boron')) {
+        setActiveElement('boron')
+        setView('explorer')
+      } else if (hash.includes('/element/beryllium')) {
         setActiveElement('beryllium')
         setView('explorer')
       } else if (hash.includes('/element/lithium')) {

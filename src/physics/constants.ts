@@ -53,6 +53,27 @@ export const BERYLLIUM_ATOMIC_WEIGHT = 9.012_183_1
 export const BERYLLIUM_ATOMIC_WEIGHT_UNCERTAINTY = 0.000_000_5
 export const BERYLLIUM_ATOMIC_WEIGHT_FORMATTED = '9.0121831(5)'
 
+// Authoritative NIST Boron (B I) constants (Source: NIST ASD Reference Data / Kramida et al., 2024)
+// First Ionization Energy: 8.298019 eV (Current NIST ASD uncertainty: ± 0.000003 eV)
+export const BORON_IONIZATION_ENERGY_EV = 8.298_019
+export const BORON_IONIZATION_ENERGY_UNCERTAINTY_EV = 0.000_003
+export const BORON_IONIZATION_ENERGY_FORMATTED_EV = '8.298019(3) eV'
+
+// Reference NIST Handbook B I → B II (¹S₀) level-table ionization limit (cm⁻¹).
+// Provenance note: this value originates from the NIST level-table compilation, a DIFFERENT
+// dataset/era than the current NIST ASD ionization-energy result above. QUANTA keeps these
+// two provenances explicitly separate rather than presenting them as one identical measurement.
+export const BORON_IONIZATION_LIMIT_CM1 = 66_928.04
+
+// CIAAW Standard Atomic-Weight Interval [10.806, 10.821]
+export const BORON_ATOMIC_WEIGHT_RANGE = [10.806, 10.821] as const
+
+// CIAAW Normal-Material Isotopic-Composition Intervals:
+// ¹⁰B: [0.189, 0.204] = 18.9% – 20.4%
+// ¹¹B: [0.796, 0.811] = 79.6% – 81.1%
+export const BORON_10_ISOTOPE_FRACTION_RANGE = [0.189, 0.204] as const
+export const BORON_11_ISOTOPE_FRACTION_RANGE = [0.796, 0.811] as const
+
 export const joulesToEv = (joules: number) => joules / ELECTRON_VOLT
 export const evToJoules = (ev: number) => ev * ELECTRON_VOLT
 export const metresToNm = (metres: number) => metres * 1e9
