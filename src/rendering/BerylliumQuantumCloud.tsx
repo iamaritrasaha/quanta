@@ -6,6 +6,8 @@ import { useQuantaStore } from '../state/quantaStore'
 import { BerylliumNucleus } from './BerylliumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { getQuantumInteractionPosition } from './transitionCoordinates'
+import { useDisposableGeometry } from './useDisposableGeometry'
+import { useReducedMotion } from './useReducedMotion'
 
 /** Maps a Beryllium level id to one of the six curated density buffer keys. */
 function getDensityKey(levelId: string): string {
@@ -27,6 +29,7 @@ export function BerylliumQuantumCloud() {
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
+  const reducedMotion = useReducedMotion()
 
   const selectedLevelId = berylliumState.selectedLevelId
   const densityView = berylliumState.densityView
@@ -83,6 +86,10 @@ export function BerylliumQuantumCloud() {
     return geom
   }, [currentKey, densityBuffers])
 
+  useDisposableGeometry(currentTotalGeom)
+  useDisposableGeometry(currentCoreGeom)
+  useDisposableGeometry(currentValenceGeom)
+
   useFrame((_, delta) => {
     const targetBlend = isQuantum ? 1.0 : 0.0
     modelBlendRef.current = THREE.MathUtils.damp(modelBlendRef.current, targetBlend, 4.0 * speed, delta)
@@ -104,7 +111,7 @@ export function BerylliumQuantumCloud() {
       const mat = totalPointsRef.current.material as THREE.PointsMaterial
       mat.opacity = densityView === 'total' ? baseAlpha : 0
       totalPointsRef.current.visible = densityView === 'total' && baseAlpha > 0.005
-      if (playing) {
+      if (playing && !reducedMotion) {
         const time = performance.now() * 0.001 * speed
         const s = 1.0 + Math.sin(time * 1.6) * 0.015 + transitionFieldBrighten * 0.06
         totalPointsRef.current.scale.set(s, s, s)

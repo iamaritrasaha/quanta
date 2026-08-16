@@ -1,10 +1,12 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
 import { LithiumNucleus } from './LithiumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z, getBohrElectronWorldPosition } from './transitionCoordinates'
+import { useDisposableGeometry } from './useDisposableGeometry'
+import { useReducedMotion } from './useReducedMotion'
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
@@ -39,6 +41,7 @@ export function LithiumShell() {
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
+  const reducedMotion = useReducedMotion()
 
   const activeTransition = lithiumState.activeTransition
   const occupancy = useMemo(() => getLithiumOccupancy(lithiumState.selectedLevelId), [lithiumState.selectedLevelId])
@@ -134,6 +137,47 @@ export function LithiumShell() {
     }
   }, [trailCount])
 
+  useEffect(() => {
+    return () => {
+      shellGeometries.forEach(({ geom }) => geom.dispose())
+    }
+  }, [shellGeometries])
+  useDisposableGeometry(c1TrailGeom)
+  useDisposableGeometry(c2TrailGeom)
+  useDisposableGeometry(vTrailGeom)
+
+  const c1TrailLine = useMemo(
+    () =>
+      new THREE.Line(
+        c1TrailGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending })
+      ),
+    [c1TrailGeom]
+  )
+  const c2TrailLine = useMemo(
+    () =>
+      new THREE.Line(
+        c2TrailGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending })
+      ),
+    [c2TrailGeom]
+  )
+  const vTrailLine = useMemo(
+    () =>
+      new THREE.Line(
+        vTrailGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending })
+      ),
+    [vTrailGeom]
+  )
+  useEffect(() => {
+    return () => {
+      c1TrailLine.material.dispose()
+      c2TrailLine.material.dispose()
+      vTrailLine.material.dispose()
+    }
+  }, [c1TrailLine, c2TrailLine, vTrailLine])
+
   useFrame(({ clock }, delta) => {
     if (!groupRef.current) return
 
@@ -219,7 +263,7 @@ export function LithiumShell() {
     }
 
     // Motion updates for all three electrons
-    if (playing) {
+    if (playing && !reducedMotion) {
       const coreSpeed = 2.4 * speed * Math.max(0.1, shellOpacity)
       const valSpeed = (1.8 / Math.pow(targetValenceN, 0.75)) * speed * Math.max(0.1, shellOpacity)
       core1Angle.current += delta * coreSpeed
@@ -339,71 +383,29 @@ export function LithiumShell() {
       <group rotation={[ORBIT_INCLINATION_X, 0, ORBIT_INCLINATION_Z]}>
         {/* Shell Guides (n = 1, 2, 3, 4) */}
         {shellGeometries.map(({ n, geom }, idx) => (
-          <primitive
+          <lineLoop
             key={n}
             ref={(el: THREE.LineLoop | null) => {
               shellGuideRefs.current[idx] = el
             }}
-            object={
-              new THREE.LineLoop(
-                geom,
-                new THREE.LineBasicMaterial({
-                  color: n === 1 ? '#93c5fd' : n === 2 ? '#fca5a5' : '#475569',
-                  transparent: true,
-                  opacity: 0.5,
-                })
-              )
-            }
-          />
+          >
+            <primitive object={geom} attach="geometry" />
+            <lineBasicMaterial
+              color={n === 1 ? '#93c5fd' : n === 2 ? '#fca5a5' : '#475569'}
+              transparent
+              opacity={0.5}
+            />
+          </lineLoop>
         ))}
 
         {/* Core 1s Electron 1 Trail */}
-        <primitive
-          ref={c1TrailRef}
-          object={
-            new THREE.Line(
-              c1TrailGeom,
-              new THREE.LineBasicMaterial({
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.65,
-                blending: THREE.AdditiveBlending,
-              })
-            )
-          }
-        />
+        <primitive ref={c1TrailRef} object={c1TrailLine} />
 
         {/* Core 1s Electron 2 Trail */}
-        <primitive
-          ref={c2TrailRef}
-          object={
-            new THREE.Line(
-              c2TrailGeom,
-              new THREE.LineBasicMaterial({
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.65,
-                blending: THREE.AdditiveBlending,
-              })
-            )
-          }
-        />
+        <primitive ref={c2TrailRef} object={c2TrailLine} />
 
         {/* Outer Valence Electron Trail */}
-        <primitive
-          ref={vTrailRef}
-          object={
-            new THREE.Line(
-              vTrailGeom,
-              new THREE.LineBasicMaterial({
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.75,
-                blending: THREE.AdditiveBlending,
-              })
-            )
-          }
-        />
+        <primitive ref={vTrailRef} object={vTrailLine} />
 
         {/* Core Electron 1 (K Shell) */}
         <group ref={c1GroupRef}>

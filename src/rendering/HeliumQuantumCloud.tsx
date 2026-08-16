@@ -6,6 +6,8 @@ import { useQuantaStore } from '../state/quantaStore'
 import { HeliumNucleus } from './HeliumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { getQuantumInteractionPosition } from './transitionCoordinates'
+import { useDisposableGeometry } from './useDisposableGeometry'
+import { useReducedMotion } from './useReducedMotion'
 
 export function HeliumQuantumCloud() {
   const mode = useQuantaStore((s) => s.mode)
@@ -15,6 +17,7 @@ export function HeliumQuantumCloud() {
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
+  const reducedMotion = useReducedMotion()
 
   const selectedLevelId = heliumState.selectedLevelId
   const densityView = heliumState.densityView
@@ -93,6 +96,10 @@ export function HeliumQuantumCloud() {
     return geom
   }, [currentKey, densityBuffers])
 
+  useDisposableGeometry(currentTotalGeom)
+  useDisposableGeometry(currentCoreGeom)
+  useDisposableGeometry(currentValenceGeom)
+
   useFrame((_, delta) => {
     const targetBlend = isQuantum ? 1.0 : 0.0
     modelBlendRef.current = THREE.MathUtils.damp(
@@ -123,7 +130,7 @@ export function HeliumQuantumCloud() {
       mat.opacity = densityView === 'total' ? baseAlpha : 0
       totalPointsRef.current.visible = densityView === 'total' && baseAlpha > 0.005
 
-      if (playing) {
+      if (playing && !reducedMotion) {
         const time = performance.now() * 0.001 * speed
         const s = 1.0 + Math.sin(time * 1.8) * 0.015 + transitionFieldBrighten * 0.06
         totalPointsRef.current.scale.set(s, s, s)

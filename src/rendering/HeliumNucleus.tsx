@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
+import { useReducedMotion } from './useReducedMotion'
 
 interface HeliumNucleusProps {
   opacity?: number
@@ -13,6 +14,7 @@ interface HeliumNucleusProps {
  * Pedagogical visualization: true nuclear scale is magnified for atomic visibility.
  */
 export function HeliumNucleus({ opacity = 1.0 }: HeliumNucleusProps) {
+  const reducedMotion = useReducedMotion()
   const groupRef = useRef<THREE.Group>(null!)
   const haloRef = useRef<THREE.Mesh>(null!)
   const innerShellRef = useRef<THREE.Mesh>(null!)
@@ -31,13 +33,15 @@ export function HeliumNucleus({ opacity = 1.0 }: HeliumNucleusProps) {
     if (!groupRef.current) return
 
     // Subtle gentle idle shimmer of the collective nuclear core
-    const idleShimmer = Math.sin(clock.elapsedTime * 1.6) * 0.03
+    const idleShimmer = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 1.6) * 0.03
     const s = 1.0 + idleShimmer
     groupRef.current.scale.set(s, s, s)
 
     // Gentle slow collective nuclear orientation drift
-    groupRef.current.rotation.y = clock.elapsedTime * 0.12
-    groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.08) * 0.15
+    if (!reducedMotion) {
+      groupRef.current.rotation.y = clock.elapsedTime * 0.12
+      groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.08) * 0.15
+    }
 
     if (haloRef.current) {
       const mat = haloRef.current.material as THREE.MeshBasicMaterial

@@ -5,6 +5,8 @@ import { sampleOrbital, type UiOrbitalKey } from '../physics/quantum'
 import { useQuantaStore } from '../state/quantaStore'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { getQuantumInteractionPosition } from './transitionCoordinates'
+import { useDisposableGeometry } from './useDisposableGeometry'
+import { useReducedMotion } from './useReducedMotion'
 
 const ORBITAL_COLORS: Record<UiOrbitalKey, string> = {
   '1s': '#93c5fd', // Ethereal silver-sky
@@ -20,6 +22,7 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
+  const reducedMotion = useReducedMotion()
 
   const [currentOrbital, setCurrentOrbital] = useState<UiOrbitalKey | null>(orbital)
   const [prevOrbital, setPrevOrbital] = useState<UiOrbitalKey | null>(null)
@@ -64,6 +67,9 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
     return geom
   }, [prevOrbital, orbitalBuffers])
 
+  useDisposableGeometry(currentGeom)
+  useDisposableGeometry(prevGeom)
+
   useFrame((_, delta) => {
     // Smoothly damp model transition blend
     const targetBlend = isQuantum && orbital !== null ? 1.0 : 0.0
@@ -102,7 +108,7 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
       currentPointsRef.current.visible = currentAlpha > 0.005 && currentOrbital !== null
 
       // Subtle quantum phase fluctuation and breathing
-      if (playing && currentOrbital !== null) {
+      if (playing && !reducedMotion && currentOrbital !== null) {
         const time = performance.now() * 0.001 * speed
         const subtleScale = 1.0 + Math.sin(time * 1.8) * 0.015 + transitionFieldBrighten * 0.06
         currentPointsRef.current.scale.set(subtleScale, subtleScale, subtleScale)

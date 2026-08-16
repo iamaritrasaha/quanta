@@ -863,6 +863,42 @@ button:focus-visible, select:focus-visible {
   animation: spin 0.8s linear infinite;
 }
 
+/* --------------------------------------------------------------------------
+   Instrument Crash Screen (Error Boundary)
+   -------------------------------------------------------------------------- */
+
+.instrument-crash-screen {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: var(--bg-deep);
+}
+
+.instrument-crash-card {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.crash-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.crash-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
 /* Floating Scene Overlays */
 .scene-overlay-caption {
   position: absolute;

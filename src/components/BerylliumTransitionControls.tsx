@@ -1,20 +1,53 @@
 import { useQuantaStore } from '../state/quantaStore'
-import { BERYLLIUM_TRANSITIONS, getBerylliumTransition, getBerylliumLevel } from '../physics/beryllium'
+import {
+  BERYLLIUM_TRANSITIONS,
+  getBerylliumTransition,
+  getBerylliumLevel,
+  calculateBerylliumStateEnergyDelta,
+} from '../physics/beryllium'
 import { SpectralTransitionRow } from './science'
+
+function getPhaseDescription(phase: string, type: 'absorption' | 'emission') {
+  switch (phase) {
+    case 'photonIncoming':
+      return 'Incoming photon wave packet propagating toward electronic state…'
+    case 'interaction':
+      return type === 'absorption'
+        ? 'Valence electrons absorbing photon energy (ΔE > 0)…'
+        : 'Valence electrons liberating discrete photon energy (ΔE < 0)…'
+    case 'electronTransition':
+      return type === 'absorption'
+        ? 'Photon absorption excites the valence electron to higher-energy state…'
+        : 'Transition to lower valence electronic state…'
+    case 'photonOutgoing':
+      return 'Liberated photon wave packet propagating outward…'
+    case 'settle':
+      return 'Stabilizing target electronic state…'
+    default:
+      return 'Transitioning electronic configuration…'
+  }
+}
 
 export function BerylliumTransitionControls() {
   const selectedTransitionId = useQuantaStore((s) => s.beryllium.selectedTransitionId)
   const activeTransition = useQuantaStore((s) => s.beryllium.activeTransition)
   const selectedLevelId = useQuantaStore((s) => s.beryllium.selectedLevelId)
   const setBerylliumTransition = useQuantaStore((s) => s.setBerylliumTransition)
+  const setBerylliumLevel = useQuantaStore((s) => s.setBerylliumLevel)
   const startTransition = useQuantaStore((s) => s.startBerylliumTransition)
   const cancelTransition = useQuantaStore((s) => s.cancelBerylliumTransition)
 
   const activePhysics = activeTransition?.physics
   const currentTransition = activePhysics ?? (selectedTransitionId ? getBerylliumTransition(selectedTransitionId) : getBerylliumTransition('234.9nm')!)
 
+  const lowerLevel = currentTransition ? getBerylliumLevel(currentTransition.lowerLevelId) : null
   const upperLevel = currentTransition ? getBerylliumLevel(currentTransition.upperLevelId) : null
   const isCurrentUpper = selectedLevelId === upperLevel?.id
+  const isAbsorption = !isCurrentUpper
+
+  const { deltaEStateEv, photonEnergyEv } = currentTransition
+    ? calculateBerylliumStateEnergyDelta(currentTransition, isAbsorption ? 'absorption' : 'emission')
+    : { deltaEStateEv: 0, photonEnergyEv: 0 }
 
   const isTransitioning = Boolean(activeTransition)
   const progressPercent = Math.round((activeTransition?.progress ?? 0) * 100)
@@ -50,55 +83,89 @@ export function BerylliumTransitionControls() {
         })}
       </div>
 
-      {currentTransition && (
-        <div className="transition-trigger-area">
-          {isTransitioning ? (
-            <div className="transition-progress-container">
-              <div className="progress-info-row">
-                <span className="progress-status-label">
-                  {activeTransition?.type === 'absorption' ? '↑ ABSORPTION IN PROGRESS' : '↓ EMISSION IN PROGRESS'}
+      {/* Metric Preview or Active Progress (canonical H/He transition-action shell) */}
+      {isTransitioning && activeTransition ? (
+        <div className="active-transition-view">
+          <div className="progress-info">
+            <span className="phase-text">
+              {getPhaseDescription(activeTransition.phase, activeTransition.type)}
+            </span>
+            <span className="progress-percent">{progressPercent}%</span>
+          </div>
+          <div className="progress-bar-track">
+            <div
+              className="progress-bar-fill"
+              style={{
+                width: `${progressPercent}%`,
+                backgroundColor: activeTransition.physics.displayColor,
+              }}
+            />
+          </div>
+          <button type="button" className="cancel-transition-btn" onClick={cancelTransition}>
+            CANCEL TRANSITION
+          </button>
+        </div>
+      ) : currentTransition && lowerLevel && upperLevel ? (
+        <div className="transition-summary-row">
+          <div className="summary-item">
+            <span className="summary-label">
+              {isAbsorption ? 'State Change (ΔE_state > 0)' : 'State Change (ΔE_state < 0)'}
+            </span>
+            <strong className="summary-val">
+              {deltaEStateEv > 0 ? `+${deltaEStateEv.toFixed(3)}` : deltaEStateEv.toFixed(3)} eV
+            </strong>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Photon Energy (Eγ = |ΔE|)</span>
+            <strong className="summary-val">{photonEnergyEv.toFixed(3)} eV</strong>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Wavelength ({currentTransition.wavelengthMedium})</span>
+            <strong className="summary-val" style={{ color: currentTransition.displayColor }}>
+              {currentTransition.wavelengthNm.toFixed(1)} nm
+            </strong>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Trigger Action Button */}
+      {!isTransitioning && currentTransition && lowerLevel && upperLevel && (
+        <div className="trigger-row-dual">
+          <button
+            type="button"
+            className={`primary-action-btn ${isAbsorption ? 'absorb-btn' : 'emit-btn'}`}
+            onClick={() => startTransition(currentTransition.id, isAbsorption ? 'absorption' : 'emission')}
+          >
+            {isAbsorption ? (
+              <>
+                <span className="action-icon">↑</span>
+                <span>
+                  ABSORB PHOTON (+{photonEnergyEv.toFixed(3)} eV · {lowerLevel.termSymbol} → {upperLevel.termSymbol})
                 </span>
-                <span className="progress-percent scientific-number">{progressPercent}%</span>
-              </div>
-              <div className="progress-track">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${progressPercent}%`,
-                    backgroundColor: currentTransition.displayColor,
-                    boxShadow: `0 0 10px ${currentTransition.displayColor}`,
-                  }}
-                />
-              </div>
-              <button type="button" className="cancel-transition-btn" onClick={cancelTransition}>
-                CANCEL TRANSITION
-              </button>
-            </div>
-          ) : (
-            <div className="trigger-row-dual">
-              <button
-                type="button"
-                className="action-trigger-btn primary-action-btn"
-                onClick={() => startTransition(currentTransition.id, isCurrentUpper ? 'emission' : 'absorption')}
-                style={{
-                  borderColor: currentTransition.displayColor,
-                  background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, ${currentTransition.displayColor}22 100%)`,
-                }}
-              >
-                <span className="btn-icon">{isCurrentUpper ? '↓' : '↑'}</span>
-                <span className="btn-text">
-                  TRIGGER {isCurrentUpper ? 'EMISSION' : 'ABSORPTION'} ({currentTransition.wavelengthNm.toFixed(1)} nm)
+              </>
+            ) : (
+              <>
+                <span className="action-icon">↓</span>
+                <span>
+                  EMIT PHOTON ({currentTransition.lineName} · {upperLevel.termSymbol} → {lowerLevel.termSymbol})
                 </span>
-              </button>
-              <button
-                type="button"
-                className="secondary-action-btn"
-                onClick={() => startTransition(currentTransition.id, isCurrentUpper ? 'absorption' : 'emission')}
-              >
-                FORCE {isCurrentUpper ? 'ABSORPTION' : 'EMISSION'}
-              </button>
-            </div>
-          )}
+              </>
+            )}
+          </button>
+
+          {/* Direction toggle button if user wants to prime the opposite state */}
+          <button
+            type="button"
+            className="secondary-action-btn"
+            onClick={() => setBerylliumLevel(isAbsorption ? upperLevel.id : lowerLevel.id)}
+            title={
+              isAbsorption
+                ? 'Set atom to upper state to enable emission'
+                : 'Set atom to lower state to enable absorption'
+            }
+          >
+            {isAbsorption ? 'PREPARE EMISSION (JUMP TO UPPER)' : 'PREPARE ABSORPTION (JUMP TO LOWER)'}
+          </button>
         </div>
       )}
     </div>

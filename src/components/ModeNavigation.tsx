@@ -56,8 +56,17 @@ export function ModeNavigation() {
       ? LITHIUM_MODES
       : BERYLLIUM_MODES
 
+  const elementName =
+    activeElement === 'hydrogen'
+      ? 'Hydrogen'
+      : activeElement === 'helium'
+      ? 'Helium'
+      : activeElement === 'lithium'
+      ? 'Lithium'
+      : 'Beryllium'
+
   return (
-    <nav className="mode-navigation glass-capsule" aria-label={`${activeElement === 'hydrogen' ? 'Hydrogen' : 'Helium'} Exploration Modes`}>
+    <nav className="mode-navigation glass-capsule" aria-label={`${elementName} Exploration Modes`}>
       <div className="mode-capsule-track">
         {modes.map((m) => {
           const isActive = mode === m.id

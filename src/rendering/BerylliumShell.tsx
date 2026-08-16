@@ -1,10 +1,11 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
 import { BerylliumNucleus } from './BerylliumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z, getBohrElectronWorldPosition } from './transitionCoordinates'
+import { useReducedMotion } from './useReducedMotion'
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
@@ -42,6 +43,7 @@ export function BerylliumShell() {
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
+  const reducedMotion = useReducedMotion()
 
   const activeTransition = berylliumState.activeTransition
   const occupancy = useMemo(() => getBerylliumOccupancy(berylliumState.selectedLevelId), [berylliumState.selectedLevelId])
@@ -84,6 +86,12 @@ export function BerylliumShell() {
       return { n, radius, geom }
     })
   }, [])
+
+  useEffect(() => {
+    return () => {
+      shellGeometries.forEach(({ geom }) => geom.dispose())
+    }
+  }, [shellGeometries])
 
   useFrame((_, delta) => {
     if (!groupRef.current) return
@@ -162,7 +170,7 @@ export function BerylliumShell() {
       delta * 12
     )
 
-    if (playing) {
+    if (playing && !reducedMotion) {
       const coreSpeed = 2.4 * speed * Math.max(0.1, shellOpacity)
       const valASpeed = (1.8 / Math.pow(occupancy.valenceNs[0], 0.75)) * speed * Math.max(0.1, shellOpacity)
       const valBSpeed = (1.8 / Math.pow(targetValenceBN, 0.75)) * speed * Math.max(0.1, shellOpacity)
@@ -232,22 +240,19 @@ export function BerylliumShell() {
 
       <group rotation={[ORBIT_INCLINATION_X, 0, ORBIT_INCLINATION_Z]}>
         {shellGeometries.map(({ n, geom }, idx) => (
-          <primitive
+          <lineLoop
             key={n}
             ref={(el: THREE.LineLoop | null) => {
               shellGuideRefs.current[idx] = el
             }}
-            object={
-              new THREE.LineLoop(
-                geom,
-                new THREE.LineBasicMaterial({
-                  color: n === 1 ? '#93c5fd' : n === 2 ? '#c4b5fd' : '#475569',
-                  transparent: true,
-                  opacity: 0.5,
-                })
-              )
-            }
-          />
+          >
+            <primitive object={geom} attach="geometry" />
+            <lineBasicMaterial
+              color={n === 1 ? '#93c5fd' : n === 2 ? '#c4b5fd' : '#475569'}
+              transparent
+              opacity={0.5}
+            />
+          </lineLoop>
         ))}
 
         {/* Core Electron 1 (K Shell) */}

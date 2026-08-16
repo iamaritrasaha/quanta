@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
@@ -6,6 +6,8 @@ import { getHeliumLevel } from '../physics/helium'
 import { HeliumNucleus } from './HeliumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z, getBohrElectronWorldPosition } from './transitionCoordinates'
+import { useDisposableGeometry } from './useDisposableGeometry'
+import { useReducedMotion } from './useReducedMotion'
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
@@ -39,6 +41,7 @@ export function HeliumShell() {
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
+  const reducedMotion = useReducedMotion()
 
   const activeTransition = heliumState.activeTransition
   const occupancy = useMemo(() => getHeliumOccupancy(heliumState.selectedLevelId), [heliumState.selectedLevelId])
@@ -110,6 +113,37 @@ export function HeliumShell() {
 
     return { e1TrailGeom: g1, e1TrailPos: pos1, e2TrailGeom: g2, e2TrailPos: pos2 }
   }, [trailCount])
+
+  useEffect(() => {
+    return () => {
+      shellGeometries.forEach(({ geom }) => geom.dispose())
+    }
+  }, [shellGeometries])
+  useDisposableGeometry(e1TrailGeom)
+  useDisposableGeometry(e2TrailGeom)
+
+  const e1TrailLine = useMemo(
+    () =>
+      new THREE.Line(
+        e1TrailGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending })
+      ),
+    [e1TrailGeom]
+  )
+  const e2TrailLine = useMemo(
+    () =>
+      new THREE.Line(
+        e2TrailGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending })
+      ),
+    [e2TrailGeom]
+  )
+  useEffect(() => {
+    return () => {
+      e1TrailLine.material.dispose()
+      e2TrailLine.material.dispose()
+    }
+  }, [e1TrailLine, e2TrailLine])
 
   useFrame(({ clock }, delta) => {
     if (!groupRef.current) return
@@ -193,7 +227,7 @@ export function HeliumShell() {
     }
 
     // Motion updates for both electron markers
-    if (playing) {
+    if (playing && !reducedMotion) {
       const speed1 = 2.2 * speed * Math.max(0.1, shellOpacity)
       const speed2 = (2.2 / Math.pow(targetOccupancy.n2, 0.7)) * speed * Math.max(0.1, shellOpacity)
       electron1Angle.current += delta * speed1
@@ -298,55 +332,22 @@ export function HeliumShell() {
       <group rotation={[ORBIT_INCLINATION_X, 0, ORBIT_INCLINATION_Z]}>
         {/* Shell Guides (n = 1, 2, 3) */}
         {shellGeometries.map(({ n, geom }, idx) => (
-          <primitive
+          <lineLoop
             key={n}
             ref={(el: THREE.LineLoop | null) => {
               shellGuideRefs.current[idx] = el
             }}
-            object={
-              new THREE.LineLoop(
-                geom,
-                new THREE.LineBasicMaterial({
-                  color: n === 1 ? '#93c5fd' : '#475569',
-                  transparent: true,
-                  opacity: 0.5,
-                })
-              )
-            }
-          />
+          >
+            <primitive object={geom} attach="geometry" />
+            <lineBasicMaterial color={n === 1 ? '#93c5fd' : '#475569'} transparent opacity={0.5} />
+          </lineLoop>
         ))}
 
         {/* Electron 1 Trail */}
-        <primitive
-          ref={e1TrailRef}
-          object={
-            new THREE.Line(
-              e1TrailGeom,
-              new THREE.LineBasicMaterial({
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.72,
-                blending: THREE.AdditiveBlending,
-              })
-            )
-          }
-        />
+        <primitive ref={e1TrailRef} object={e1TrailLine} />
 
         {/* Electron 2 Trail */}
-        <primitive
-          ref={e2TrailRef}
-          object={
-            new THREE.Line(
-              e2TrailGeom,
-              new THREE.LineBasicMaterial({
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.72,
-                blending: THREE.AdditiveBlending,
-              })
-            )
-          }
-        />
+        <primitive ref={e2TrailRef} object={e2TrailLine} />
 
         {/* Electron Marker 1 */}
         <group ref={e1GroupRef}>

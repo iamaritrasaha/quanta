@@ -1,10 +1,12 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
 import { getOrbitAngularSpeed, getVisualRadius } from './visualRadius'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { getBohrElectronWorldPosition, ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z } from './transitionCoordinates'
+import { useDisposableGeometry } from './useDisposableGeometry'
+import { useReducedMotion } from './useReducedMotion'
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
@@ -21,6 +23,7 @@ export function BohrAtom() {
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
+  const reducedMotion = useReducedMotion()
 
   const groupRef = useRef<THREE.Group>(null!)
   const electronGroupRef = useRef<THREE.Group>(null!)
@@ -88,6 +91,33 @@ export function BohrAtom() {
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3))
     return { trailGeometry: geom, trailPosAttr: pos }
   }, [trailPointsCount])
+
+  useEffect(() => {
+    return () => {
+      orbitGeometries.forEach(({ geom }) => geom.dispose())
+    }
+  }, [orbitGeometries])
+  useDisposableGeometry(dynamicActiveOrbitGeom)
+  useDisposableGeometry(trailGeometry)
+
+  // Constructed once per geometry change (not per render) to avoid leaking a
+  // new THREE.Line + material on every re-render triggered by transition state.
+  const electronTrailLine = useMemo(() => {
+    return new THREE.Line(
+      trailGeometry,
+      new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending,
+      })
+    )
+  }, [trailGeometry])
+  useEffect(() => {
+    return () => {
+      electronTrailLine.material.dispose()
+    }
+  }, [electronTrailLine])
 
   useFrame(({ clock }, delta) => {
     if (!groupRef.current) return
@@ -174,7 +204,9 @@ export function BohrAtom() {
     currentVisualRadius.current = THREE.MathUtils.lerp(currentVisualRadius.current, targetRadius, delta * 14)
 
     // Electron orbital rotation with smooth deceleration during quantum morph
-    if (playing) {
+    // (idle spin is decorative; reduced-motion users still see the electron at
+    // its current orbit position/radius, which conveys the scientific state)
+    if (playing && !reducedMotion) {
       const angularSpeed = getOrbitAngularSpeed(level) * speed * Math.max(0.1, bohrOpacity)
       electronAngle.current += delta * angularSpeed
     }
@@ -269,7 +301,7 @@ export function BohrAtom() {
 
     // Nucleus retains its beautiful compact proton identity and subtle idle shimmer
     // (Nucleus flash during electronic transition is strictly decoupled)
-    const idleShimmer = Math.sin(clock.elapsedTime * 1.8) * 0.04
+    const idleShimmer = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 1.8) * 0.04
     const baseEnergyScale = 1.0 + idleShimmer
 
     if (nucleusGroupRef.current) {
@@ -339,56 +371,35 @@ export function BohrAtom() {
         {orbitGeometries.map(({ n, geom }, index) => {
           const isActive = n === level && !activeTransition
           return (
-            <primitive
+            <lineLoop
               key={n}
               ref={(el: THREE.LineLoop | null) => {
                 orbitLineRefs.current[index] = el
               }}
-              object={
-                new THREE.LineLoop(
-                  geom,
-                  new THREE.LineBasicMaterial({
-                    color: isActive ? '#93c5fd' : '#334155',
-                    transparent: true,
-                    opacity: isActive ? 0.75 : 0.16,
-                  })
-                )
-              }
-            />
+            >
+              <primitive object={geom} attach="geometry" />
+              <lineBasicMaterial
+                color={isActive ? '#93c5fd' : '#334155'}
+                transparent
+                opacity={isActive ? 0.75 : 0.16}
+              />
+            </lineLoop>
           )
         })}
 
         {/* Dynamic active highlighted orbit line */}
-        <primitive
-          ref={activeOrbitLineRef}
-          object={
-            new THREE.LineLoop(
-              dynamicActiveOrbitGeom,
-              new THREE.LineBasicMaterial({
-                color: activeTransition ? photonColor : '#60a5fa',
-                transparent: true,
-                opacity: activeTransition ? 0.92 : 0.78,
-                linewidth: 2,
-              })
-            )
-          }
-        />
+        <lineLoop ref={activeOrbitLineRef}>
+          <primitive object={dynamicActiveOrbitGeom} attach="geometry" />
+          <lineBasicMaterial
+            color={activeTransition ? photonColor : '#60a5fa'}
+            transparent
+            opacity={activeTransition ? 0.92 : 0.78}
+            linewidth={2}
+          />
+        </lineLoop>
 
         {/* Tapered electron motion trail */}
-        <primitive
-          ref={electronTrailRef}
-          object={
-            new THREE.Line(
-              trailGeometry,
-              new THREE.LineBasicMaterial({
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.75,
-                blending: THREE.AdditiveBlending,
-              })
-            )
-          }
-        />
+        <primitive ref={electronTrailRef} object={electronTrailLine} />
 
         {/* Electron with Tiny Luminous Core and Cold Blue-White Halo */}
         <group ref={electronGroupRef}>

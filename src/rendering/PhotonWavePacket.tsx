@@ -1,8 +1,10 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
 import { getAbsorptionOrigin, getEmissionDestination } from './transitionCoordinates'
+import { useDisposableGeometry } from './useDisposableGeometry'
+import { useReducedMotion } from './useReducedMotion'
 
 interface PhotonWavePacketProps {
   visible: boolean
@@ -22,6 +24,7 @@ export function PhotonWavePacket({
 }: PhotonWavePacketProps) {
   const speed = useQuantaStore((s) => s.animationSpeed)
   const playing = useQuantaStore((s) => s.playing)
+  const reducedMotion = useReducedMotion()
 
   const groupRef = useRef<THREE.Group>(null!)
   const primaryLineRef = useRef<THREE.Line>(null!)
@@ -87,6 +90,32 @@ export function PhotonWavePacket({
     return { primaryGeom: pGeom, orthogonalGeom: oGeom, primaryPosAttr: pPos, orthoPosAttr: oPos }
   }, [color, pointsCount, packetLength, sigma, spatialFreq])
 
+  useDisposableGeometry(primaryGeom)
+  useDisposableGeometry(orthogonalGeom)
+
+  const primaryLine = useMemo(
+    () =>
+      new THREE.Line(
+        primaryGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending })
+      ),
+    [primaryGeom]
+  )
+  const orthogonalLine = useMemo(
+    () =>
+      new THREE.Line(
+        orthogonalGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending })
+      ),
+    [orthogonalGeom]
+  )
+  useEffect(() => {
+    return () => {
+      primaryLine.material.dispose()
+      orthogonalLine.material.dispose()
+    }
+  }, [primaryLine, orthogonalLine])
+
   const defaultFarEntry = useMemo(() => getAbsorptionOrigin(), [])
   const defaultFarExit = useMemo(() => getEmissionDestination(), [])
 
@@ -98,8 +127,10 @@ export function PhotonWavePacket({
       return
     }
 
-    // High frequency internal wave phase oscillation
-    if (playing) {
+    // High frequency internal wave phase oscillation (decorative squiggle only —
+    // packet position/opacity below is driven by `progress` and still updates,
+    // preserving transition direction and state under reduced motion)
+    if (playing && !reducedMotion) {
       wavePhase.current += delta * 24.0 * speed
     }
 
@@ -220,36 +251,10 @@ export function PhotonWavePacket({
   return (
     <group ref={groupRef} visible={false}>
       {/* Primary oscillating E-field wave line */}
-      <primitive
-        ref={primaryLineRef}
-        object={
-          new THREE.Line(
-            primaryGeom,
-            new THREE.LineBasicMaterial({
-              vertexColors: true,
-              transparent: true,
-              opacity: 0.95,
-              blending: THREE.AdditiveBlending,
-            })
-          )
-        }
-      />
+      <primitive ref={primaryLineRef} object={primaryLine} />
 
       {/* Orthogonal oscillating B-field wave line */}
-      <primitive
-        ref={orthogonalLineRef}
-        object={
-          new THREE.Line(
-            orthogonalGeom,
-            new THREE.LineBasicMaterial({
-              vertexColors: true,
-              transparent: true,
-              opacity: 0.65,
-              blending: THREE.AdditiveBlending,
-            })
-          )
-        }
-      />
+      <primitive ref={orthogonalLineRef} object={orthogonalLine} />
 
       {/* Tiny white-hot central energy centroid */}
       <mesh ref={coreRef}>

@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
+import { useReducedMotion } from './useReducedMotion'
 
 interface BerylliumNucleusProps {
   opacity?: number
@@ -14,6 +15,7 @@ interface BerylliumNucleusProps {
  * nuclear geometry claim. Nuclear/atomic scale is magnified for visibility.
  */
 export function BerylliumNucleus({ opacity = 1.0 }: BerylliumNucleusProps) {
+  const reducedMotion = useReducedMotion()
   const groupRef = useRef<THREE.Group>(null!)
   const haloRef = useRef<THREE.Mesh>(null!)
   const innerShellRef = useRef<THREE.Mesh>(null!)
@@ -37,12 +39,14 @@ export function BerylliumNucleus({ opacity = 1.0 }: BerylliumNucleusProps) {
   useFrame(({ clock }) => {
     if (!groupRef.current) return
 
-    const idleShimmer = Math.sin(clock.elapsedTime * 1.5) * 0.025
+    const idleShimmer = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 1.5) * 0.025
     const s = 1.0 + idleShimmer
     groupRef.current.scale.set(s, s, s)
 
-    groupRef.current.rotation.y = clock.elapsedTime * 0.1
-    groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.07) * 0.12
+    if (!reducedMotion) {
+      groupRef.current.rotation.y = clock.elapsedTime * 0.1
+      groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.07) * 0.12
+    }
 
     if (haloRef.current) {
       const mat = haloRef.current.material as THREE.MeshBasicMaterial
