@@ -40,11 +40,22 @@ import { BoronLevelDiagram } from './components/BoronLevelDiagram'
 import { BoronSpectrumVisualizer } from './components/BoronSpectrumVisualizer'
 import { BoronTransitionControls } from './components/BoronTransitionControls'
 import { BoronEquationInspector } from './components/BoronEquationInspector'
+import { getAtomicProperties } from './data/atomicData'
+import { elementKey, getElementByKey, getElementKeyFromHash } from './data/elements'
 import './styles.css'
 
 const AtomScene = lazy(() =>
   import('./rendering/AtomScene').then((m) => ({ default: m.AtomScene }))
 )
+
+const MultiElementInstrument = lazy(() =>
+  import('./components/MultiElementInstrument').then((module) => ({ default: module.MultiElementInstrument }))
+)
+
+function readRouteElement() {
+  const key = getElementKeyFromHash(window.location.hash)
+  return key ? getElementByKey(key) : undefined
+}
 
 function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const activeElement = useQuantaStore((s) => s.activeElement)
@@ -68,6 +79,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const isLithium = activeElement === 'lithium'
   const isBeryllium = activeElement === 'beryllium'
   const isBoron = activeElement === 'boron'
+  const isMultiElement = !isHydrogen && !isHelium && !isLithium && !isBeryllium && !isBoron
+  const selectedElement = getElementByKey(activeElement)
+  const selectedProperties = selectedElement ? getAtomicProperties(selectedElement.symbol) : undefined
 
   const hydrogenModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
     overview: {
@@ -234,6 +248,39 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
     },
   }
 
+  const multiElementModeDescriptions: Record<string, { title: string; subtitle: string; badge: string }> = {
+    overview: {
+      title: 'ATOMIC REFERENCE PROFILE',
+      subtitle: 'Element properties and ground-state configuration from a published periodic table reference',
+      badge: 'REFERENCE DATA',
+    },
+    bohr: {
+      title: 'SHELL OCCUPANCY MODEL',
+      subtitle: 'Electron counts parsed from the listed ground-state configuration',
+      badge: 'IDEALIZED SHELL REPRESENTATION',
+    },
+    quantum: {
+      title: 'CONFIGURATION VIEW',
+      subtitle: 'Principal-shell occupancy with explicit limits for multi-electron atoms',
+      badge: 'OCCUPANCY DATA',
+    },
+    energy: {
+      title: 'NEUTRAL ATOM ENERGY LEVELS',
+      subtitle: 'Reference level records from NIST ASD when available',
+      badge: 'NIST ASD REFERENCE',
+    },
+    spectra: {
+      title: 'DERIVED TRANSITION WAVELENGTH',
+      subtitle: 'Vacuum wavelength calculated from the selected reference-level energy difference',
+      badge: 'CALCULATED FROM LEVEL DATA',
+    },
+    equations: {
+      title: 'ATOMIC RELATIONS',
+      subtitle: 'Configuration electron counts and energy-to-wavelength conversion',
+      badge: 'REFERENCE RELATIONS',
+    },
+  }
+
   const currentModeInfo = isHydrogen
     ? hydrogenModeDescriptions[mode] ?? hydrogenModeDescriptions.overview
     : isHelium
@@ -242,7 +289,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
     ? lithiumModeDescriptions[mode] ?? lithiumModeDescriptions.overview
     : isBeryllium
     ? berylliumModeDescriptions[mode] ?? berylliumModeDescriptions.overview
-    : boronModeDescriptions[mode] ?? boronModeDescriptions.overview
+    : isBoron
+    ? boronModeDescriptions[mode] ?? boronModeDescriptions.overview
+    : multiElementModeDescriptions[mode] ?? multiElementModeDescriptions.overview
 
   const hydrogenEnergyEv = hydrogenEnergy(level)
   const currentHeliumLevel = getHeliumLevel(heliumState.selectedLevelId) ?? getHeliumLevel('1s2_1S0')!
@@ -259,11 +308,11 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             ← PERIODIC TABLE
           </button>
           <div className="element-heading">
-            <span className="element-atomic-badge">{isHydrogen ? '1' : isHelium ? '2' : isLithium ? '3' : isBeryllium ? '4' : '5'}</span>
+            <span className="element-atomic-badge">{selectedElement?.number ?? 1}</span>
             <div className="element-title-group">
               <h2 className="element-name-heading">
-                {isHydrogen ? 'Hydrogen' : isHelium ? 'Helium' : isLithium ? 'Lithium' : isBeryllium ? 'Beryllium' : 'Boron'}{' '}
-                <span className="element-symbol-tag">{isHydrogen ? 'H' : isHelium ? 'He' : isLithium ? 'Li' : isBeryllium ? 'Be' : 'B'}</span>
+                {selectedElement?.name ?? 'Hydrogen'}{' '}
+                <span className="element-symbol-tag">{selectedElement?.symbol ?? 'H'}</span>
               </h2>
               <span className="element-sub-heading">
                 {isHydrogen
@@ -274,7 +323,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                   ? '⁷Li · 3p⁺ 4n⁰ 3e⁻ · [6.938, 6.997] u'
                   : isBeryllium
                   ? '⁹Be · 4p⁺ 5n⁰ 4e⁻ · 9.0121831(5) u'
-                  : '¹¹B · 5p⁺ 6n⁰ 5e⁻ · [10.806, 10.821] u'}
+                  : isBoron
+                  ? '¹¹B · 5p⁺ 6n⁰ 5e⁻ · [10.806, 10.821] u'
+                  : `Neutral atom · ${selectedElement?.category ?? 'Element'}`}
               </span>
             </div>
           </div>
@@ -315,12 +366,21 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 </strong>
                 <span className="quick-state-sub">{currentBerylliumLevel.energyEv.toFixed(3)} eV</span>
               </>
-            ) : (
+            ) : isBoron ? (
               <>
                 <strong className="quick-state-val">
                   {currentBoronLevel.configuration} {currentBoronLevel.termSymbol}
                 </strong>
                 <span className="quick-state-sub">{currentBoronLevel.energyEv.toFixed(3)} eV</span>
+              </>
+            ) : (
+              <>
+                <strong className="quick-state-val">
+                  {selectedProperties?.electronConfiguration ?? `${selectedElement?.symbol ?? ''} configuration unavailable`}
+                </strong>
+                <span className="quick-state-sub">
+                  NEUTRAL ATOM · {selectedElement?.number ?? 0} e⁻
+                </span>
               </>
             )}
           </div>
@@ -360,7 +420,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 ? 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁷Li (3p⁺ 4n⁰)'
                 : isBeryllium
                 ? 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ⁹Be (4p⁺ 5n⁰) · PEDAGOGICAL NUCLEAR REPRESENTATION'
-                : 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ¹¹B (5p⁺ 6n⁰) DEFAULT ISOTOPE VISUALIZATION · PEDAGOGICAL NUCLEAR REPRESENTATION'}
+                : isBoron
+                ? 'NUCLEAR AND ATOMIC SCALES EXAGGERATED FOR CLARITY · ¹¹B (5p⁺ 6n⁰) DEFAULT ISOTOPE VISUALIZATION · PEDAGOGICAL NUCLEAR REPRESENTATION'
+                : 'ATOMIC AND ELECTRON SCALE COMPRESSED FOR CLARITY · ELECTRON SHELLS ARE IDEALIZED REPRESENTATIONS'}
             </span>
           </div>
 
@@ -409,9 +471,11 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             </button>
 
             {/* Reset Full State */}
-            <button className="scene-ctrl-btn reset-btn" onClick={reset} title="Reset to ground state">
-              RESET ATOM
-            </button>
+            {!isMultiElement && (
+              <button className="scene-ctrl-btn reset-btn" onClick={reset} title="Reset to ground state">
+                RESET ATOM
+              </button>
+            )}
           </div>
         </section>
 
@@ -591,7 +655,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 </div>
               )}
             </>
-          ) : (
+          ) : isBoron ? (
             /* Boron Exploration Rail */
             <>
               {mode === 'overview' && <BoronOverview />}
@@ -619,7 +683,11 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                 </div>
               )}
             </>
-          )}
+          ) : selectedElement ? (
+            <Suspense fallback={<div className="overview-card glass-instrument" role="status">Loading reference data…</div>}>
+              <MultiElementInstrument key={selectedElement.symbol} element={selectedElement} mode={mode} />
+            </Suspense>
+          ) : null}
         </aside>
       </div>
 
@@ -650,7 +718,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
               ? 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD Li I compilation'
               : isBeryllium
               ? 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD Be I data'
-              : 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD B I data'}
+              : isBoron
+              ? 'Shell models represent pedagogical occupancy · Quantum views represent reduced |ψ|² densities · NIST ASD B I data'
+              : 'Shell diagrams show idealized occupancy · NIST ASD levels are shown where available · wavelengths are derived'}
           </span>
           <span className="footer-copyright">© 2026 Aritra Saha</span>
         </div>
@@ -663,32 +733,14 @@ export default function App() {
   const setActiveElement = useQuantaStore((s) => s.setActiveElement)
 
   const [view, setView] = useState<'table' | 'explorer'>(() => {
-    const hash = window.location.hash
-    if (hash.includes('/element/boron')) return 'explorer'
-    if (hash.includes('/element/beryllium')) return 'explorer'
-    if (hash.includes('/element/lithium')) return 'explorer'
-    if (hash.includes('/element/helium')) return 'explorer'
-    if (hash.includes('/element/hydrogen')) return 'explorer'
-    return 'table'
+    return readRouteElement() ? 'explorer' : 'table'
   })
 
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash
-      if (hash.includes('/element/boron')) {
-        setActiveElement('boron')
-        setView('explorer')
-      } else if (hash.includes('/element/beryllium')) {
-        setActiveElement('beryllium')
-        setView('explorer')
-      } else if (hash.includes('/element/lithium')) {
-        setActiveElement('lithium')
-        setView('explorer')
-      } else if (hash.includes('/element/helium')) {
-        setActiveElement('helium')
-        setView('explorer')
-      } else if (hash.includes('/element/hydrogen')) {
-        setActiveElement('hydrogen')
+      const element = readRouteElement()
+      if (element) {
+        setActiveElement(elementKey(element))
         setView('explorer')
       } else {
         setView('table')
@@ -714,6 +766,6 @@ export default function App() {
   return view === 'explorer' ? (
     <Explorer onBackToTable={returnToTable} />
   ) : (
-    <PeriodicTable onSelectElement={selectElement} onSelectHydrogen={() => selectElement('hydrogen')} />
+    <PeriodicTable onSelectElement={selectElement} />
   )
 }

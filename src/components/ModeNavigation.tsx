@@ -1,4 +1,5 @@
 import { useQuantaStore, type ViewMode } from '../state/quantaStore'
+import { getElementByKey } from '../data/elements'
 
 interface ModeDef {
   id: ViewMode
@@ -51,11 +52,21 @@ const BORON_MODES: ModeDef[] = [
   { id: 'equations', label: 'Equations', shortDesc: 'Five-Electron Math' },
 ]
 
+const MULTI_ELEMENT_MODES: ModeDef[] = [
+  { id: 'overview', label: 'Overview', shortDesc: 'Element Profile' },
+  { id: 'bohr', label: 'Shell Model', shortDesc: 'Electron Occupancy' },
+  { id: 'quantum', label: 'Quantum', shortDesc: 'Occupancy View' },
+  { id: 'energy', label: 'Energy Levels', shortDesc: 'NIST ASD Levels' },
+  { id: 'spectra', label: 'Spectra', shortDesc: 'Derived Wavelength' },
+  { id: 'equations', label: 'Equations', shortDesc: 'Energy Relations' },
+]
+
 export function ModeNavigation() {
   const mode = useQuantaStore((s) => s.mode)
   const activeElement = useQuantaStore((s) => s.activeElement)
   const setMode = useQuantaStore((s) => s.setMode)
 
+  const element = getElementByKey(activeElement)
   const modes =
     activeElement === 'hydrogen'
       ? HYDROGEN_MODES
@@ -65,7 +76,9 @@ export function ModeNavigation() {
       ? LITHIUM_MODES
       : activeElement === 'beryllium'
       ? BERYLLIUM_MODES
-      : BORON_MODES
+      : activeElement === 'boron'
+      ? BORON_MODES
+      : MULTI_ELEMENT_MODES
 
   const elementName =
     activeElement === 'hydrogen'
@@ -76,7 +89,7 @@ export function ModeNavigation() {
       ? 'Lithium'
       : activeElement === 'beryllium'
       ? 'Beryllium'
-      : 'Boron'
+      : element?.name ?? 'Element'
 
   return (
     <nav className="mode-navigation glass-capsule" aria-label={`${elementName} Exploration Modes`}>

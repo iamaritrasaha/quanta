@@ -295,6 +295,20 @@ Reference persistent-line wavelengths remain architecturally separate from level
 
 ---
 
+## Multi-Element Scope (Z = 6–118)
+
+Carbon through Oganesson use the shared reference instrument. The published ground-state electron configuration supplies the electron count by principal shell. The 3D shell diagram is an idealized occupancy display: its radii and electron positions are not solved atomic orbitals, classical paths, or many-electron probability densities. Configurations marked predicted in the source retain that annotation.
+
+The bundled NIST ASD records contain up to the first 20 returned neutral-atom bound levels for each element. Energies are relative to the neutral ground state and are listed in cm$^{-1}$. Ionization-limit records, when present in the retained set, are displayed separately from bound states. Elements with no reference levels, or only one bound level, do not receive inferred spectral transitions.
+
+The spectrum view lets the user select two bound levels and derives $\Delta E$ and $\lambda = 10^7/\Delta\tilde{\nu}$ nm from their NIST ASD energy difference. It does not imply that the selected pair is an allowed transition, nor does it report an observed wavelength, transition probability, or line intensity. The equations view and screen labels state this limitation.
+
+## Reference Data
+
+Element properties and their units, NIST ASD coverage, source links, and retrieval date are documented in [`reference-data.md`](reference-data.md). The source files are bundled locally; no reference-data service is called at runtime.
+
+---
+
 ## Pedagogical Models & Visual Disclaimers
 
 - **Shell Occupancy Model**: Pedagogical representation illustrating discrete shell occupancies ($K, L, M, N$). Electron markers and their classical orbits are illustrative; multi-electron atoms possess no fixed classical trajectories.

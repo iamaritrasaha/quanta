@@ -1,74 +1,61 @@
-import { useState } from 'react'
-import { elements, type Element } from '../data/elements'
+import { useEffect, useRef, useState } from 'react'
+import { elements, elementKey, type Element } from '../data/elements'
 import type { ElementKey } from '../state/quantaStore'
 
 interface PeriodicTableProps {
   onSelectElement: (elementKey: ElementKey) => void
-  onSelectHydrogen?: () => void
 }
 
-const categoryClass = (c: Element['category']) => c.replace(/\s+/g, '-')
+const categoryClass = (category: Element['category']) => category.replace(/\s+/g, '-')
 
-export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTableProps) {
-  const [selectedNoticeElement, setSelectedNoticeElement] = useState<Element | null>(null)
+export function PeriodicTable({ onSelectElement }: PeriodicTableProps) {
   const [enteringSymbol, setEnteringSymbol] = useState<string | null>(null)
+  const enterTimer = useRef<number | null>(null)
+
+  useEffect(() => () => {
+    if (enterTimer.current !== null) window.clearTimeout(enterTimer.current)
+  }, [])
 
   const handleElementClick = (element: Element) => {
-    if (element.available) {
-      setEnteringSymbol(element.symbol)
-      setTimeout(() => {
-        if (element.symbol === 'H') {
-          if (onSelectElement) onSelectElement('hydrogen')
-          else if (onSelectHydrogen) onSelectHydrogen()
-        } else if (element.symbol === 'He') {
-          if (onSelectElement) onSelectElement('helium')
-        } else if (element.symbol === 'Li') {
-          if (onSelectElement) onSelectElement('lithium')
-        } else if (element.symbol === 'Be') {
-          if (onSelectElement) onSelectElement('beryllium')
-        } else if (element.symbol === 'B') {
-          if (onSelectElement) onSelectElement('boron')
-        }
-      }, 550)
-    } else {
-      setSelectedNoticeElement(element)
-    }
+    if (enterTimer.current !== null) return
+    setEnteringSymbol(element.symbol)
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    enterTimer.current = window.setTimeout(() => {
+      onSelectElement(elementKey(element))
+    }, reducedMotion ? 0 : 550)
   }
 
   return (
     <main className={`welcome-screen ${enteringSymbol ? 'welcome-entering' : ''}`}>
-      {/* Ambient optical background */}
       <div className="optical-background" />
 
-      {/* Masthead Header */}
       <header className="welcome-masthead">
         <div className="masthead-brand">
           <div className="brand-eyebrow">
             <span className="dot-indicator live" />
-            <span>OPTICAL SCIENTIFIC INSTRUMENT · INSTRUMENTS 01–05 ACTIVE</span>
+            <span>OPTICAL SCIENTIFIC INSTRUMENT · ALL 118 ELEMENTS AVAILABLE</span>
           </div>
           <h1 className="brand-title">QUANTA</h1>
           <p className="brand-tagline">Matter, visualized.</p>
         </div>
         <div className="masthead-info">
           <p className="masthead-intro">
-            Explore quantized atomic physics from historical orbital models to modern Schrödinger
-            eigenfunctions and many-electron quantum mechanics.
+            Explore atomic structure, shell occupancy, reference energy levels, and wavelengths derived
+            from reference data across the periodic table.
           </p>
           <div className="masthead-stats">
-            <span className="active-stat">5 ELEMENTS ACTIVE (H · He · Li · Be · B)</span>
+            <span className="active-stat">118 ELEMENTS READY</span>
             <span>·</span>
-            <span>113 STAGED</span>
+            <span>NIST LEVELS WHERE AVAILABLE</span>
           </div>
         </div>
       </header>
 
-      {/* Periodic Table Glass Stage */}
       <section className="table-stage glass-surface" aria-label="Interactive Periodic Table of Elements">
         <div className="table-stage-header">
           <div className="stage-title-wrap">
             <span className="stage-kicker">INTERACTIVE PERIODIC TABLE</span>
-            <span className="stage-hint">Select Hydrogen (H), Helium (He), Lithium (Li), Beryllium (Be), or Boron (B) to initialize the 3D atomic instrument</span>
+            <span className="stage-hint">Select any element to open its atomic instrument.</span>
           </div>
           <div className="mobile-scroll-hint">
             <span>← Swipe to explore 18 groups →</span>
@@ -77,41 +64,27 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
 
         <div className="periodic-table-scroll-wrapper">
           <div className="periodic-table-grid">
-            {elements.map((el) => {
-              const isH = el.symbol === 'H'
-              const isHe = el.symbol === 'He'
-              const isLi = el.symbol === 'Li'
-              const isBe = el.symbol === 'Be'
-              const isB = el.symbol === 'B'
-              const isAvailable = el.available
-              const isEnteringThis = enteringSymbol === el.symbol
-
-              let tileSpecificClass = 'unsupported-tile'
-              if (isH) tileSpecificClass = 'hydrogen-tile'
-              if (isHe) tileSpecificClass = 'helium-tile'
-              if (isLi) tileSpecificClass = 'lithium-tile'
-              if (isBe) tileSpecificClass = 'beryllium-tile'
-              if (isB) tileSpecificClass = 'boron-tile'
+            {elements.map((element) => {
+              const isEnteringThis = enteringSymbol === element.symbol
+              const tileSpecificClass =
+                element.number <= 5 ? `${element.name.toLowerCase()}-tile` : 'multi-element-tile'
 
               return (
                 <button
-                  key={el.symbol}
-                  className={`element-tile ${categoryClass(el.category)} ${tileSpecificClass} ${
+                  key={element.symbol}
+                  className={`element-tile ${categoryClass(element.category)} ${tileSpecificClass} ${
                     isEnteringThis ? 'entering-focus' : ''
                   }`}
-                  style={{
-                    gridColumn: el.gridColumn,
-                    gridRow: el.gridRow,
-                  }}
-                  onClick={() => handleElementClick(el)}
-                  aria-label={`${el.name}, atomic number ${el.number}${isAvailable ? ', available' : ', coming soon'}`}
+                  style={{ gridColumn: element.gridColumn, gridRow: element.gridRow }}
+                  onClick={() => handleElementClick(element)}
+                  aria-label={`${element.name}, atomic number ${element.number}, open instrument`}
                 >
                   <div className="tile-top-row">
-                    <span className="atomic-number">{el.number}</span>
-                    {isAvailable && <span className="explore-tag">EXPLORE</span>}
+                    <span className="atomic-number">{element.number}</span>
+                    <span className="explore-tag">{element.number <= 5 ? 'EXPLORE' : 'OPEN'}</span>
                   </div>
-                  <strong className="element-symbol">{el.symbol}</strong>
-                  <span className="element-name">{el.name}</span>
+                  <strong className="element-symbol">{element.symbol}</strong>
+                  <span className="element-name">{element.name}</span>
                 </button>
               )
             })}
@@ -121,111 +94,18 @@ export function PeriodicTable({ onSelectElement, onSelectHydrogen }: PeriodicTab
         <footer className="table-stage-footer">
           <div className="legend-items">
             <span className="legend-item">
-              <b className="legend-dot hydrogen-dot" /> Hydrogen (Z = 1, Exact Analytic)
+              <b className="legend-dot hydrogen-dot" /> H–B: element-specific instruments
             </span>
             <span className="legend-item">
-              <b className="legend-dot helium-dot" /> Helium (Z = 2, Many-Electron)
-            </span>
-            <span className="legend-item">
-              <b className="legend-dot lithium-dot" /> Lithium (Z = 3, Closed Core + Valence)
-            </span>
-            <span className="legend-item">
-              <b className="legend-dot beryllium-dot" /> Beryllium (Z = 4, Two Valence Electrons)
-            </span>
-            <span className="legend-item">
-              <b className="legend-dot boron-dot" /> Boron (Z = 5, Open p Subshell)
-            </span>
-            <span className="legend-item">
-              <b className="legend-dot upcoming-dot" /> 113 Elements (Staged Library)
+              <b className="legend-dot multi-element-dot" /> C–Og: shared multi-element instrument
             </span>
           </div>
-          <span className="table-nav-note">Calculations executed entirely client-side via exact SI physics & NIST ASD reference data.</span>
+          <span className="table-nav-note">
+            Neutral-atom reference levels are shown where available in NIST ASD.
+          </span>
         </footer>
       </section>
 
-      {/* Restrained Upcoming Element Modal Dialog */}
-      {selectedNoticeElement && (
-        <div className="notice-overlay" onClick={() => setSelectedNoticeElement(null)}>
-          <div className="notice-dialog glass-floating" onClick={(e) => e.stopPropagation()}>
-            <div className="notice-header">
-              <span className="notice-eyebrow">UPCOMING INSTRUMENT</span>
-              <button
-                className="notice-close-btn"
-                onClick={() => setSelectedNoticeElement(null)}
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="notice-body">
-              <div className="notice-element-badge">
-                <span className="badge-num">{selectedNoticeElement.number}</span>
-                <strong className="badge-sym">{selectedNoticeElement.symbol}</strong>
-                <span className="badge-name">{selectedNoticeElement.name}</span>
-              </div>
-              <div className="notice-details">
-                <p className="notice-main-text">
-                  <strong>{selectedNoticeElement.name}</strong> is currently staged for a future QUANTA
-                  release.
-                </p>
-                <p className="notice-sub-text">
-                  Multi-electron atoms beyond Boron require Hartree-Fock or density functional approximations.
-                  Hydrogen, Helium, Lithium, Beryllium, and Boron are our active instruments.
-                </p>
-              </div>
-            </div>
-            <div className="notice-actions triple-notice-actions">
-              <button
-                className="secondary-notice-btn"
-                onClick={() => {
-                  setSelectedNoticeElement(null)
-                  handleElementClick(elements[0]) // Select Hydrogen
-                }}
-              >
-                OPEN HYDROGEN (H) →
-              </button>
-              <button
-                className="secondary-notice-btn"
-                onClick={() => {
-                  setSelectedNoticeElement(null)
-                  handleElementClick(elements[1]) // Select Helium
-                }}
-              >
-                OPEN HELIUM (He) →
-              </button>
-              <button
-                className="secondary-notice-btn"
-                onClick={() => {
-                  setSelectedNoticeElement(null)
-                  handleElementClick(elements[2]) // Select Lithium
-                }}
-              >
-                OPEN LITHIUM (Li) →
-              </button>
-              <button
-                className="secondary-notice-btn"
-                onClick={() => {
-                  setSelectedNoticeElement(null)
-                  handleElementClick(elements[3]) // Select Beryllium
-                }}
-              >
-                OPEN BERYLLIUM (Be) →
-              </button>
-              <button
-                className="primary-notice-btn"
-                onClick={() => {
-                  setSelectedNoticeElement(null)
-                  handleElementClick(elements[4]) // Select Boron
-                }}
-              >
-                OPEN BORON (B) →
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Global Welcome Footer */}
       <footer className="welcome-global-footer">
         <div className="welcome-footer-left">
           <span className="welcome-footer-brand">QUANTA — Matter, visualized.</span>

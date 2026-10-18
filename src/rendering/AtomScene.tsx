@@ -13,6 +13,8 @@ import { BerylliumShell } from './BerylliumShell'
 import { BerylliumQuantumCloud } from './BerylliumQuantumCloud'
 import { BoronShell } from './BoronShell'
 import { BoronQuantumCloud } from './BoronQuantumCloud'
+import { MultiElementAtom } from './MultiElementAtom'
+import { getElementByKey } from '../data/elements'
 
 interface SceneManagerProps {
   resetCameraTrigger?: number
@@ -23,6 +25,7 @@ function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
   const orbital = useQuantaStore((s) => s.orbital)
   const controlsRef = useRef<OrbitControlsImpl>(null!)
   const { camera } = useThree()
+  const selectedElement = getElementByKey(activeElement)
 
   // Smoothly reset camera when requested
   useEffect(() => {
@@ -68,12 +71,14 @@ function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
           <BerylliumShell />
           <BerylliumQuantumCloud />
         </>
-      ) : (
+      ) : activeElement === 'boron' ? (
         <>
           <BoronShell />
           <BoronQuantumCloud />
         </>
-      )}
+      ) : selectedElement ? (
+        <MultiElementAtom element={selectedElement} />
+      ) : null}
 
       {/* Restrained Orbit Controls */}
       <OrbitControls

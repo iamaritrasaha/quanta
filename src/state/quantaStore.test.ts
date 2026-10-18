@@ -17,6 +17,28 @@ describe('Quanta Store and Model Transitions', () => {
     useQuantaStore.getState().setMode('overview')
   })
 
+  it('cancels dedicated transitions when entering a shared element instrument', () => {
+    const store = useQuantaStore.getState()
+    store.setActiveElement('boron')
+    expect(store.startBoronTransition()).toBe(true)
+    expect(useQuantaStore.getState().boron.activeTransition).not.toBeNull()
+    store.setActiveElement('carbon')
+    expect(useQuantaStore.getState().activeElement).toBe('carbon')
+    expect(useQuantaStore.getState().boron.activeTransition).toBeNull()
+  })
+
+  it('keeps dedicated element state isolated while browsing and resetting shared instruments', () => {
+    const store = useQuantaStore.getState()
+    store.setBoronLevel('3s_2S1_2')
+    const savedBoron = useQuantaStore.getState().boron
+    store.setActiveElement('oganesson')
+    store.setMode('spectra')
+    store.reset()
+    expect(useQuantaStore.getState().boron).toBe(savedBoron)
+    store.setActiveElement('boron')
+    expect(useQuantaStore.getState().boron.selectedLevelId).toBe('3s_2S1_2')
+  })
+
   it('maps Bohr level n to compatible Quantum orbital without forcing n>=3', () => {
     expect(mapLevelToOrbital(1, '1s')).toBe('1s')
     expect(mapLevelToOrbital(2, '1s')).toBe('2s')
