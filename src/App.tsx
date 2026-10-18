@@ -66,6 +66,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const lithiumState = useQuantaStore((s) => s.lithium)
   const berylliumState = useQuantaStore((s) => s.beryllium)
   const boronState = useQuantaStore((s) => s.boron)
+  const selectedSharedState = useQuantaStore((s) => s.sharedElement.selected)
   const playing = useQuantaStore((s) => s.playing)
   const speed = useQuantaStore((s) => s.animationSpeed)
   const togglePlaying = useQuantaStore((s) => s.togglePlaying)
@@ -79,7 +80,6 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
   const isLithium = activeElement === 'lithium'
   const isBeryllium = activeElement === 'beryllium'
   const isBoron = activeElement === 'boron'
-  const isMultiElement = !isHydrogen && !isHelium && !isLithium && !isBeryllium && !isBoron
   const selectedElement = getElementByKey(activeElement)
   const selectedProperties = selectedElement ? getAtomicProperties(selectedElement.symbol) : undefined
 
@@ -256,13 +256,13 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
     },
     bohr: {
       title: 'SHELL OCCUPANCY MODEL',
-      subtitle: 'Electron counts parsed from the listed ground-state configuration',
+      subtitle: 'Select electronic states, absorb or emit photons, and inspect electron shell changes',
       badge: 'IDEALIZED SHELL REPRESENTATION',
     },
     quantum: {
-      title: 'CONFIGURATION VIEW',
-      subtitle: 'Principal-shell occupancy with explicit limits for multi-electron atoms',
-      badge: 'OCCUPANCY DATA',
+      title: 'RADIAL ELECTRON CLOUD',
+      subtitle: 'Schematic shell density for the selected configuration, with animated state changes',
+      badge: 'ILLUSTRATIVE DENSITY MODEL',
     },
     energy: {
       title: 'NEUTRAL ATOM ENERGY LEVELS',
@@ -376,7 +376,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             ) : (
               <>
                 <strong className="quick-state-val">
-                  {selectedProperties?.electronConfiguration ?? `${selectedElement?.symbol ?? ''} configuration unavailable`}
+                  {selectedSharedState && selectedSharedState.id !== 'ground'
+                    ? selectedSharedState.label
+                    : `Ground state · ${selectedProperties?.electronConfiguration ?? ''}`}
                 </strong>
                 <span className="quick-state-sub">
                   NEUTRAL ATOM · {selectedElement?.number ?? 0} e⁻
@@ -471,11 +473,9 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
             </button>
 
             {/* Reset Full State */}
-            {!isMultiElement && (
-              <button className="scene-ctrl-btn reset-btn" onClick={reset} title="Reset to ground state">
-                RESET ATOM
-              </button>
-            )}
+            <button className="scene-ctrl-btn reset-btn" onClick={reset} title="Reset to ground state">
+              RESET ATOM
+            </button>
           </div>
         </section>
 

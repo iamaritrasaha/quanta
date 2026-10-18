@@ -55,7 +55,7 @@ const BORON_MODES: ModeDef[] = [
 const MULTI_ELEMENT_MODES: ModeDef[] = [
   { id: 'overview', label: 'Overview', shortDesc: 'Element Profile' },
   { id: 'bohr', label: 'Shell Model', shortDesc: 'Electron Occupancy' },
-  { id: 'quantum', label: 'Quantum', shortDesc: 'Occupancy View' },
+  { id: 'quantum', label: 'Quantum', shortDesc: 'Radial Cloud' },
   { id: 'energy', label: 'Energy Levels', shortDesc: 'NIST ASD Levels' },
   { id: 'spectra', label: 'Spectra', shortDesc: 'Derived Wavelength' },
   { id: 'equations', label: 'Equations', shortDesc: 'Energy Relations' },

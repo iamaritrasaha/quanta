@@ -7,7 +7,7 @@ QUANTA is an interactive atomic physics visualization instrument for exploring a
 ## Scope & Features
 
 - **Interactive Periodic Table**: All 118 elements open directly into an instrument.
-- **Multi-Element Reference Instrument**: Element properties and ground-state configurations for Carbon through Oganesson, plus up to 20 neutral-atom energy levels from NIST ASD where available.
+- **Multi-Element Instrument**: Moving electron markers, drag rotation, scroll/pinch zoom, shell and cloud views, state selection, photon absorption/emission, pause/resume, speed controls, and atom/camera resets for Carbon through Oganesson. Includes up to 20 neutral-atom NIST levels where available.
 - **Derived Spectral Wavelengths**: Wavelengths calculated from selected NIST level differences. Observed line strengths and transition probabilities are not inferred.
 - **Bohr Quantization Model**: Historical/conceptual model showing discrete electron orbits ($r_n = a_0 \cdot n^2$), orbital velocity scaling, and electronic state transitions.
 - **Schrödinger Eigenfunctions**: Exact wave function probability distributions ($|\psi(r,\theta,\phi)|^2$) for $1s$, $2s$, and $2p$ eigenstates with physical nodal surfaces.
@@ -41,8 +41,8 @@ The included GitHub Actions workflow automatically builds and deploys on pushes 
 ## Scientific Model Notes
 
 - **Bohr Model**: Presented as a historical and conceptual representation of quantized states. Electron motion is time-expanded for educational clarity.
-- **Quantum Mechanics**: Hydrogen renders exact analytical Hydrogenic probability densities ($|\psi|^2$), derived from the wave function $\psi$. The shared multi-element view reports shell occupancy and does not claim to calculate many-electron wavefunctions.
-- **Multi-Electron Atoms**: Published ground-state configurations drive shell counts. Shell diagrams are idealized representations. Neutral-atom reference levels come from NIST ASD; wavelengths shown for selected pairs are calculated from level differences, not transcribed observed spectral lines.
+- **Quantum Mechanics**: Hydrogen renders exact analytical Hydrogenic probability densities ($|\psi|^2$), derived from the wave function $\psi$. The shared multi-element cloud illustrates radial shell occupancy; it is schematic and does not calculate many-electron wavefunctions.
+- **Multi-Electron Atoms**: Published configurations drive shell counts and selectable reference states. Shell diagrams and animated paths are idealized representations. Separate schematic shell-promotion states have no assigned measured energies or wavelengths. Neutral-atom reference levels come from NIST ASD; wavelengths shown for selected pairs are calculated from level differences, not transcribed observed spectral lines.
 - **Photon Wave Packets**: Pedagogical visualizations of quantum energy exchange; spatial wavelength is not to physical scale.
 
 For detailed notes on physical formulas and assumptions, refer to [`docs/science.md`](docs/science.md) and [`docs/reference-data.md`](docs/reference-data.md).
