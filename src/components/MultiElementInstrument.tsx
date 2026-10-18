@@ -9,7 +9,10 @@ import {
   type AtomicProperties,
 } from '../data/atomicData'
 import { calculateLevelSeparation, getNistLevels, NIST_LEVELS_SOURCE, NIST_LEVELS_SOURCE_URL, type AtomicLevel } from '../data/atomicLevels'
-import type { ViewMode } from '../state/quantaStore'
+import { useQuantaStore, type ViewMode } from '../state/quantaStore'
+import { ElementTransitionControls } from './ElementTransitionControls'
+import { referenceModel } from '../data/elementStates'
+import { groundModel, type ModelShell } from '../physics/elementModel'
 
 const SHELL_NAMES = ['K', 'L', 'M', 'N', 'O', 'P', 'Q']
 
@@ -55,8 +58,7 @@ function NistUnavailable({ symbol, levelCount = 0 }: { symbol: string; levelCoun
   )
 }
 
-function ShellOccupancy({ configuration, isQuantumView = false }: { configuration: string; isQuantumView?: boolean }) {
-  const shells = getShellOccupancy(configuration)
+function ShellOccupancy({ shells, isQuantumView = false }: { shells: ModelShell[]; isQuantumView?: boolean }) {
   const maxElectrons = Math.max(...shells.map((shell) => shell.electrons), 1)
 
   return (
@@ -72,14 +74,24 @@ function ShellOccupancy({ configuration, isQuantumView = false }: { configuratio
       ))}
       <p className="atomic-model-note">
         {isQuantumView
-          ? 'Occupancy is grouped by principal shell from the published configuration. This display is not a many-electron wavefunction or electron probability density.'
-          : 'Shell totals are parsed from the published ground-state configuration. Rings and counts are an idealized occupancy model, not classical electron paths.'}
+          ? 'The cloud illustrates occupancy by principal shell for the selected state. Its radial shape is schematic, not a calculated many-electron wavefunction.'
+          : 'Rings show principal shells of the selected state. Moving point markers and shell jumps are schematic; they are not classical electron paths.'}
       </p>
     </div>
   )
 }
 
 export function MultiElementInstrument({ element, mode }: { element: Element; mode: ViewMode }) {
+  return <><ElementTransitionControls symbol={element.symbol} /><ElementReferencePanel element={element} mode={mode} /></>
+}
+
+function ElementReferencePanel({ element, mode }: { element: Element; mode: ViewMode }) {
+  const selectedState = useQuantaStore((s) => s.sharedElement.selected)
+  const isTransitioning = useQuantaStore((s) => Boolean(s.sharedElement.activeTransition))
+  const selectState = useQuantaStore((s) => s.selectElementState)
+  const startTransition = useQuantaStore((s) => s.startElementTransition)
+  const setTarget = useQuantaStore((s) => s.setElementTarget)
+  const selected = selectedState ?? groundModel(element.symbol)
   const properties = getAtomicProperties(element.symbol)
   const nist = getNistLevels(element.symbol)
   const levels = useMemo(
@@ -115,10 +127,10 @@ export function MultiElementInstrument({ element, mode }: { element: Element; mo
     return (
       <section className="multi-element-panel">
         <div className="instrument-card glass-instrument">
-          <span className="card-kicker">{mode === 'bohr' ? 'SHELL OCCUPANCY MODEL' : 'CONFIGURATION VIEW'}</span>
+          <span className="card-kicker">{mode === 'bohr' ? 'INTERACTIVE SHELL MODEL' : 'SCHEMATIC RADIAL DENSITY'}</span>
           <h3 className="card-title">{element.name} electron distribution</h3>
-          <p className="card-desc mono-config">{properties.electronConfiguration}</p>
-          <ShellOccupancy configuration={properties.electronConfiguration} isQuantumView={mode === 'quantum'} />
+          <p className="card-desc mono-config">{selected.label} · {selected.configuration}</p>
+          <ShellOccupancy shells={selected.shells} isQuantumView={mode === 'quantum'} />
           <div className="atomic-count-check">
             <span>Configuration electron count</span>
             <strong>{electronCount} / {element.number}</strong>
@@ -137,15 +149,19 @@ export function MultiElementInstrument({ element, mode }: { element: Element; mo
           <h3 className="card-title">Reference energy levels</h3>
           {levels.length ? (
             <>
-              <p className="card-desc">Energies are listed relative to the neutral atom ground state in cm⁻¹.</p>
+              <p className="card-desc">Select a level to display its shell configuration. Energies are relative to the neutral atom ground state in cm⁻¹. Disabled levels cannot be mapped unambiguously to this shell model.</p>
               <div className="atomic-level-list">
                 {levels.map((level, index) => (
-                  <div className="atomic-level-row" key={`${level.configuration}-${level.term}-${level.j}-${level.energyCm}`}>
+                  <button type="button" className="atomic-level-row atomic-level-button"
+                    disabled={isTransitioning || (index !== 0 && !referenceModel(element.symbol, level, index))}
+                    aria-pressed={selected.id === (index === 0 ? 'ground' : `nist-${index}`)}
+                    onClick={() => selectState(index === 0 ? groundModel(element.symbol) : referenceModel(element.symbol, level, index)!)}
+                    key={`${level.configuration}-${level.term}-${level.j}-${level.energyCm}`}>
                     <span className="atomic-level-number">{String(index + 1).padStart(2, '0')}</span>
                     <span className="atomic-level-term"><LevelName level={level} /></span>
                     <strong>{level.energyCm.toLocaleString('en-US', { maximumFractionDigits: 7 })}</strong>
                     <small>cm⁻¹</small>
-                  </div>
+                  </button>
                 ))}
                 {nist.ionizationLimitCm !== undefined && (
                   <div className="atomic-level-row atomic-limit-row">
@@ -192,6 +208,7 @@ export function MultiElementInstrument({ element, mode }: { element: Element; mo
               <select
                 id="atomic-lower-level"
                 className="atomic-level-select"
+                disabled={isTransitioning}
                 value={lowerIndex}
                 onChange={(event) => {
                   const nextLower = Number(event.target.value)
@@ -210,6 +227,7 @@ export function MultiElementInstrument({ element, mode }: { element: Element; mo
               <select
                 id="atomic-upper-level"
                 className="atomic-level-select"
+                disabled={isTransitioning}
                 value={selectedUpperIndex ?? ''}
                 onChange={(event) => setUpperIndex(Number(event.target.value))}
               >
@@ -219,6 +237,15 @@ export function MultiElementInstrument({ element, mode }: { element: Element; mo
                   </option>
                 ))}
               </select>
+              {selectedUpper && (() => {
+                const lower = lowerIndex === 0 ? groundModel(element.symbol) : referenceModel(element.symbol, lowerLevel, lowerIndex)
+                const upper = referenceModel(element.symbol, selectedUpper, selectedUpperIndex ?? 0)
+                if (!lower || !upper) return <p className="atomic-model-note">This reference pair cannot be mapped unambiguously to the shell model.</p>
+                return <div className="preset-buttons-row">
+                  <button className="preset-btn" disabled={isTransitioning} onClick={() => { selectState(lower); setTarget(upper); startTransition(upper) }}>ANIMATE ABSORPTION</button>
+                  <button className="preset-btn" disabled={isTransitioning} onClick={() => { selectState(upper); setTarget(lower); startTransition(lower) }}>ANIMATE EMISSION</button>
+                </div>
+              })()}
               {transitionWavelengthNm && transitionEnergyEv && selectedUpper && (
                 <div className="atomic-transition-result">
                   <span className="card-kicker">DERIVED VACUUM WAVELENGTH · NIST ASD ENERGIES</span>

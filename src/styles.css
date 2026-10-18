@@ -862,7 +862,11 @@ button:focus-visible, select:focus-visible {
   inset: 0;
   width: 100% !important;
   height: 100% !important;
+  touch-action: none;
+  cursor: grab;
 }
+
+.scene-container canvas:active { cursor: grabbing; }
 
 .scene-loader-fallback, .webgl-fallback {
   position: absolute;
@@ -1179,6 +1183,28 @@ button:focus-visible, select:focus-visible {
   border-radius: var(--radius-sm);
   font-size: 0.68rem;
 }
+
+.atomic-level-button {
+  width: 100%;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.atomic-level-button:hover,
+.atomic-level-button[aria-pressed="true"] {
+  border-color: var(--accent-optic);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.atomic-level-button:disabled { opacity: 0.5; cursor: default; }
+
+.element-transition-controls .select-field { min-width: 0; }
+.element-transition-controls select { font-size: 0.72rem; text-overflow: ellipsis; }
+.element-transition-controls .preset-buttons-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.element-transition-controls .primary-action-btn { margin-top: 0.8rem; }
+.atomic-jump-energy { margin-top: 0.8rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); overflow-wrap: anywhere; }
+.atomic-jump-progress { width: 100%; accent-color: var(--accent-optic); }
 
 .atomic-level-term {
   min-width: 0;

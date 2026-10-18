@@ -1,4 +1,6 @@
 import type { ElementKey } from '../data/elements'
+import { getElementByKey } from '../data/elements'
+import { groundModel, modelSeparation, type ElementModelState } from '../physics/elementModel'
 import { create } from 'zustand'
 import { ORBITALS, type UiOrbitalKey } from '../physics/quantum'
 import { safeHydrogenTransition, type HydrogenTransition } from '../physics/hydrogen'
@@ -141,6 +143,20 @@ export interface BoronState {
   activeTransition: ActiveBoronTransition | null
 }
 
+export interface ElementJump {
+  initial: ElementModelState
+  target: ElementModelState
+  type: 'absorption' | 'emission'
+  progress: number
+  duration: number
+}
+
+export interface SharedElementState {
+  selected: ElementModelState | null
+  target: ElementModelState | null
+  activeTransition: ElementJump | null
+}
+
 interface QuantaState {
   activeElement: ElementKey
   mode: ViewMode
@@ -158,6 +174,12 @@ interface QuantaState {
   beryllium: BerylliumState
   // Boron Sub-State
   boron: BoronState
+  sharedElement: SharedElementState
+  selectElementState: (state: ElementModelState) => void
+  setElementTarget: (state: ElementModelState) => void
+  startElementTransition: (target: ElementModelState) => boolean
+  advanceElementTransition: (seconds: number) => void
+  cancelElementTransition: () => void
 
   // Legacy/Direct Accessors for Hydrogen (Preserves regression benchmark)
   level: number
@@ -312,6 +334,40 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
   lithium: { ...defaultLithiumState },
   beryllium: { ...defaultBerylliumState },
   boron: { ...defaultBoronState },
+  sharedElement: { selected: null, target: null, activeTransition: null },
+
+  selectElementState: (selected) => {
+    if (selected.symbol !== getElementByKey(get().activeElement)?.symbol || get().sharedElement.activeTransition) return
+    set((s) => ({ sharedElement: { ...s.sharedElement, selected } }))
+  },
+  setElementTarget: (target) => {
+    if (target.symbol !== getElementByKey(get().activeElement)?.symbol || get().sharedElement.activeTransition) return
+    set((s) => ({ sharedElement: { ...s.sharedElement, target } }))
+  },
+  startElementTransition: (target) => {
+    const state = get()
+    const symbol = getElementByKey(state.activeElement)?.symbol
+    if (!symbol || target.symbol !== symbol || state.sharedElement.activeTransition) return false
+    const initial = state.sharedElement.selected ?? groundModel(symbol)
+    if (target.id === initial.id || target.rank === initial.rank) return false
+    // A reference pair must have a positive, finite energy difference.
+    if (!initial.schematic && !target.schematic && !modelSeparation(initial, target)) return false
+    set({ playing: true, sharedElement: { selected: initial, target, activeTransition: {
+      initial, target, type: target.rank > initial.rank ? 'absorption' : 'emission', progress: 0, duration: 4.2,
+    } } })
+    return true
+  },
+  advanceElementTransition: (seconds) => {
+    const state = get(), jump = state.sharedElement.activeTransition
+    if (!jump || !state.playing || !Number.isFinite(seconds) || seconds <= 0) return
+    const progress = Math.min(1, jump.progress + seconds * state.animationSpeed / jump.duration)
+    set({ sharedElement: { ...state.sharedElement,
+      selected: progress === 1 ? jump.target : state.sharedElement.selected,
+      target: progress === 1 ? jump.initial : state.sharedElement.target,
+      activeTransition: progress === 1 ? null : { ...jump, progress },
+    } })
+  },
+  cancelElementTransition: () => set((s) => ({ sharedElement: { ...s.sharedElement, activeTransition: null } })),
 
   // Mirror legacy Hydrogen accessors to prevent any breaking changes
   level: defaultHydrogenState.level,
@@ -341,11 +397,12 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
       current.cancelBoronTransition()
     }
 
-    set({ activeElement: element })
+    set({ activeElement: element, sharedElement: { selected: null, target: null, activeTransition: null } })
   },
 
   setMode: (mode) => {
     const current = get()
+    current.cancelElementTransition()
 
     // Safely cancel active transitions upon model switch
     if (current.hydrogen.activeTransition) {
@@ -1200,6 +1257,8 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
       get().resetBeryllium()
     } else if (element === 'boron') {
       get().resetBoron()
+    } else {
+      set({ sharedElement: { selected: null, target: null, activeTransition: null }, playing: true })
     }
   },
 }))

@@ -30,11 +30,20 @@ function SceneManager({ resetCameraTrigger }: SceneManagerProps) {
   // Smoothly reset camera when requested
   useEffect(() => {
     if (resetCameraTrigger && resetCameraTrigger > 0) {
+      // Flush pending damped gestures before restoring the camera, otherwise a
+      // reset during a drag/zoom continues drifting away from the default view.
+      const controls = controlsRef.current
+      const damping = controls?.enableDamping
+      if (controls) {
+        controls.enableDamping = false
+        controls.update()
+      }
       camera.position.set(0, 2.2, 13.5)
       camera.lookAt(0, 0, 0)
-      if (controlsRef.current) {
-        controlsRef.current.target.set(0, 0, 0)
-        controlsRef.current.update()
+      if (controls) {
+        controls.target.set(0, 0, 0)
+        controls.update()
+        controls.enableDamping = damping ?? true
       }
     }
   }, [resetCameraTrigger, camera])

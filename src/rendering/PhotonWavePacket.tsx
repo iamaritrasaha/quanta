@@ -249,7 +249,7 @@ export function PhotonWavePacket({
   })
 
   return (
-    <group ref={groupRef} visible={false}>
+    <group name="photon-wave-packet" ref={groupRef} visible={false}>
       {/* Primary oscillating E-field wave line */}
       <primitive ref={primaryLineRef} object={primaryLine} />
 
