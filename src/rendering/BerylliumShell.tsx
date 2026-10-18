@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
+import { advanceTransitionProgress } from '../physics/transitionTiming'
 import { BerylliumNucleus } from './BerylliumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z, getBohrElectronWorldPosition } from './transitionCoordinates'
@@ -105,8 +106,7 @@ export function BerylliumShell() {
     let electronInteractionFlash = 0
 
     if (activeTransition) {
-      const elapsed = performance.now() - activeTransition.startTime
-      progress = Math.min(1, Math.max(0, elapsed / activeTransition.durationMs))
+      progress = advanceTransitionProgress(activeTransition, delta, speed, playing)
 
       const initialOcc = getBerylliumOccupancy(activeTransition.initialLevelId)
       const finalOcc = getBerylliumOccupancy(activeTransition.targetLevelId)
@@ -157,17 +157,17 @@ export function BerylliumShell() {
         completeTransition()
       }
     } else {
-      currentValenceBRadius.current = THREE.MathUtils.lerp(
+      currentValenceBRadius.current = THREE.MathUtils.damp(
         currentValenceBRadius.current,
         getBerylliumShellRadius(targetValenceBN),
-        delta * 12
+        12, delta
       )
     }
 
-    currentValenceARadius.current = THREE.MathUtils.lerp(
+    currentValenceARadius.current = THREE.MathUtils.damp(
       currentValenceARadius.current,
       getBerylliumShellRadius(occupancy.valenceNs[0]),
-      delta * 12
+      12, delta
     )
 
     if (playing && !reducedMotion) {

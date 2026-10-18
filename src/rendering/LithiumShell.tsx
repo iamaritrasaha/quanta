@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
+import { advanceTransitionProgress } from '../physics/transitionTiming'
 import { LithiumNucleus } from './LithiumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z, getBohrElectronWorldPosition } from './transitionCoordinates'
@@ -198,8 +199,7 @@ export function LithiumShell() {
     let electronInteractionFlash = 0
 
     if (activeTransition) {
-      const elapsed = performance.now() - activeTransition.startTime
-      progress = Math.min(1, Math.max(0, elapsed / activeTransition.durationMs))
+      progress = advanceTransitionProgress(activeTransition, delta, speed, playing)
 
       const initialOcc = getLithiumOccupancy(activeTransition.initialLevelId)
       const finalOcc = getLithiumOccupancy(activeTransition.targetLevelId)
@@ -255,10 +255,10 @@ export function LithiumShell() {
         completeTransition()
       }
     } else {
-      currentValenceRadius.current = THREE.MathUtils.lerp(
+      currentValenceRadius.current = THREE.MathUtils.damp(
         currentValenceRadius.current,
         getLithiumShellRadius(targetValenceN),
-        delta * 12
+        12, delta
       )
     }
 

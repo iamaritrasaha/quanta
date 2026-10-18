@@ -49,6 +49,7 @@ export function BerylliumTransitionControls() {
     ? calculateBerylliumStateEnergyDelta(currentTransition, isAbsorption ? 'absorption' : 'emission')
     : { deltaEStateEv: 0, photonEnergyEv: 0 }
 
+  const playing = useQuantaStore((s) => s.playing)
   const isTransitioning = Boolean(activeTransition)
   const progressPercent = Math.round((activeTransition?.progress ?? 0) * 100)
 
@@ -88,7 +89,7 @@ export function BerylliumTransitionControls() {
         <div className="active-transition-view">
           <div className="progress-info">
             <span className="phase-text">
-              {getPhaseDescription(activeTransition.phase, activeTransition.type)}
+              {playing ? getPhaseDescription(activeTransition.phase, activeTransition.type) : 'Transition paused. Select PLAY to continue.'}
             </span>
             <span className="progress-percent">{progressPercent}%</span>
           </div>

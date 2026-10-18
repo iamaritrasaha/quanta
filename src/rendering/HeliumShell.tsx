@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
+import { advanceTransitionProgress } from '../physics/transitionTiming'
 import { getHeliumLevel } from '../physics/helium'
 import { HeliumNucleus } from './HeliumNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
@@ -165,8 +166,7 @@ export function HeliumShell() {
     let electronInteractionFlash = 0
 
     if (activeTransition) {
-      const elapsed = performance.now() - activeTransition.startTime
-      progress = Math.min(1, Math.max(0, elapsed / activeTransition.durationMs))
+      progress = advanceTransitionProgress(activeTransition, delta, speed, playing)
 
       const initialOcc = getHeliumOccupancy(activeTransition.initialLevelId)
       const finalOcc = getHeliumOccupancy(activeTransition.targetLevelId)
@@ -222,8 +222,8 @@ export function HeliumShell() {
         completeTransition()
       }
     } else {
-      currentR1.current = THREE.MathUtils.lerp(currentR1.current, getHeliumShellRadius(targetOccupancy.n1), delta * 12)
-      currentR2.current = THREE.MathUtils.lerp(currentR2.current, getHeliumShellRadius(targetOccupancy.n2), delta * 12)
+      currentR1.current = THREE.MathUtils.damp(currentR1.current, getHeliumShellRadius(targetOccupancy.n1), 12, delta)
+      currentR2.current = THREE.MathUtils.damp(currentR2.current, getHeliumShellRadius(targetOccupancy.n2), 12, delta)
     }
 
     // Motion updates for both electron markers

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
+import { advanceTransitionProgress } from '../physics/transitionTiming'
 import { getOrbitAngularSpeed, getVisualRadius } from './visualRadius'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { getBohrElectronWorldPosition, ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z } from './transitionCoordinates'
@@ -24,6 +25,7 @@ export function BohrAtom() {
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
   const reducedMotion = useReducedMotion()
+  const motionTime = useRef(0)
 
   const groupRef = useRef<THREE.Group>(null!)
   const electronGroupRef = useRef<THREE.Group>(null!)
@@ -119,8 +121,9 @@ export function BohrAtom() {
     }
   }, [electronTrailLine])
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     if (!groupRef.current) return
+    if (playing && !reducedMotion) motionTime.current += delta * speed
 
     // Smoothly damp model transition blend
     const targetBlend = isQuantum ? 1.0 : 0.0
@@ -142,8 +145,7 @@ export function BohrAtom() {
 
     if (activeTransition) {
       isTransitioning = true
-      const elapsed = performance.now() - activeTransition.startTime
-      progress = Math.min(1, Math.max(0, elapsed / activeTransition.durationMs))
+      progress = advanceTransitionProgress(activeTransition, delta, speed, playing)
 
       const initialR = getVisualRadius(activeTransition.initialLevel)
       const targetR = getVisualRadius(activeTransition.targetLevel)
@@ -201,7 +203,9 @@ export function BohrAtom() {
 
     // Smooth radius convergence
     const targetRadius = isTransitioning ? transitionRadius : getVisualRadius(level)
-    currentVisualRadius.current = THREE.MathUtils.lerp(currentVisualRadius.current, targetRadius, delta * 14)
+    if (!activeTransition || playing) {
+      currentVisualRadius.current = THREE.MathUtils.damp(currentVisualRadius.current, targetRadius, 14, delta)
+    }
 
     // Electron orbital rotation with smooth deceleration during quantum morph
     // (idle spin is decorative; reduced-motion users still see the electron at
@@ -301,7 +305,7 @@ export function BohrAtom() {
 
     // Nucleus retains its beautiful compact proton identity and subtle idle shimmer
     // (Nucleus flash during electronic transition is strictly decoupled)
-    const idleShimmer = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 1.8) * 0.04
+    const idleShimmer = reducedMotion ? 0 : Math.sin(motionTime.current * 1.8) * 0.04
     const baseEnergyScale = 1.0 + idleShimmer
 
     if (nucleusGroupRef.current) {

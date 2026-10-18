@@ -448,7 +448,9 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
   },
 
-  setAnimationSpeed: (speed) => set({ animationSpeed: Math.max(0.25, Math.min(4, speed)) }),
+  setAnimationSpeed: (speed) => {
+    if (Number.isFinite(speed)) set({ animationSpeed: Math.max(0.25, Math.min(4, speed)) })
+  },
 
   togglePlaying: () => set((state) => ({ playing: !state.playing })),
 
@@ -513,7 +515,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
 
     const transitionType = overrideType ?? (target > initial ? 'absorption' : 'emission')
     const baseDurationMs = 2000
-    const durationMs = baseDurationMs / state.animationSpeed
+    const durationMs = baseDurationMs
 
     const transition: ActiveHydrogenTransition = {
       type: transitionType,
@@ -529,6 +531,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     set((s) => ({
       level: initial,
       activeTransition: transition,
+      playing: true,
       transitionEventSeq: s.transitionEventSeq + 1,
       hydrogen: {
         ...s.hydrogen,
@@ -687,7 +690,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     const targetId = type === 'absorption' ? upper.id : lower.id
 
     const baseDurationMs = 2000
-    const durationMs = baseDurationMs / state.animationSpeed
+    const durationMs = baseDurationMs
 
     const activeTransition: ActiveHeliumTransition = {
       type,
@@ -701,6 +704,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
 
     set((s) => ({
+      playing: true,
       transitionEventSeq: s.transitionEventSeq + 1,
       helium: {
         ...s.helium,
@@ -848,7 +852,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     const targetId = type === 'absorption' ? upper.id : lower.id
 
     const baseDurationMs = 2000
-    const durationMs = baseDurationMs / state.animationSpeed
+    const durationMs = baseDurationMs
 
     const activeTransition: ActiveLithiumTransition = {
       type,
@@ -862,6 +866,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
 
     set((s) => ({
+      playing: true,
       transitionEventSeq: s.transitionEventSeq + 1,
       lithium: {
         ...s.lithium,
@@ -1008,7 +1013,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     const targetId = type === 'absorption' ? upper.id : lower.id
 
     const baseDurationMs = 2000
-    const durationMs = baseDurationMs / state.animationSpeed
+    const durationMs = baseDurationMs
 
     const activeTransition: ActiveBerylliumTransition = {
       type,
@@ -1022,6 +1027,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
 
     set((s) => ({
+      playing: true,
       transitionEventSeq: s.transitionEventSeq + 1,
       beryllium: {
         ...s.beryllium,
@@ -1168,7 +1174,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     const targetId = type === 'absorption' ? upper.id : lower.id
 
     const baseDurationMs = 2000
-    const durationMs = baseDurationMs / state.animationSpeed
+    const durationMs = baseDurationMs
 
     const activeTransition: ActiveBoronTransition = {
       type,
@@ -1182,6 +1188,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
     }
 
     set((s) => ({
+      playing: true,
       transitionEventSeq: s.transitionEventSeq + 1,
       boron: {
         ...s.boron,

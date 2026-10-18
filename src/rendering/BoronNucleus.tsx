@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useReducedMotion } from './useReducedMotion'
+import { useQuantaStore } from '../state/quantaStore'
 
 interface BoronNucleusProps {
   opacity?: number
@@ -18,6 +19,7 @@ interface BoronNucleusProps {
  */
 export function BoronNucleus({ opacity = 1.0 }: BoronNucleusProps) {
   const reducedMotion = useReducedMotion()
+  const motionTime = useRef(0)
   const groupRef = useRef<THREE.Group>(null!)
   const haloRef = useRef<THREE.Mesh>(null!)
   const innerShellRef = useRef<THREE.Mesh>(null!)
@@ -40,16 +42,18 @@ export function BoronNucleus({ opacity = 1.0 }: BoronNucleusProps) {
     { pos: [0.0, -0.11, 0.05], isProton: false },
   ]
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!groupRef.current) return
+    const { playing, animationSpeed } = useQuantaStore.getState()
+    if (playing && !reducedMotion) motionTime.current += delta * animationSpeed
 
-    const idleShimmer = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 1.5) * 0.025
+    const idleShimmer = reducedMotion ? 0 : Math.sin(motionTime.current * 1.5) * 0.025
     const s = 1.0 + idleShimmer
     groupRef.current.scale.set(s, s, s)
 
     if (!reducedMotion) {
-      groupRef.current.rotation.y = clock.elapsedTime * 0.1
-      groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.07) * 0.12
+      groupRef.current.rotation.y = motionTime.current * 0.1
+      groupRef.current.rotation.x = Math.sin(motionTime.current * 0.07) * 0.12
     }
 
     if (haloRef.current) {
