@@ -56,7 +56,7 @@ export function MultiElementAtom({ element }: { element: Element }) {
   useFrame((_, delta) => {
     const state = useQuantaStore.getState()
     if (state.playing && !reducedMotion) clock.current += delta * state.animationSpeed
-    if (state.sharedElement.activeTransition) state.advanceElementTransition(Math.min(delta, 0.1))
+    if (state.sharedElement.activeTransition) state.advanceElementTransition(delta)
     const active = useQuantaStore.getState().sharedElement.activeTransition
     const mix = jumpProgress(active?.progress ?? (jump ? 1 : 0), jump?.type ?? 'absorption')
     let activeIndex = paths.findIndex((p) => p.from !== p.to)
