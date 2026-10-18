@@ -1,3 +1,4 @@
+import type { ElementKey } from '../data/elements'
 import { create } from 'zustand'
 import { ORBITALS, type UiOrbitalKey } from '../physics/quantum'
 import { safeHydrogenTransition, type HydrogenTransition } from '../physics/hydrogen'
@@ -26,7 +27,7 @@ import {
   type BoronTransition,
 } from '../physics/boron'
 
-export type ElementKey = 'hydrogen' | 'helium' | 'lithium' | 'beryllium' | 'boron'
+export type { ElementKey } from '../data/elements'
 
 export type ViewMode = 'overview' | 'bohr' | 'quantum' | 'energy' | 'spectra' | 'equations'
 
@@ -1197,7 +1198,7 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
       get().resetLithium()
     } else if (element === 'beryllium') {
       get().resetBeryllium()
-    } else {
+    } else if (element === 'boron') {
       get().resetBoron()
     }
   },
