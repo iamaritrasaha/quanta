@@ -313,6 +313,10 @@ Element properties and their units, NIST ASD coverage, source links, and retriev
 
 ---
 
+## Playback and Transition Timing
+
+Photon transitions use elapsed simulation time. PLAY / PAUSE freezes and resumes their progress, and speed changes apply to the remaining transition without restarting it. Starting a photon action resumes playback. Decorative nuclear motion uses the same playback state. Radius convergence uses exponential damping so a long frame cannot cause the smoothing step to overshoot the target radius. Visual timing and these smoothing parameters are not physical transition lifetimes.
+
 ## Pedagogical Models & Visual Disclaimers
 
 - **Shell Occupancy Model**: Pedagogical representation illustrating discrete shell occupancies ($K, L, M, N$). Electron markers and their classical orbits are illustrative; multi-electron atoms possess no fixed classical trajectories.

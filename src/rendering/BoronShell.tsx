@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useQuantaStore } from '../state/quantaStore'
+import { advanceTransitionProgress } from '../physics/transitionTiming'
 import { BoronNucleus } from './BoronNucleus'
 import { PhotonWavePacket } from './PhotonWavePacket'
 import { ORBIT_INCLINATION_X, ORBIT_INCLINATION_Z, getBohrElectronWorldPosition } from './transitionCoordinates'
@@ -111,8 +112,7 @@ export function BoronShell() {
     let electronInteractionFlash = 0
 
     if (activeTransition) {
-      const elapsed = performance.now() - activeTransition.startTime
-      progress = Math.min(1, Math.max(0, elapsed / activeTransition.durationMs))
+      progress = advanceTransitionProgress(activeTransition, delta, speed, playing)
 
       const initialOcc = getBoronOccupancy(activeTransition.initialLevelId)
       const finalOcc = getBoronOccupancy(activeTransition.targetLevelId)
@@ -163,10 +163,10 @@ export function BoronShell() {
         completeTransition()
       }
     } else {
-      currentTransitionRadius.current = THREE.MathUtils.lerp(
+      currentTransitionRadius.current = THREE.MathUtils.damp(
         currentTransitionRadius.current,
         getBoronShellRadius(targetTransitionN),
-        delta * 12
+        12, delta
       )
     }
 

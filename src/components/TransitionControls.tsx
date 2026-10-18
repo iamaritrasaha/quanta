@@ -15,6 +15,7 @@ export function TransitionControls() {
     return safeHydrogenTransition(initialLevel, targetLevel)
   }, [initialLevel, targetLevel])
 
+  const playing = useQuantaStore((s) => s.playing)
   const isTransitioning = Boolean(activeTransition)
   const isAbsorption = transition ? transition.direction === 'absorption' : false
 
@@ -49,7 +50,7 @@ export function TransitionControls() {
     <div className="transition-controls glass-floating" aria-label="State Transition Controls">
       <div className="controls-header">
         <span className="controls-title">QUANTUM JUMP CONTROLLER</span>
-        {isTransitioning && <span className="transition-active-badge">IN PROGRESS</span>}
+        {isTransitioning && <span className="transition-active-badge">{playing ? 'IN PROGRESS' : 'PAUSED'}</span>}
       </div>
 
       {/* Level Selectors */}
@@ -130,7 +131,7 @@ export function TransitionControls() {
         <div className="active-transition-view">
           <div className="progress-info">
             <span className="phase-text">
-              {getPhaseDescription(activeTransition.phase, activeTransition.type)}
+              {playing ? getPhaseDescription(activeTransition.phase, activeTransition.type) : 'Transition paused. Select PLAY to continue.'}
             </span>
             <span className="progress-percent">{Math.round(activeTransition.progress * 100)}%</span>
           </div>

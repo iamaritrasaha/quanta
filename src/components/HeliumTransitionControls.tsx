@@ -25,6 +25,7 @@ export function HeliumTransitionControls() {
     return getHeliumTransition('587.6nm')!
   }, [activeTransition, selectedTransitionId])
 
+  const playing = useQuantaStore((s) => s.playing)
   const isTransitioning = Boolean(activeTransition)
   const lowerLevel = transition ? getHeliumLevel(transition.lowerLevelId) : null
   const upperLevel = transition ? getHeliumLevel(transition.upperLevelId) : null
@@ -70,7 +71,7 @@ export function HeliumTransitionControls() {
           <span className="controls-title">HELIUM TRANSITION CONTROLLER</span>
           <span className="provenance-tag">NIST ASD LINES</span>
         </div>
-        {isTransitioning && <span className="transition-active-badge">IN PROGRESS</span>}
+        {isTransitioning && <span className="transition-active-badge">{playing ? 'IN PROGRESS' : 'PAUSED'}</span>}
       </div>
 
       {/* Quick Scientific Line Presets */}
@@ -138,7 +139,7 @@ export function HeliumTransitionControls() {
         <div className="active-transition-view">
           <div className="progress-info">
             <span className="phase-text">
-              {getPhaseDescription(activeTransition.phase, activeTransition.type)}
+              {playing ? getPhaseDescription(activeTransition.phase, activeTransition.type) : 'Transition paused. Select PLAY to continue.'}
             </span>
             <span className="progress-percent">{Math.round(activeTransition.progress * 100)}%</span>
           </div>

@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useReducedMotion } from './useReducedMotion'
+import { useQuantaStore } from '../state/quantaStore'
 
 interface HeliumNucleusProps {
   opacity?: number
@@ -15,6 +16,7 @@ interface HeliumNucleusProps {
  */
 export function HeliumNucleus({ opacity = 1.0 }: HeliumNucleusProps) {
   const reducedMotion = useReducedMotion()
+  const motionTime = useRef(0)
   const groupRef = useRef<THREE.Group>(null!)
   const haloRef = useRef<THREE.Mesh>(null!)
   const innerShellRef = useRef<THREE.Mesh>(null!)
@@ -29,18 +31,20 @@ export function HeliumNucleus({ opacity = 1.0 }: HeliumNucleusProps) {
     { pos: [d, -d, -d], isProton: false }, // Neutron B
   ]
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!groupRef.current) return
+    const { playing, animationSpeed } = useQuantaStore.getState()
+    if (playing && !reducedMotion) motionTime.current += delta * animationSpeed
 
     // Subtle gentle idle shimmer of the collective nuclear core
-    const idleShimmer = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 1.6) * 0.03
+    const idleShimmer = reducedMotion ? 0 : Math.sin(motionTime.current * 1.6) * 0.03
     const s = 1.0 + idleShimmer
     groupRef.current.scale.set(s, s, s)
 
     // Gentle slow collective nuclear orientation drift
     if (!reducedMotion) {
-      groupRef.current.rotation.y = clock.elapsedTime * 0.12
-      groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.08) * 0.15
+      groupRef.current.rotation.y = motionTime.current * 0.12
+      groupRef.current.rotation.x = Math.sin(motionTime.current * 0.08) * 0.15
     }
 
     if (haloRef.current) {
