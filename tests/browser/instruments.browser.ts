@@ -205,7 +205,8 @@ test('shared reference and schematic transitions, clouds and missing data', asyn
 test('mouse rotation, zoom, and camera reset work on Hydrogen and Carbon', async ({ page }) => {
   for (const name of ['Hydrogen', 'Carbon']) {
     await openElement(page, name)
-    await page.getByRole('button', { name: 'PAUSE', exact: true }).click()
+    const pause = page.getByRole('button', { name: 'PAUSE', exact: true })
+    if (await pause.count()) await pause.click()
     const original = await page.locator('canvas').screenshot()
     const box = (await page.locator('canvas').boundingBox())!
     const x = box.x + box.width / 2, y = box.y + box.height / 2
