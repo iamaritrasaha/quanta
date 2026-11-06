@@ -1,4 +1,5 @@
 import type { ElementModelState } from '../../physics/elementModel'
+import type { AtomicLevel } from '../../data/atomicLevels'
 import type { ComboboxOption } from './StateCombobox'
 
 // CM-1 to eV conversion factor: 1 eV = 8065.54429 cm-1
@@ -99,5 +100,45 @@ export function formatElementStateOption(
       `${energyEv.toFixed(2)}eV`,
       `${Math.round(energyCm)}cm`,
     ],
+  }
+}
+
+/**
+ * Formats an AtomicLevel (from NIST levels) into a rich ComboboxOption.
+ */
+export function formatAtomicLevelOption(
+  level: AtomicLevel,
+  index: number
+): ComboboxOption {
+  const isGround = index === 0 || level.energyCm === 0
+  const termFormatted = formatTermSymbol(level.term)
+  const jPart = level.j ? ` (J = ${level.j})` : ''
+  const cleanConfig = level.configuration ? level.configuration.replace(/\./g, '·') : ''
+  const primaryLabel = `${cleanConfig}  ${termFormatted}${jPart}`.trim() || `Level ${index}`
+
+  const energyEv = level.energyCm * CM_TO_EV
+  const subLabel = isGround
+    ? 'E = 0.00 cm⁻¹ (0.000 eV) · Reference ground level'
+    : `E = ${level.energyCm.toLocaleString('en-US', {
+        maximumFractionDigits: 1,
+      })} cm⁻¹ · ${energyEv.toFixed(4)} eV`
+
+  return {
+    value: String(index),
+    label: primaryLabel,
+    subLabel,
+    badge: isGround ? 'GROUND' : 'NIST ASD',
+    badgeVariant: isGround ? 'ground' : 'nist',
+    keywords: [
+      String(index),
+      level.configuration,
+      cleanConfig,
+      level.term,
+      termFormatted,
+      level.j ? `J=${level.j}` : '',
+      String(level.j ?? ''),
+      `${energyEv.toFixed(2)}eV`,
+      `${Math.round(level.energyCm)}cm`,
+    ].filter(Boolean),
   }
 }

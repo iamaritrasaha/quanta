@@ -15,7 +15,6 @@ import {
   size,
   useClick,
   useDismiss,
-  useRole,
   useInteractions,
   FloatingPortal,
   FloatingFocusManager,
@@ -43,6 +42,8 @@ export interface StateComboboxProps {
   searchPlaceholder?: string
   className?: string
   ariaLabel?: string
+  labelId?: string
+  triggerId?: string
   compact?: boolean
 }
 
@@ -58,6 +59,8 @@ export function StateCombobox({
   searchPlaceholder = 'Filter states (config, term, J)…',
   className = '',
   ariaLabel,
+  labelId,
+  triggerId,
   compact = false,
 }: StateComboboxProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -67,50 +70,10 @@ export function StateCombobox({
   const listRef = useRef<(HTMLDivElement | null)[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
   const listboxId = useId()
+  const actualTriggerId = triggerId ?? `${id}-trigger`
 
   // Auto-enable search for lists with 8 or more options
   const isSearchable = searchable ?? options.length >= 8
-
-  // Floating UI configuration with collision-aware positioning & dynamic viewport clamping
-  const { refs, floatingStyles, context } = useFloating({
-    open: isOpen,
-    onOpenChange: (open) => {
-      if (disabled) return
-      setIsOpen(open)
-      if (!open) {
-        setSearchQuery('')
-        setActiveIndex(null)
-      }
-    },
-    placement: 'bottom-start',
-    middleware: [
-      offset(6),
-      flip({
-        padding: 12,
-        fallbackPlacements: ['top-start', 'bottom-end', 'top-end'],
-      }),
-      shift({ padding: 12 }),
-      size({
-        padding: 12,
-        apply({ availableHeight, elements }) {
-          // Dynamic height constraint: max 320px, clamped to available viewport space
-          const maxHeight = Math.max(160, Math.min(320, availableHeight - 16))
-          elements.floating.style.maxHeight = `${maxHeight}px`
-        },
-      }),
-    ],
-    whileElementsMounted: autoUpdate,
-  })
-
-  const click = useClick(context, { enabled: !disabled })
-  const dismiss = useDismiss(context)
-  const role = useRole(context, { role: 'listbox' })
-
-  const { getReferenceProps, getFloatingProps } = useInteractions([
-    click,
-    dismiss,
-    role,
-  ])
 
   // Selected option details
   const selectedOption = useMemo(
@@ -141,6 +104,49 @@ export function StateCombobox({
     })
   }, [options, searchQuery])
 
+  // Floating UI configuration with collision-aware positioning & dynamic viewport clamping
+  const { refs, floatingStyles, context } = useFloating({
+    open: isOpen,
+    onOpenChange: (open) => {
+      if (disabled) return
+      setIsOpen(open)
+      if (!open) {
+        setSearchQuery('')
+        setActiveIndex(null)
+      } else {
+        // Highlight currently selected option if available
+        const selectedIdx = filteredOptions.findIndex((opt) => opt.value === value)
+        setActiveIndex(selectedIdx >= 0 ? selectedIdx : 0)
+      }
+    },
+    placement: 'bottom-start',
+    middleware: [
+      offset(6),
+      flip({
+        padding: 8,
+        fallbackPlacements: ['top-start', 'bottom-end', 'top-end'],
+      }),
+      size({
+        padding: 8,
+        apply({ availableHeight, elements }) {
+          // Dynamic height constraint: max 320px, clamped to available viewport space
+          const maxHeight = Math.min(320, Math.max(100, availableHeight - 8))
+          elements.floating.style.maxHeight = `${maxHeight}px`
+        },
+      }),
+      shift({ padding: 8, crossAxis: true }),
+    ],
+    whileElementsMounted: autoUpdate,
+  })
+
+  const click = useClick(context, { enabled: !disabled })
+  const dismiss = useDismiss(context)
+
+  // We manage the combobox / listbox / option roles explicitly according to W3C ARIA APG
+  // rather than using useRole({ role: 'listbox' }) which would inappropriately place role="listbox"
+  // on the outer floating wrapper (which houses the search box).
+  const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss])
+
   // Keep listRef array in sync with filtered options count
   useEffect(() => {
     listRef.current = listRef.current.slice(0, filteredOptions.length)
@@ -149,7 +155,6 @@ export function StateCombobox({
   // Auto-focus search input when combobox opens
   useEffect(() => {
     if (isOpen && isSearchable) {
-      // Small timeout to ensure DOM focus manager is ready
       const t = setTimeout(() => {
         searchInputRef.current?.focus()
       }, 30)
@@ -169,14 +174,31 @@ export function StateCombobox({
     [onChange]
   )
 
+  // Find next enabled option index in a direction
+  const findNextEnabledIndex = useCallback(
+    (startIndex: number, direction: 1 | -1): number => {
+      const count = filteredOptions.length
+      if (count === 0) return 0
+      let cur = startIndex
+      for (let i = 0; i < count; i++) {
+        cur = (cur + direction + count) % count
+        if (!filteredOptions[cur]?.disabled) {
+          return cur
+        }
+      }
+      return startIndex
+    },
+    [filteredOptions]
+  )
+
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (disabled) return
-    e.stopPropagation()
 
     if (!isOpen) {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
+        e.stopPropagation()
         setIsOpen(true)
       }
       return
@@ -185,30 +207,60 @@ export function StateCombobox({
     switch (e.key) {
       case 'ArrowDown': {
         e.preventDefault()
+        e.stopPropagation()
         setActiveIndex((prev) => {
-          if (prev === null) return 0
-          const next = prev + 1
-          return next < filteredOptions.length ? next : 0
+          if (prev === null) {
+            const firstEnabled = filteredOptions.findIndex((opt) => !opt.disabled)
+            return firstEnabled >= 0 ? firstEnabled : 0
+          }
+          return findNextEnabledIndex(prev, 1)
         })
         break
       }
       case 'ArrowUp': {
         e.preventDefault()
+        e.stopPropagation()
         setActiveIndex((prev) => {
-          if (prev === null) return filteredOptions.length - 1
-          const next = prev - 1
-          return next >= 0 ? next : filteredOptions.length - 1
+          if (prev === null) {
+            const lastEnabled = [...filteredOptions].reverse().findIndex((opt) => !opt.disabled)
+            return lastEnabled >= 0 ? filteredOptions.length - 1 - lastEnabled : filteredOptions.length - 1
+          }
+          return findNextEnabledIndex(prev, -1)
         })
         break
       }
       case 'Home': {
         e.preventDefault()
-        setActiveIndex(0)
+        e.stopPropagation()
+        const firstEnabled = filteredOptions.findIndex((opt) => !opt.disabled)
+        setActiveIndex(firstEnabled >= 0 ? firstEnabled : 0)
         break
       }
       case 'End': {
         e.preventDefault()
-        setActiveIndex(filteredOptions.length - 1)
+        e.stopPropagation()
+        const lastEnabled = [...filteredOptions].reverse().findIndex((opt) => !opt.disabled)
+        setActiveIndex(lastEnabled >= 0 ? filteredOptions.length - 1 - lastEnabled : filteredOptions.length - 1)
+        break
+      }
+      case 'PageDown': {
+        e.preventDefault()
+        e.stopPropagation()
+        setActiveIndex((prev) => {
+          const base = prev ?? 0
+          const target = Math.min(filteredOptions.length - 1, base + 5)
+          return target
+        })
+        break
+      }
+      case 'PageUp': {
+        e.preventDefault()
+        e.stopPropagation()
+        setActiveIndex((prev) => {
+          const base = prev ?? 0
+          const target = Math.max(0, base - 5)
+          return target
+        })
         break
       }
       case 'Enter': {
@@ -217,8 +269,8 @@ export function StateCombobox({
         if (activeIndex !== null && filteredOptions[activeIndex]) {
           handleSelect(filteredOptions[activeIndex])
         } else if (filteredOptions.length > 0) {
-          // Select first matching option if enter is pressed in search input
-          handleSelect(filteredOptions[0])
+          const firstValid = filteredOptions.find((opt) => !opt.disabled)
+          if (firstValid) handleSelect(firstValid)
         }
         break
       }
@@ -229,9 +281,33 @@ export function StateCombobox({
         break
       }
       case 'Tab': {
-        // Close on tab away
         setIsOpen(false)
         break
+      }
+      default: {
+        // Typeahead for non-searchable dropdowns
+        if (!isSearchable && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          const char = e.key.toLowerCase()
+          const matchIdx = filteredOptions.findIndex(
+            (opt, i) =>
+              (activeIndex === null || i > activeIndex) &&
+              !opt.disabled &&
+              opt.label.trim().toLowerCase().startsWith(char)
+          )
+          if (matchIdx >= 0) {
+            e.preventDefault()
+            setActiveIndex(matchIdx)
+          } else {
+            // Wrap to start
+            const wrapIdx = filteredOptions.findIndex(
+              (opt) => !opt.disabled && opt.label.trim().toLowerCase().startsWith(char)
+            )
+            if (wrapIdx >= 0) {
+              e.preventDefault()
+              setActiveIndex(wrapIdx)
+            }
+          }
+        }
       }
     }
   }
@@ -246,6 +322,11 @@ export function StateCombobox({
     }
   }, [activeIndex])
 
+  const activeOptionId =
+    activeIndex !== null && filteredOptions[activeIndex]
+      ? `${listboxId}-opt-${activeIndex}`
+      : undefined
+
   return (
     <div className={`quanta-combobox-wrap ${className}`} onKeyDown={handleKeyDown}>
       {/* Backing select for standard HTML form APIs, accessibility, and automation */}
@@ -259,7 +340,7 @@ export function StateCombobox({
         className="combobox-native-select"
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => {
-          const trigger = document.getElementById(`${id}-trigger`)
+          const trigger = document.getElementById(actualTriggerId)
           trigger?.focus()
         }}
       >
@@ -270,22 +351,25 @@ export function StateCombobox({
         ))}
       </select>
 
-      {/* Trigger Button */}
+      {/* Trigger Button (Combobox) */}
       <button
         ref={refs.setReference}
-        id={`${id}-trigger`}
+        id={actualTriggerId}
         type="button"
+        role="combobox"
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-controls={isOpen ? listboxId : undefined}
-        aria-label={ariaLabel ?? placeholder}
+        aria-activedescendant={isOpen && !isSearchable ? activeOptionId : undefined}
+        aria-label={!labelId ? (ariaLabel ?? placeholder) : undefined}
+        aria-labelledby={labelId ? `${labelId} ${id}-trigger-text` : undefined}
         className={`quanta-combobox-trigger ${isOpen ? 'active-open' : ''} ${
           compact ? 'compact' : ''
         }`}
         {...getReferenceProps()}
       >
-        <span className="combobox-trigger-text">
+        <span id={`${id}-trigger-text`} className="combobox-trigger-text">
           {selectedOption ? (
             <span className="combobox-trigger-content">
               <span className="combobox-trigger-primary">{selectedOption.label}</span>
@@ -335,6 +419,7 @@ export function StateCombobox({
               ref={refs.setFloating}
               style={floatingStyles}
               className="quanta-combobox-popover glass-combobox"
+              aria-label={ariaLabel ?? placeholder}
               {...getFloatingProps()}
             >
               {/* Optional Search / Filter Header */}
@@ -366,6 +451,12 @@ export function StateCombobox({
                     <input
                       ref={searchInputRef}
                       type="text"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      aria-expanded="true"
+                      aria-controls={listboxId}
+                      aria-activedescendant={activeOptionId}
+                      aria-label="Filter states"
                       className="combobox-search-input"
                       placeholder={searchPlaceholder}
                       value={searchQuery}
@@ -374,13 +465,21 @@ export function StateCombobox({
                         setActiveIndex(0)
                       }}
                       onKeyDown={(e) => {
-                        // Let arrow up/down pass through to handleKeyDown
-                        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Escape') {
+                        // Let arrow navigation and enter pass through to handleKeyDown
+                        if (
+                          e.key === 'ArrowDown' ||
+                          e.key === 'ArrowUp' ||
+                          e.key === 'Enter' ||
+                          e.key === 'Escape' ||
+                          e.key === 'Home' ||
+                          e.key === 'End' ||
+                          e.key === 'PageDown' ||
+                          e.key === 'PageUp'
+                        ) {
                           e.stopPropagation()
                           handleKeyDown(e)
                         }
                       }}
-                      aria-label="Filter options"
                       autoComplete="off"
                       spellCheck="false"
                     />
@@ -390,6 +489,7 @@ export function StateCombobox({
                         className="search-clear-btn"
                         onClick={() => {
                           setSearchQuery('')
+                          setActiveIndex(0)
                           searchInputRef.current?.focus()
                         }}
                         aria-label="Clear search query"
@@ -401,14 +501,19 @@ export function StateCombobox({
                   <div className="combobox-count-indicator">
                     {filteredOptions.length} of {options.length} states
                   </div>
+                  {/* Screen reader live announcement */}
+                  <div className="quanta-sr-only" aria-live="polite" aria-atomic="true">
+                    {filteredOptions.length} {filteredOptions.length === 1 ? 'state' : 'states'} available
+                  </div>
                 </div>
               )}
 
-              {/* Options List */}
+              {/* Single Authentic Options Listbox */}
               <div
                 id={listboxId}
                 role="listbox"
-                aria-label={ariaLabel ?? 'Options'}
+                tabIndex={-1}
+                aria-label={ariaLabel ?? placeholder}
                 className="combobox-options-list"
               >
                 {filteredOptions.length === 0 ? (
@@ -439,7 +544,9 @@ export function StateCombobox({
                           opt.disabled ? 'disabled' : ''
                         }`}
                         onClick={() => handleSelect(opt)}
-                        onMouseEnter={() => setActiveIndex(idx)}
+                        onMouseEnter={() => {
+                          if (!opt.disabled) setActiveIndex(idx)
+                        }}
                       >
                         <div className="option-main-col">
                           <div className="option-primary-line">

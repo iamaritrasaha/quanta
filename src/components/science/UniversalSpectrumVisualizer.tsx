@@ -14,6 +14,8 @@ import { SpectrumInstrumentHeader } from './SpectrumInstrumentHeader'
 import { SpectralHeroResult } from './SpectralHeroResult'
 import { SpectralRegionBadge } from './SpectralRegionBadge'
 import { InstrumentFooter } from './InstrumentFooter'
+import { StateCombobox, type ComboboxOption } from '../common/StateCombobox'
+import { formatAtomicLevelOption } from '../common/stateComboboxHelpers'
 
 interface UniversalSpectrumVisualizerProps {
   element: Element
@@ -90,6 +92,18 @@ export function UniversalSpectrumVisualizer({ element }: UniversalSpectrumVisual
   const selectedUpperIndex = availableUpperLevels.find(
     ({ level }) => level === selectedUpper
   )?.index
+
+  const lowerOptions = useMemo<ComboboxOption[]>(() => {
+    return availableLowerLevels.map(({ level, index }) =>
+      formatAtomicLevelOption(level, index)
+    )
+  }, [availableLowerLevels])
+
+  const upperOptions = useMemo<ComboboxOption[]>(() => {
+    return availableUpperLevels.map(({ level, index }) =>
+      formatAtomicLevelOption(level, index)
+    )
+  }, [availableUpperLevels])
 
   const separation = calculateLevelSeparation(lowerLevel, selectedUpper)
   const transitionWavelengthNm = separation?.wavelengthNm
@@ -220,48 +234,50 @@ export function UniversalSpectrumVisualizer({ element }: UniversalSpectrumVisual
         <div className="spectral-controls-container" style={{ marginTop: '1rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
             <div>
-              <label className="atomic-select-label" htmlFor="atomic-lower-level">
+              <label
+                id="atomic-lower-level-label"
+                className="atomic-select-label"
+                htmlFor="atomic-lower-level-trigger"
+              >
                 Lower Level
               </label>
-              <select
+              <StateCombobox
                 id="atomic-lower-level"
-                className="atomic-level-select"
+                labelId="atomic-lower-level-label"
+                ariaLabel="Lower energy level"
+                compact
                 disabled={isTransitioning}
-                value={lowerIndex}
-                onChange={(e) => {
-                  const nextLower = Number(e.target.value)
+                value={String(lowerIndex)}
+                onChange={(val) => {
+                  const nextLower = Number(val)
                   setLowerIndex(nextLower)
                   const nextUpper = levels.findIndex(
                     (level, idx) => idx > nextLower && level.energyCm > levels[nextLower].energyCm
                   )
                   setUpperIndex(nextUpper >= 0 ? nextUpper : nextLower + 1)
                 }}
-              >
-                {availableLowerLevels.map(({ level, index }) => (
-                  <option key={`lower-${level.energyCm}-${index}`} value={index}>
-                    {level.configuration} {level.term} ({level.energyCm.toFixed(1)} cm⁻¹)
-                  </option>
-                ))}
-              </select>
+                options={lowerOptions}
+              />
             </div>
 
             <div>
-              <label className="atomic-select-label" htmlFor="atomic-upper-level">
+              <label
+                id="atomic-upper-level-label"
+                className="atomic-select-label"
+                htmlFor="atomic-upper-level-trigger"
+              >
                 Upper Level
               </label>
-              <select
+              <StateCombobox
                 id="atomic-upper-level"
-                className="atomic-level-select"
+                labelId="atomic-upper-level-label"
+                ariaLabel="Upper energy level"
+                compact
                 disabled={isTransitioning}
-                value={selectedUpperIndex ?? ''}
-                onChange={(e) => setUpperIndex(Number(e.target.value))}
-              >
-                {availableUpperLevels.map(({ level, index }) => (
-                  <option key={`upper-${level.energyCm}-${index}`} value={index}>
-                    {level.configuration} {level.term} ({level.energyCm.toFixed(1)} cm⁻¹)
-                  </option>
-                ))}
-              </select>
+                value={selectedUpperIndex !== undefined ? String(selectedUpperIndex) : ''}
+                onChange={(val) => setUpperIndex(Number(val))}
+                options={upperOptions}
+              />
             </div>
           </div>
 

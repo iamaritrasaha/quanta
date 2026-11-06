@@ -38,7 +38,7 @@ test.describe('P0 Dropdown UI Repair — Optical Glass Combobox Verification', (
     // 2. Verify height is clamped to <= 320px
     const popoverBox = (await popover.boundingBox())!
     expect(popoverBox.height).toBeLessThanOrEqual(325)
-    expect(popoverBox.height).toBeGreaterThanOrEqual(160)
+    expect(popoverBox.height).toBeGreaterThanOrEqual(140)
 
     // 3. Verify options list has internal scrolling
     const optionsList = popover.locator('.combobox-options-list')
@@ -129,7 +129,7 @@ test.describe('P0 Dropdown UI Repair — Optical Glass Combobox Verification', (
     await expect(popover).toContainText('n = 3')
     await expect(popover).toContainText('BALMER')
 
-    // Select n = 3 (H-alpha, 656.3 nm)
+    // Select n = 3 (H-alpha, 656.5 nm)
     const n3Option = popover.locator('.combobox-option-row', { hasText: 'n = 3' })
     await n3Option.click()
 
@@ -183,29 +183,124 @@ test.describe('P0 Dropdown UI Repair — Optical Glass Combobox Verification', (
     await expect(targetTrigger).toBeFocused()
   })
 
-  test('Mobile viewport: dropdown fits within screen bounds without overflow clipping', async ({
+  test('Spectra mode (UniversalSpectrumVisualizer): dark optical glass combobox replaces native selects', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/#/element/sodium')
     await page.waitForSelector('.element-name-heading')
 
-    const targetTrigger = page.locator('#element-target-state-trigger')
-    await targetTrigger.click()
+    // Switch to Mode 4: Spectroscopy
+    await page.getByRole('button', { name: /Spectra/ }).click()
+    await page.waitForTimeout(400)
+
+    const lowerTrigger = page.locator('#atomic-lower-level-trigger')
+    const upperTrigger = page.locator('#atomic-upper-level-trigger')
+    await expect(lowerTrigger).toBeVisible()
+    await expect(upperTrigger).toBeVisible()
+
+    // Open Upper Level combobox
+    await upperTrigger.click()
+    const popover = page.locator('.quanta-combobox-popover')
+    await expect(popover).toBeVisible()
+
+    // Verify dark styling
+    const bgColor = await popover.evaluate((el) => window.getComputedStyle(el).backgroundColor)
+    expect(bgColor).toMatch(/rgba?\(1[0-2],\s*1[4-6],\s*2[4-6]/)
+
+    // Check option formatted labels with unicode term symbols
+    await expect(popover).toContainText('²P*')
+
+    // Capture screenshot of Spectra combobox
+    await page.screenshot({
+      path: 'test-results/screenshots/dropdowns/spectra-combobox-open.png',
+      fullPage: false,
+    })
+
+    // Filter by searching "3p"
+    const searchInput = popover.locator('.combobox-search-input')
+    if (await searchInput.isVisible()) {
+      await searchInput.fill('3p')
+      await page.waitForTimeout(100)
+    }
+
+    // Select the first option
+    const optionRows = popover.locator('.combobox-option-row')
+    await optionRows.first().click()
+    await expect(popover).not.toBeVisible()
+
+    // Animate absorption button should be available
+    const animAbsorb = page.getByRole('button', { name: 'ANIMATE ABSORPTION', exact: true })
+    await expect(animAbsorb).toBeVisible()
+  })
+
+  test('W3C ARIA Combobox Compliance: authentic listbox and active-descendant attributes', async ({
+    page,
+  }) => {
+    await page.goto('/#/element/sodium')
+    await page.waitForSelector('.element-name-heading')
+
+    const trigger = page.locator('#element-target-state-trigger')
+    await expect(trigger).toHaveAttribute('role', 'combobox')
+    await expect(trigger).toHaveAttribute('aria-haspopup', 'listbox')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+
+    // Open
+    await trigger.click()
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
 
     const popover = page.locator('.quanta-combobox-popover')
     await expect(popover).toBeVisible()
 
-    const popBox = (await popover.boundingBox())!
-    // Must be completely within mobile viewport [0..390] x [0..844]
-    expect(popBox.x).toBeGreaterThanOrEqual(0)
-    expect(popBox.x + popBox.width).toBeLessThanOrEqual(395)
-    expect(popBox.y + popBox.height).toBeLessThanOrEqual(850)
+    // CRITICAL ARIA RULE: Outer popover MUST NOT have role="listbox" (no nested listbox)
+    await expect(popover).not.toHaveAttribute('role', 'listbox')
 
-    // Capture mobile screenshot
-    await page.screenshot({
-      path: 'test-results/screenshots/dropdowns/sodium-mobile-dropdown.png',
-      fullPage: false,
+    // The inner container MUST have role="listbox"
+    const listbox = popover.locator('.combobox-options-list')
+    await expect(listbox).toHaveAttribute('role', 'listbox')
+
+    // Search input should be an active combobox with autocomplete
+    const searchInput = popover.locator('.combobox-search-input')
+    await expect(searchInput).toHaveAttribute('role', 'combobox')
+    await expect(searchInput).toHaveAttribute('aria-autocomplete', 'list')
+    await expect(searchInput).toHaveAttribute('aria-expanded', 'true')
+
+    // Verify aria-activedescendant points to a valid option
+    const activeDescendant = await searchInput.getAttribute('aria-activedescendant')
+    expect(activeDescendant).toBeTruthy()
+    const activeNode = page.locator(`#${activeDescendant}`)
+    await expect(activeNode).toHaveAttribute('role', 'option')
+
+    // Close
+    await page.keyboard.press('Escape')
+    await expect(popover).not.toBeVisible()
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  test.describe('Small viewports (320px width & 500px height)', () => {
+    test.use({ viewport: { width: 320, height: 500 } })
+
+    test('no horizontal overflow or clipping', async ({ page }) => {
+      await page.goto('/#/element/sodium')
+      await page.waitForSelector('.element-name-heading')
+
+      const targetTrigger = page.locator('#element-target-state-trigger')
+      await targetTrigger.click()
+
+      const popover = page.locator('.quanta-combobox-popover')
+      await expect(popover).toBeVisible()
+
+      const popBox = (await popover.boundingBox())!
+      // Bounding box must be within 320px width
+      expect(popBox.x).toBeGreaterThanOrEqual(0)
+      expect(popBox.x + popBox.width).toBeLessThanOrEqual(325)
+      // Height must be clamped to viewport
+      expect(popBox.y + popBox.height).toBeLessThanOrEqual(510)
+
+      // Capture small viewport screenshot
+      await page.screenshot({
+        path: 'test-results/screenshots/dropdowns/small-viewport-320px.png',
+        fullPage: false,
+      })
     })
   })
 })

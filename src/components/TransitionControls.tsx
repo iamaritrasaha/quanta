@@ -102,9 +102,10 @@ export function TransitionControls() {
       {/* Level Selectors */}
       <div className="level-select-grid">
         <div className="select-field">
-          <label htmlFor="initial-level-select">INITIAL STATE (nᵢ)</label>
+          <label id="initial-level-select-label" htmlFor="initial-level-select-trigger">INITIAL STATE (nᵢ)</label>
           <StateCombobox
             id="initial-level-select"
+            labelId="initial-level-select-label"
             ariaLabel="Initial quantum level"
             value={String(initialLevel)}
             disabled={isTransitioning}
@@ -117,9 +118,10 @@ export function TransitionControls() {
         <div className="select-divider">→</div>
 
         <div className="select-field">
-          <label htmlFor="target-level-select">FINAL STATE (n𝒻)</label>
+          <label id="target-level-select-label" htmlFor="target-level-select-trigger">FINAL STATE (n𝒻)</label>
           <StateCombobox
             id="target-level-select"
+            labelId="target-level-select-label"
             ariaLabel="Final quantum level"
             value={String(targetLevel)}
             disabled={isTransitioning}

@@ -39,9 +39,10 @@ export function ElementTransitionControls({ symbol }: { symbol: string }) {
       </div>
       <div className="level-select-grid">
         <div className="select-field">
-          <label htmlFor="element-initial-state">INITIAL STATE</label>
+          <label id="element-initial-state-label" htmlFor="element-initial-state-trigger">INITIAL STATE</label>
           <StateCombobox
             id="element-initial-state"
+            labelId="element-initial-state-label"
             ariaLabel="Initial quantum state"
             value={initial.id}
             disabled={Boolean(jump)}
@@ -54,9 +55,10 @@ export function ElementTransitionControls({ symbol }: { symbol: string }) {
         </div>
         <div className="select-divider">→</div>
         <div className="select-field">
-          <label htmlFor="element-target-state">FINAL STATE</label>
+          <label id="element-target-state-label" htmlFor="element-target-state-trigger">FINAL STATE</label>
           <StateCombobox
             id="element-target-state"
+            labelId="element-target-state-label"
             ariaLabel="Final quantum state"
             value={target.id}
             disabled={Boolean(jump)}
