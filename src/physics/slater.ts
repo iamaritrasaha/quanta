@@ -188,6 +188,63 @@ export function buildSlaterGroups(subshells: SubshellPopulation[]): SlaterGroup[
 }
 
 /**
+ * Returns the canonical Slater group label for a given principal shell n and subshell type.
+ * e.g., (1, 's') -> '1s', (2, 'p') -> '2s,2p', (3, 'd') -> '3d', (4, 'f') -> '4f'
+ */
+export function getSlaterGroupLabel(n: number, subshellType: 's' | 'p' | 'd' | 'f'): string {
+  if (subshellType === 's' || subshellType === 'p') {
+    return n === 1 ? '1s' : `${n}s,${n}p`
+  }
+  return `${n}${subshellType}`
+}
+
+/**
+ * Ranks Slater groups in strict energy/distance order according to John C. Slater (Phys. Rev. 36, 57, 1930):
+ * (1s) < (2s,2p) < (3s,3p) < (3d) < (4s,4p) < (4d) < (4f) < (5s,5p) < (5d) < (5f) < ...
+ */
+export function getSlaterGroupRank(n: number, type: 'sp' | 'd' | 'f'): number {
+  const base = (n - 1) * 3
+  if (type === 'sp') return base + 1
+  if (type === 'd') return base + 2
+  return base + 3 // 'f'
+}
+
+/**
+ * Parses any orbital/subshell designation (e.g. '1s', '2s,2p', '2p', '3d', '4f') into
+ * its standard Slater group label, principal quantum number n, and group type ('sp' | 'd' | 'f').
+ */
+export function parseSlaterGroupLabel(label: string): { standardLabel: string; n: number; type: 'sp' | 'd' | 'f' } {
+  const clean = label.trim().toLowerCase()
+  if (clean === '1s' || clean.startsWith('1s')) {
+    return { standardLabel: '1s', n: 1, type: 'sp' }
+  }
+  const dMatch = clean.match(/^(\d+)d$/)
+  if (dMatch) {
+    const n = parseInt(dMatch[1], 10)
+    return { standardLabel: `${n}d`, n, type: 'd' }
+  }
+  const fMatch = clean.match(/^(\d+)f$/)
+  if (fMatch) {
+    const n = parseInt(fMatch[1], 10)
+    return { standardLabel: `${n}f`, n, type: 'f' }
+  }
+  const spMatch = clean.match(/^(\d+)(?:s|p|s,\d+p)$/)
+  if (spMatch) {
+    const n = parseInt(spMatch[1], 10)
+    return { standardLabel: n === 1 ? '1s' : `${n}s,${n}p`, n, type: 'sp' }
+  }
+  const genMatch = clean.match(/^(\d+)([spdf])/)
+  if (genMatch) {
+    const n = parseInt(genMatch[1], 10)
+    const l = genMatch[2]
+    if (l === 'd') return { standardLabel: `${n}d`, n, type: 'd' }
+    if (l === 'f') return { standardLabel: `${n}f`, n, type: 'f' }
+    return { standardLabel: n === 1 ? '1s' : `${n}s,${n}p`, n, type: 'sp' }
+  }
+  return { standardLabel: clean, n: 1, type: 'sp' }
+}
+
+/**
  * Calculates Slater screening (sigma) and effective nuclear charge (Z_eff)
  * for a test electron in the valence (or specified) group.
  */
@@ -210,11 +267,28 @@ export function calculateSlaterScreening(
     }
   }
 
-  // Pick target group (defaults to outermost group)
-  const targetIndex = targetGroupLabel
-    ? groups.findIndex((g) => g.label === targetGroupLabel)
-    : groups.length - 1
-  const targetGroup = groups[targetIndex >= 0 ? targetIndex : groups.length - 1]
+  let targetGroup: SlaterGroup
+  let targetRank: number
+
+  if (targetGroupLabel) {
+    const parsed = parseSlaterGroupLabel(targetGroupLabel)
+    targetRank = getSlaterGroupRank(parsed.n, parsed.type)
+    const existing = groups.find((g) => g.label === parsed.standardLabel)
+    if (existing) {
+      targetGroup = existing
+    } else {
+      // Virtual/unoccupied group: test electron has zero peers in target shell
+      targetGroup = {
+        label: parsed.standardLabel,
+        n: parsed.n,
+        type: parsed.type,
+        electrons: 1,
+      }
+    }
+  } else {
+    targetGroup = groups[groups.length - 1]
+    targetRank = getSlaterGroupRank(targetGroup.n, targetGroup.type)
+  }
 
   let sigma = 0
 
@@ -222,19 +296,19 @@ export function calculateSlaterScreening(
     // Case 1: [1s] group
     if (targetGroup.n === 1) {
       // For 1s, other 1s electron contributes 0.30
-      sigma += (targetGroup.electrons - 1) * 0.3
+      sigma += (targetGroup.electrons - 1) * 0.30
     } else {
       // (a) Other electrons in the same (ns, np) group contribute 0.35 each
       sigma += (targetGroup.electrons - 1) * 0.35
 
-      // (b) Electrons in the (n-1) principal shell contribute 0.85 each
-      for (let i = 0; i < targetIndex; i++) {
-        const g = groups[i]
-        if (g.n === targetGroup.n - 1) {
-          sigma += g.electrons * 0.85
-        } else if (g.n < targetGroup.n - 1) {
-          // (c) Electrons in (n-2) or lower shells contribute 1.00 each
-          sigma += g.electrons * 1.0
+      // (b) Groups lying to the left (lower rank in Slater's order)
+      for (const g of groups) {
+        if (getSlaterGroupRank(g.n, g.type) < targetRank) {
+          if (g.n === targetGroup.n - 1) {
+            sigma += g.electrons * 0.85
+          } else if (g.n < targetGroup.n - 1) {
+            sigma += g.electrons * 1.00
+          }
         }
       }
     }
@@ -243,16 +317,18 @@ export function calculateSlaterScreening(
     // (a) Other electrons in the same group contribute 0.35 each
     sigma += (targetGroup.electrons - 1) * 0.35
 
-    // (b) All electrons in groups lying to the left (lower energy/position) contribute 1.00 each
-    for (let i = 0; i < targetIndex; i++) {
-      sigma += groups[i].electrons * 1.0
+    // (b) All electrons in groups lying to the left contribute 1.00 each
+    for (const g of groups) {
+      if (getSlaterGroupRank(g.n, g.type) < targetRank) {
+        sigma += g.electrons * 1.00
+      }
     }
   }
 
   const zEffective = Math.max(0.1, z - sigma)
 
   // Slater's effective quantum number n* for energy estimation:
-  // n = 1 -> 1, 2 -> 2, 3 -> 3, 4 -> 3.7, 5 -> 4.0, 6 -> 4.2
+  // n = 1 -> 1, 2 -> 2, 3 -> 3, 4 -> 3.7, 5 -> 4.0, 6 -> 4.2, 7 -> 4.4
   const nStarMap: Record<number, number> = {
     1: 1.0,
     2: 2.0,

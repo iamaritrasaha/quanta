@@ -122,7 +122,7 @@ const berylliumModeDescriptions: ModeDescriptions = {
   },
   quantum: {
     title: 'SCHRÖDINGER REDUCED DENSITY (4-ELECTRON)',
-    subtitle: 'Reduced one-electron density ρ(r) derived from multi-electron Hartree-Fock screening',
+    subtitle: 'Reduced one-electron density ρ(r) derived from multi-electron effective-charge screening',
     badge: 'REDUCED PROBABILITY DENSITY',
   },
   energy: {

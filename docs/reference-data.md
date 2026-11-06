@@ -117,9 +117,9 @@ To maintain scientific integrity, QUANTA never masquerades approximate or schema
 | Tier | Category | Scope | Quantum Model Description |
 | :--- | :--- | :--- | :--- |
 | **Tier A** | Analytical Hydrogenic | $\text{H}$ ($Z=1$) | Exact analytical wavefunctions $\psi_{n\ell m}(r,\theta,\phi)$ with Laguerre polynomials and spherical harmonics. Analytical energy eigenvalues $E_n = -13.6\text{ eV}/n^2$. |
-| **Tier B** | Approximate Many-Electron | $\text{He}\text{–}\text{B}$ ($Z=2\text{–}5$) | Multi-electron configurations with Hartree-Fock/effective-charge screening approximations, singlet/triplet fine structure, and reduced orbital densities. |
-| **Tier C** | Empirical / Slater Radial | $\text{C}\text{–}\text{Hs}$ ($Z=6\text{–}108$) | Empirical NIST ASD level ladders, calculated Slater screening $Z_{\text{eff}}$, and pedagogical radial occupancy clouds with core vs. valence differentiation. |
-| **Tier D** | Theoretical / Superheavy | $\text{Mt}\text{–}\text{Og}$ ($Z=109\text{–}118$) | Relativistic Dirac-Fock predictions, relativistic spin-orbit subshell splittings ($7p_{1/2}\text{–}7p_{3/2}$), closed-shell stability calculations. No fabricated optical spectra. |
+| **Tier B** | Approximate Many-Electron | $\text{He}\text{–}\text{B}$ ($Z=2\text{–}5$) | Dedicated multi-electron configurations with effective-charge screening approximations (calibrated against empirical ionization energies and published numerical Hartree-Fock charge densities), singlet/triplet fine structure, and reduced orbital densities. |
+| **Tier C** | Empirical / Slater Radial | $\text{C}\text{–}\text{Hs}$ ($Z=6\text{–}108$) | Empirical NIST ASD level ladders, calculated subshell-targeted Slater screening $Z_{\text{eff}}$, exact analytical Laguerre radial functions with numerical peak and node evaluation, and real spherical harmonic angular representations. |
+| **Tier D** | Theoretical / Superheavy | $\text{Mt}\text{–}\text{Og}$ ($Z=109\text{–}118$) | Published relativistic Dirac-Fock predictions (e.g. Fricke, Schwerdtfeger, and NIST theoretical literature), relativistic spin-orbit subshell splittings ($7p_{1/2}\text{–}7p_{3/2}$), closed-shell stability calculations. No fabricated optical spectra. |
 
 ---
 

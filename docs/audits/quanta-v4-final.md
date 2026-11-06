@@ -18,7 +18,7 @@ At the same time, V4 upholds uncompromising scientific honesty:
 - Empirical NIST ASD levels are linked to visual Grotrian ladders.
 - Slater's screening rules are implemented to compute real effective nuclear charges ($Z_{\text{eff}}$).
 - Atmospheric dispersion is calculated via the Edlén formula for optical lines ($\lambda \ge 200\text{ nm}$).
-- Superheavy elements lacking experimental bound levels ($Z=109\text{–}118$) are classified as Tier D with relativistic Dirac-Fock predictions, strictly forbidding fabricated experimental spectra.
+- Superheavy elements lacking experimental bound levels ($Z=109\text{–}118$) are classified as Tier D with published relativistic Dirac-Fock predictions, strictly forbidding fabricated experimental spectra.
 
 ---
 

@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import {
   sampleOrbitalField,
+  getOrbitalZeff,
   type RealOrientationKey,
   type OrbitalFamily,
   ORBITAL_ORIENTATIONS,
@@ -55,10 +56,9 @@ export function OrbitalCloud({
 
   // Sample current orbital point cloud
   const sample = useMemo(() => {
-    // For element 1 (Hydrogen), Z_eff is 1.0; for others, compute appropriate screening
-    const zeff = elementNumber === 1 ? 1.0 : Math.max(1.0, Math.sqrt(elementNumber) * 0.75 + 0.5)
+    const zeff = getOrbitalZeff(elementNumber, n, family)
     return sampleOrbitalField(n, orientation, sampleCount, zeff, 173 + n * 17, slicePlane)
-  }, [elementNumber, n, orientation, sampleCount, slicePlane])
+  }, [elementNumber, n, family, orientation, sampleCount, slicePlane])
 
   // Build vertex buffer geometry with position and vertex colors
   const geometry = useMemo(() => {
@@ -86,6 +86,7 @@ export function OrbitalCloud({
     }
 
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+    geom.setDrawRange(0, sample.pointCount)
     return geom
   }, [sample, viewMode])
 

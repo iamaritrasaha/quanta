@@ -38,9 +38,9 @@ To preserve physical honesty, QUANTA categorizes atomic systems into four clear 
 | Tier | Scope | Description & Physical Realism |
 | :--- | :--- | :--- |
 | **Tier A — Analytical Hydrogenic** | $\text{H}$ ($Z=1$) | Exact analytical wavefunctions $\psi_{n\ell m}(r,\theta,\phi)$ and Rydberg energy eigenvalues $E_n = -13.6\text{ eV}/n^2$. |
-| **Tier B — Dedicated Multi-Electron** | $\text{He}\text{–}\text{B}$ ($Z=2\text{–}5$) | Multi-electron states with Hartree-Fock/effective-charge screening, singlet/triplet manifolds, and fine structure. |
-| **Tier C — Empirical / Slater Radial** | $\text{C}\text{–}\text{Hs}$ ($Z=6\text{–}108$) | Empirical NIST ASD level ladders, calculated Slater screening constants ($Z_{\text{eff}} = Z - \sigma$), and radial occupancy clouds. |
-| **Tier D — Theoretical / Superheavy** | $\text{Mt}\text{–}\text{Og}$ ($Z=109\text{–}118$) | Relativistic Dirac-Fock predictions and $j\text{-}j$ spin-orbit coupling. Missing optical spectra are honestly flagged rather than fabricated. |
+| **Tier B — Dedicated Multi-Electron** | $\text{He}\text{–}\text{B}$ ($Z=2\text{–}5$) | Dedicated multi-electron states with parameterized effective-charge screening (calibrated against empirical ionization energies and published numerical Hartree-Fock charge densities), singlet/triplet manifolds, and fine structure. |
+| **Tier C — Empirical / Slater Radial** | $\text{C}\text{–}\text{Hs}$ ($Z=6\text{–}108$) | Empirical NIST ASD level ladders, calculated subshell-targeted Slater screening constants ($Z_{\text{eff}} = Z - \sigma$), exact analytical Laguerre radial functions with numerical peak and node evaluation, and real spherical harmonic angular representations. |
+| **Tier D — Theoretical / Superheavy** | $\text{Mt}\text{–}\text{Og}$ ($Z=109\text{–}118$) | Published relativistic Dirac-Fock predictions (e.g. Fricke, Schwerdtfeger, and NIST theoretical literature) and $j\text{-}j$ spin-orbit coupling disclosures. Missing optical spectra are honestly flagged rather than fabricated. |
 
 ---
 
@@ -58,7 +58,7 @@ QUANTA uses a modern, open-source typography standard:
 
 1. **Overview:** Rich scientific dossier with IUPAC category, discovery history, etymology, distinctive physical behavior callout (e.g. relativistic contraction in Au, aufbau anomalies in Cu/Cr), and tabular physical properties.
 2. **Bohr / Shell Model:** 3D interactive shell visualization with principal quantum shells ($K$ through $Q$, $n=1\text{–}7$), clear core versus valence distinctions, and pedagogical notices.
-3. **Quantum:** Complete, interactive 3D atomic orbital explorer covering all $s, p, d, f$ subshells ($n=1\text{–}7$) across all 16 real basis orientations ($p_x/p_y/p_z$, 5 $d$, 7 $f$). Features signed wavefunction phase coloring ($\psi > 0$ Sky Blue vs $\psi < 0$ Coral Amber), internal cross-section slicing (XY, XZ, YZ), interactive SVG radial probability density plots $P(r) = r^2|R(r)|^2$ with peak radius and node markers, ground-state occupancy badges, and live Slater $Z_{\text{eff}}$ screening calculators.
+3. **Quantum:** Complete, interactive 3D atomic orbital explorer covering all $s, p, d, f$ subshells ($n=1\text{–}7$) across all 16 real basis orientations ($p_x/p_y/p_z$, 5 $d$, 7 $f$). Features signed wavefunction phase coloring ($\psi > 0$ Sky Blue vs $\psi < 0$ Coral Amber), internal cross-section slicing (XY, XZ, YZ), interactive SVG radial probability density plots $P(r) = r^2|R(r)|^2$ with exact numerical peak radii and analytical node markers, ground-state occupancy badges, and live Slater $Z_{\text{eff}}$ screening calculators.
 4. **Energy Levels:** Visual SVG Grotrian energy ladder calibrated in $\text{eV}$ and $\text{cm}^{-1}$, continuum threshold ($E_{\text{ion}}$), visual scale breaks, and selectable bound stationary states.
 5. **Spectra:** Continuous spectral strip covering Vacuum UV ($<200\text{ nm}$), Near UV, Visible ($380\text{–}750\text{ nm}$), and Near IR ($>750\text{ nm}$). Displays landmark spectral lines, vacuum wavelengths, and air wavelengths computed via the **Edlén dispersion formula** ($\lambda \ge 200\text{ nm}$).
 6. **Equations:** 4-stage pedagogical mathematical derivation stepper:
@@ -116,7 +116,7 @@ npm run dev
 ### Verification & Testing Suite
 
 ```bash
-# Run unit tests (394 tests across 17 suites)
+# Run unit tests (438 tests across 19 suites)
 npm test
 
 # Production build and TypeScript type check
@@ -151,6 +151,7 @@ src/
     elements.ts                IUPAC element properties & categories
     nistLevels.json            Bundled NIST ASD bound-level records
   physics/                     Physical formulas, Slater screening, dispersion
+    orbitals.ts                Analytical wavefunctions, nodes & maxima, rejection sampling
     slater.ts                  Slater screening constant and Z_eff calculator
   rendering/                   Three.js canvas, electron orbits, photon packets
   state/                       Zustand state store and transition controllers
