@@ -128,7 +128,7 @@ $$L_0^\alpha(x) = 1$$
 $$L_1^\alpha(x) = 1 + \alpha - x$$
 $$(j + 1) L_{j+1}^\alpha(x) = (2j + 1 + \alpha - x) L_j^\alpha(x) - (j + \alpha) L_{j-1}^\alpha(x)$$
 
-### 3.3 Radial Nodes and Probability Distribution
+### 3.3 Radial Nodes and Exact Probability Maxima
 
 The total number of nodal surfaces is $n - 1$:
 - **Radial nodes:** $k = n - \ell - 1$ (spherical shells where $R_{n\ell}(r) = 0$).
@@ -143,9 +143,12 @@ Normalized such that:
 
 $$\int_0^\infty P(r) \, dr = 1$$
 
-The peak radius (most probable radius for circular states with $\ell = n - 1$) is:
+While circular states ($\ell = n - 1$, e.g. $1s, 2p, 3d, 4f$) have a single maximum at $r_{\text{peak}} = \frac{n^2 a_0}{Z_{\text{eff}}}$, states with radial nodes ($k = n - \ell - 1 > 0$) have multiple local maxima and shift the principal valence peak outward (for example, the $2s$ orbital has its principal peak at $r = (3 + \sqrt{5})\frac{a_0}{Z_{\text{eff}}} \approx 5.236 \frac{a_0}{Z_{\text{eff}}}$, over $30\%$ farther out than $n^2/Z_{\text{eff}} = 4.0 a_0/Z_{\text{eff}}$).
 
-$$r_{\text{peak}} \approx \frac{n^2 a_0}{Z_{\text{eff}}}$$
+QUANTA locates all exact radial nodes and peaks:
+1. **Radial Nodes:** Computed as the roots of the associated Laguerre polynomial $L_{n-\ell-1}^{2\ell+1}(\rho) = 0$ via closed forms for $k \le 2$ and the symmetric tridiagonal Jacobi eigensolver for $k \ge 3$:
+   $$r_{\text{node}, i} = \frac{n \rho_i a_0}{2 Z_{\text{eff}}}$$
+2. **Radial Probability Maxima:** Evaluated via golden-section search across the unimodal intervals bounded by the radial nodes, identifying both secondary internal maxima and the dominant outermost principal peak displayed in the interface.
 
 ---
 
@@ -159,7 +162,7 @@ $$\hat{H} = \sum_{i=1}^Z \left( -\frac{\hbar^2}{2m_e}\nabla_i^2 - \frac{Z e^2}{4
 
 Due to the inter-electronic distance terms $r_{ij} = |\mathbf{r}_i - \mathbf{r}_j|$, the multi-electron Schrödinger equation cannot be separated into independent single-particle coordinates. Exact closed-form analytic solutions **do not exist**.
 
-In Hartree-Fock theory and Central Field Approximations, each electron moves in an effective central potential representing the nucleus screened by the average spherical charge density of the other $Z - 1$ electrons:
+In central field approximations, each electron moves in an effective central potential representing the nucleus screened by the average spherical charge density of the other $Z - 1$ electrons:
 
 $$V_{\text{eff}}(r) \approx -\frac{Z_{\text{eff}}(r) e^2}{4\pi\varepsilon_0 r}$$
 
@@ -190,7 +193,7 @@ $$(1s), (2s, 2p), (3s, 3p), (3d), (4s, 4p), (4d), (4f), (5s, 5p), \dots$$
 QUANTA explicitly discloses the scope and boundaries of its quantum representations in the user interface:
 
 1. **Not Exact Wavefunctions for Multi-Electron Atoms:**
-   A hydrogenic orbital evaluated with an effective charge $Z_{\text{eff}}$ is an educational model of single-electron spatial behavior. It does not incorporate full electron-electron correlation, configuration interaction (CI), or self-consistent field (SCF) relaxation.
+   A hydrogenic orbital evaluated with an effective charge $Z_{\text{eff}}$ is an educational model of single-electron spatial behavior. It does not incorporate full electron-electron correlation, configuration interaction (CI), or runtime self-consistent field (SCF) relaxation.
 
 2. **Phase Sign vs Electrical Charge:**
    Wavefunction phase colors (+ Sky Blue, - Coral Amber) represent opposite algebraic signs of the scalar mathematical field $\psi(\mathbf{r})$, **not positive and negative electrical charges**. An electron possesses an invariant negative charge $-e$ throughout all lobes and phases.

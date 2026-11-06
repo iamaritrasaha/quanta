@@ -73,7 +73,7 @@ Rather than maintaining divergent instrument views, QUANTA V4 unifies elements $
 │                                ├───────────────────────────────────────┤
 │                                │       ElementTransitionControls       │
 │                                │  [EXCITE] [RELAX] [ABSORB] [EMIT]     │
-└────────────────────────────────┴───────────────────────────────────────┘
+│└────────────────────────────────┴───────────────────────────────────────┘
 ```
 
 ### Universal Component Suite
@@ -128,8 +128,8 @@ To guarantee scientific rigor, QUANTA adheres strictly to four model tiers:
 
 - **Tier A — Analytical Hydrogenic ($Z=1$):** Exact hydrogenic solutions. Wavefunctions rendered as continuous probability density volumes.
 - **Tier B — Dedicated Many-Electron ($Z=2\text{–}5$):** Multi-electron wavefunctions incorporating electron correlation, singlet/triplet manifolds, and fine structure.
-- **Tier C — Empirical / Slater Radial ($Z=6\text{–}108$):** Empirical NIST ASD level ladders, calculated Slater effective nuclear charges ($Z_{\text{eff}}$), and pedagogical radial occupancy clouds.
-- **Tier D — Theoretical / Superheavy ($Z=109\text{–}118$):** Relativistic Dirac-Fock predictions, shell closures, and open research questions. Missing experimental spectra are explicitly marked as unavailable rather than fabricated.
+- **Tier C — Empirical / Slater Radial ($Z=6\text{–}108$):** Empirical NIST ASD level ladders, calculated subshell-targeted Slater effective nuclear charges ($Z_{\text{eff}}$), exact analytical Laguerre radial functions with numerical peak and node evaluation, and real spherical harmonic angular representations.
+- **Tier D — Theoretical / Superheavy ($Z=109\text{–}118$):** Published relativistic Dirac-Fock predictions (e.g. Fricke, Schwerdtfeger, and NIST theoretical literature), shell closures, and open research questions. Missing experimental spectra are explicitly marked as unavailable rather than fabricated.
 
 ---
 

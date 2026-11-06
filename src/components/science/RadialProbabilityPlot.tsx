@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { evaluateRadialProbability, evaluateRadialWavefunction } from '../../physics/orbitals'
+import { evaluateRadialProbability, findRadialNodes } from '../../physics/orbitals'
 
 interface RadialProbabilityPlotProps {
   n: number
@@ -51,20 +51,8 @@ export function RadialProbabilityPlot({
     // Peak position
     const peakX = Math.min(padding.left + plotW, Math.max(padding.left, padding.left + (rPeak / rMax) * plotW))
 
-    // Estimate radial node locations (roots where R(r) changes sign)
-    const nodeRadii: number[] = []
-    if (radialNodes > 0) {
-      let prevSign = 0
-      for (let i = 1; i <= 300; i++) {
-        const rTest = (i / 300) * rMax
-        const val = evaluateRadialWavefunction(n, l, rTest, zEffective)
-        const sign = Math.sign(val)
-        if (prevSign !== 0 && sign !== 0 && sign !== prevSign) {
-          nodeRadii.push(rTest)
-        }
-        if (sign !== 0) prevSign = sign
-      }
-    }
+    // Exact analytical/numerical radial node locations (roots of associated Laguerre polynomial)
+    const nodeRadii = findRadialNodes(n, l, zEffective)
 
     const nodeMarkers = nodeRadii.slice(0, radialNodes).map((r) => ({
       r,

@@ -15,10 +15,10 @@
  *    L_{n-l-1}^{2l+1}(2Zr/n) for arbitrary n >= 1 and 0 <= l < n.
  * 3. Screened effective nuclear charge (Z_eff) integration for multi-electron atoms.
  * 4. Wavefunction phase evaluation (sign +1 or -1), probability densities, and nodes.
- * 5. Rejection sampling of 3D point clouds with phase tags for Three.js rendering.
+ * 5. Factorized rejection sampling of 3D point clouds with phase tags for Three.js rendering.
  */
 
-import { calculateSlaterScreening, parseConfiguration } from './slater'
+import { calculateSlaterScreening, parseConfiguration, getSlaterGroupLabel } from './slater'
 import { getAtomicProperties } from '../data/atomicData'
 import { elements } from '../data/elements'
 
@@ -282,6 +282,28 @@ export function evaluateRealSphericalHarmonic(
 }
 
 /**
+ * Returns the exact analytical or rigorous supremum of |Y_l,orient(θ, φ)|² on the unit sphere S².
+ * Used as the definitive upper bound envelope for angular rejection sampling.
+ */
+export function getMaxSphericalHarmonicDensity(orientation: RealOrientationKey): number {
+  const info = ORBITAL_ORIENTATIONS[orientation]
+  switch (info.family) {
+    case 's':
+      return 1.0 / (4.0 * Math.PI) // ~0.07957747
+    case 'p':
+      return 3.0 / (4.0 * Math.PI) // ~0.23873241
+    case 'd':
+      return orientation === 'dz2'
+        ? 5.0 / (4.0 * Math.PI) // ~0.39788736
+        : 15.0 / (16.0 * Math.PI) // ~0.29841552
+    case 'f':
+      return 7.0 / (4.0 * Math.PI) // ~0.55704230
+    default:
+      return 1.0 / (4.0 * Math.PI)
+  }
+}
+
+/**
  * Generalized / Associated Laguerre Polynomial L_k^alpha(x) via three-term recurrence.
  * Degree k = n - l - 1 equals the number of radial nodes.
  */
@@ -351,6 +373,190 @@ export function evaluateRadialProbability(n: number, l: number, r: number, z = 1
 }
 
 /**
+ * Solves eigenvalues of a symmetric tridiagonal matrix using the implicit QL algorithm
+ * with Wilkinson shifts. Used to determine the exact roots of generalized Laguerre polynomials
+ * (Gauss-Laguerre quadrature nodes).
+ */
+function computeTridiagonalEigenvalues(diag: number[], subdiag: number[]): number[] {
+  const n = diag.length
+  const d = [...diag]
+  const e = [...subdiag, 0]
+
+  for (let l = 0; l < n; l++) {
+    let iter = 0
+    let m = l
+    do {
+      for (m = l; m < n - 1; m++) {
+        const dd = Math.abs(d[m]) + Math.abs(d[m + 1])
+        if (Math.abs(e[m]) + dd === dd) break
+      }
+      if (m !== l) {
+        if (iter++ === 60) break // safety guard
+        let g = (d[l + 1] - d[l]) / (2.0 * e[l])
+        let r = Math.hypot(g, 1.0)
+        g = d[m] - d[l] + e[l] / (g + (g >= 0 ? Math.abs(r) : -Math.abs(r)))
+        let s = 1.0
+        let c = 1.0
+        let p = 0.0
+        let i = m - 1
+        for (; i >= l; i--) {
+          let f = s * e[i]
+          let b = c * e[i]
+          r = Math.hypot(f, g)
+          e[i + 1] = r
+          if (r === 0.0) {
+            d[i + 1] -= p
+            e[m] = 0.0
+            break
+          }
+          s = f / r
+          c = g / r
+          g = d[i + 1] - p
+          r = (d[i] - g) * s + 2.0 * c * b
+          p = s * r
+          d[i + 1] = g + p
+          g = c * r - b
+        }
+        if (r === 0.0 && i >= l) continue
+        d[l] -= p
+        e[l] = g
+        e[m] = 0.0
+      }
+    } while (m !== l)
+  }
+
+  return d.sort((a, b) => a - b)
+}
+
+/**
+ * Finds all exact radial nodes (r > 0 where R_{nl}(r) = 0) in atomic units a₀.
+ * Evaluates the analytical roots of the associated Laguerre polynomial L_{n-l-1}^{2l+1}(2Zr/n).
+ */
+export function findRadialNodes(n: number, l: number, zeff = 1.0): number[] {
+  const k = n - l - 1
+  if (k <= 0) return []
+
+  const alpha = 2 * l + 1
+  if (k === 1) {
+    // Exact closed form for k = 1: L_1^alpha(rho) = 1 + alpha - rho = 0
+    return [(n * (alpha + 1)) / (2.0 * zeff)] // n * (l + 1) / zeff
+  }
+
+  if (k === 2) {
+    // Exact closed form for k = 2
+    const term1 = alpha + 2
+    const term2 = Math.sqrt(alpha + 2)
+    const rho1 = term1 - term2
+    const rho2 = term1 + term2
+    return [(n * rho1) / (2.0 * zeff), (n * rho2) / (2.0 * zeff)]
+  }
+
+  // Symmetric tridiagonal Jacobi matrix for general k
+  const diag: number[] = []
+  const subdiag: number[] = []
+  for (let j = 0; j < k; j++) {
+    diag.push(2 * j + 1 + alpha)
+    if (j < k - 1) {
+      subdiag.push(Math.sqrt((j + 1) * (j + 1 + alpha)))
+    }
+  }
+
+  const roots = computeTridiagonalEigenvalues(diag, subdiag)
+  return roots.map((rho) => (n * rho) / (2.0 * zeff))
+}
+
+/**
+ * Golden section search for unimodal maximum of f on [a, b].
+ */
+function goldenSectionMax(
+  f: (r: number) => number,
+  a: number,
+  b: number,
+  tol = 1e-6,
+  maxIter = 60
+): { radius: number; probability: number } {
+  const phi = (Math.sqrt(5) - 1) / 2
+  let x1 = b - phi * (b - a)
+  let x2 = a + phi * (b - a)
+  let f1 = f(x1)
+  let f2 = f(x2)
+
+  for (let i = 0; i < maxIter; i++) {
+    if (Math.abs(b - a) < tol) break
+    if (f1 > f2) {
+      b = x2
+      x2 = x1
+      f2 = f1
+      x1 = b - phi * (b - a)
+      f1 = f(x1)
+    } else {
+      a = x1
+      x1 = x2
+      f1 = f2
+      x2 = a + phi * (b - a)
+      f2 = f(x2)
+    }
+  }
+
+  const rOpt = (a + b) / 2
+  return { radius: rOpt, probability: f(rOpt) }
+}
+
+export interface RadialMaximaResult {
+  principalPeak: number // Radius of the highest probability peak in a₀
+  allPeaks: { radius: number; probability: number }[]
+  nodes: number[]
+}
+
+/**
+ * Numerically computes the exact local maxima and global principal peak of the radial probability
+ * density P(r) = r² |R_{nl}(r)|² by searching within the brackets defined by radial nodes.
+ */
+export function findRadialMaxima(n: number, l: number, zeff = 1.0): RadialMaximaResult {
+  const nodes = findRadialNodes(n, l, zeff)
+  const k = nodes.length
+  const probFunc = (r: number) => evaluateRadialProbability(n, l, r, zeff)
+
+  const rBound = Math.max(
+    k > 0 ? nodes[k - 1] * 4.0 : 0,
+    (3.5 * n * n) / zeff + (25.0 * n) / zeff
+  )
+
+  const allPeaks: { radius: number; probability: number }[] = []
+
+  if (k === 0) {
+    const peak = goldenSectionMax(probFunc, 1e-5, rBound)
+    allPeaks.push(peak)
+  } else {
+    // First interval: (1e-5, nodes[0])
+    allPeaks.push(goldenSectionMax(probFunc, 1e-5, Math.max(1e-4, nodes[0] - 1e-5)))
+
+    // Intermediate intervals: (nodes[i-1], nodes[i])
+    for (let i = 1; i < k; i++) {
+      allPeaks.push(goldenSectionMax(probFunc, nodes[i - 1] + 1e-5, nodes[i] - 1e-5))
+    }
+
+    // Outer interval: (nodes[k-1], rBound)
+    allPeaks.push(goldenSectionMax(probFunc, nodes[k - 1] + 1e-5, rBound))
+  }
+
+  let principalPeak = allPeaks[0].radius
+  let maxP = allPeaks[0].probability
+  for (const p of allPeaks) {
+    if (p.probability > maxP) {
+      maxP = p.probability
+      principalPeak = p.radius
+    }
+  }
+
+  return {
+    principalPeak,
+    allPeaks,
+    nodes,
+  }
+}
+
+/**
  * Full spatial atomic orbital wavefunction value ψ(x, y, z):
  *   ψ(x, y, z) = R_{nl}(r; Z_eff) * Y_{l,orient}(x/r, y/r, z/r)
  */
@@ -388,7 +594,7 @@ export function evaluateOrbitalWavefunction(
 
 /**
  * Computes the Slater effective nuclear charge Z_eff for a specific (n, l) orbital
- * within a given element's electron configuration.
+ * within a given element's electron configuration, targeting its exact Slater screening group.
  */
 export function getOrbitalZeff(
   elementNumber: number,
@@ -408,36 +614,8 @@ export function getOrbitalZeff(
     return Math.max(1.0, Math.sqrt(elementNumber) * 0.75 + 0.5)
   }
 
-  const subshells = parseConfiguration(config)
-  const targetSubshellKey = `${n}${family}`
-  const targetIndex = subshells.findIndex((s) => `${s.n}${s.l}` === targetSubshellKey)
-
-  // If subshell is unpopulated in ground state, compute screening from all occupied electrons
-  if (targetIndex < 0) {
-    let sigma = 0
-    for (const sub of subshells) {
-      if (family === 's' || family === 'p') {
-        if (sub.n === n) {
-          sigma += sub.count * 0.35
-        } else if (sub.n === n - 1) {
-          sigma += sub.count * 0.85
-        } else if (sub.n < n - 1) {
-          sigma += sub.count * 1.0
-        }
-      } else {
-        // d or f
-        if (sub.n === n && sub.l === family) {
-          sigma += sub.count * 0.35
-        } else if (sub.n < n || (sub.n === n && (sub.l === 's' || sub.l === 'p'))) {
-          sigma += sub.count * 1.0
-        }
-      }
-    }
-    return Math.max(1.0, elementNumber - sigma)
-  }
-
-  // Subshell exists in configuration
-  const slater = calculateSlaterScreening(elementNumber, config)
+  const targetGroupLabel = getSlaterGroupLabel(n, family)
+  const slater = calculateSlaterScreening(elementNumber, config, targetGroupLabel)
   return Math.max(1.0, slater.zEffective)
 }
 
@@ -457,7 +635,9 @@ export interface OrbitalMetadata {
   isGroundOccupied: boolean
   groundOccupancy: number
   zEffective: number
-  rPeakBoher: number // Approximate peak radius in a₀
+  rPeakBoher: number // Numerically computed principal peak radius in a₀
+  nodeRadii: number[] // Exact locations of radial nodes in a₀
+  allPeaks: { radius: number; probability: number }[] // All local probability maxima
 }
 
 /**
@@ -496,8 +676,8 @@ export function getOrbitalMetadata(
     }
   }
 
-  // Peak radius estimate: r_peak ≈ n² / Z_eff
-  const rPeakBoher = (n * n) / zeff
+  // Exact numerical radial maxima and nodes
+  const maxima = findRadialMaxima(n, l, zeff)
 
   return {
     n,
@@ -512,7 +692,9 @@ export function getOrbitalMetadata(
     isGroundOccupied,
     groundOccupancy,
     zEffective: zeff,
-    rPeakBoher,
+    rPeakBoher: maxima.principalPeak,
+    nodeRadii: maxima.nodes,
+    allPeaks: maxima.allPeaks,
   }
 }
 
@@ -528,6 +710,11 @@ export interface OrbitalSampleResult {
  * Rejection sampling of 3D orbital probability density |ψ|² with phase attribution.
  * Generates points proportional to |ψ|² and tags each point with the algebraic sign
  * of ψ (wavefunction phase).
+ *
+ * Employs factorized spherical sampling:
+ *   P(r, theta, phi) dr dOmega = [r² |R_nl(r)|² dr] * [|Y_l,orient(theta, phi)|² dOmega]
+ * utilizing numerically determined global radial maxima and analytical spherical harmonic bounds.
+ * Eliminates artificial fallback points and rejection envelope underestimations.
  */
 export function sampleOrbitalField(
   n: number,
@@ -540,11 +727,19 @@ export function sampleOrbitalField(
   const orientInfo = ORBITAL_ORIENTATIONS[orientation]
   const l = FAMILY_TO_L[orientInfo.family]
 
-  // Dynamic spatial bounding extent based on principal quantum number and effective charge
-  // Visual scaling: normalized to maintain comfortable viewing size in Three.js viewport
-  const visualScale = 1.0 // scaled in scene space
-  const rExtent = Math.max(3.5, (n * n * 2.8) / Math.sqrt(zeff))
-  const boxExtent = rExtent * 1.15
+  const visualScale = 1.0
+  const maxima = findRadialMaxima(n, l, zeff)
+  const principalPeak = maxima.principalPeak
+  const maxPrad = Math.max(
+    ...maxima.allPeaks.map((p) => p.probability),
+    evaluateRadialProbability(n, l, principalPeak, zeff),
+    1e-6
+  )
+  const maxY2 = getMaxSphericalHarmonicDensity(orientation)
+
+  // Radial cutoff where wavefunction probability density falls below 1e-5 of max
+  const rCutoff = Math.max(principalPeak * 2.8, principalPeak + (10.0 * n) / zeff, 3.5)
+  const boxExtent = rCutoff * 1.15
 
   const positions = new Float32Array(count * 3)
   const phases = new Float32Array(count)
@@ -556,66 +751,120 @@ export function sampleOrbitalField(
     return rng / 4294967296
   }
 
-  // Find approximate maximum density for rejection sampling
-  let maxPsi2 = 0
-  const probeCount = 200
-  for (let i = 0; i < probeCount; i++) {
-    const rx = (random() * 2 - 1) * rExtent
-    const ry = (random() * 2 - 1) * rExtent
-    const rz = (random() * 2 - 1) * rExtent
-    const psi = evaluateOrbitalWavefunction(n, orientation, rx, ry, rz, zeff)
-    const psi2 = psi * psi
-    if (psi2 > maxPsi2) maxPsi2 = psi2
-  }
-  if (maxPsi2 <= 0) maxPsi2 = 0.01
+  const sceneScale = visualScale / Math.max(1.0, (n * 1.2) / Math.sqrt(zeff))
 
   let accepted = 0
   let iterations = 0
-  const maxIterations = count * 120
+  const maxIterations = count * 200
 
-  while (accepted < count && iterations < maxIterations) {
-    iterations++
+  if (slicePlane === 'none') {
+    // Exact independent factorized spherical rejection sampling
+    // p(r, theta, phi) dr dOmega = [r^2 |R_nl(r)|^2 dr] * [|Y_l,orient(theta, phi)|^2 dOmega]
+    while (accepted < count && iterations < maxIterations) {
+      iterations++
 
-    let px = (random() * 2 - 1) * boxExtent
-    let py = (random() * 2 - 1) * boxExtent
-    let pz = (random() * 2 - 1) * boxExtent
+      // 1. Draw r from P_rad(r)
+      let rCandidate = 0
+      let rAccepted = false
+      for (let rTry = 0; rTry < 30; rTry++) {
+        const testR = random() * rCutoff
+        const prad = evaluateRadialProbability(n, l, testR, zeff)
+        if (random() * maxPrad <= prad) {
+          rCandidate = testR
+          rAccepted = true
+          break
+        }
+      }
+      if (!rAccepted) continue
 
-    // Cross-section slice constraint: restrict point sampling to a thin slice
-    if (slicePlane === 'xy') {
-      pz = (random() * 2 - 1) * 0.18
-    } else if (slicePlane === 'xz') {
-      py = (random() * 2 - 1) * 0.18
-    } else if (slicePlane === 'yz') {
-      px = (random() * 2 - 1) * 0.18
-    }
+      // 2. Draw unit vector u on S^2 from |Y_l,orient(u)|^2
+      let ux = 0
+      let uy = 0
+      let uz = 0
+      let yVal = 0
+      let yAccepted = false
 
-    const psi = evaluateOrbitalWavefunction(n, orientation, px, py, pz, zeff)
-    const psi2 = psi * psi
+      for (let uTry = 0; uTry < 30; uTry++) {
+        const testUz = random() * 2.0 - 1.0
+        const phi = random() * 2.0 * Math.PI
+        const uRho = Math.sqrt(Math.max(0, 1.0 - testUz * testUz))
+        const testUx = uRho * Math.cos(phi)
+        const testUy = uRho * Math.sin(phi)
 
-    // Rejection threshold
-    if (random() * maxPsi2 * 1.2 <= psi2) {
-      // Scene coordinates with normalized scale
-      const sceneScale = visualScale / Math.max(1.0, (n * 1.2) / Math.sqrt(zeff))
+        const testY = evaluateRealSphericalHarmonic(orientation, testUx, testUy, testUz)
+        const y2 = testY * testY
+        if (random() * maxY2 <= y2) {
+          ux = testUx
+          uy = testUy
+          uz = testUz
+          yVal = testY
+          yAccepted = true
+          break
+        }
+      }
+      if (!yAccepted) continue
+
+      // 3. Reconstruct 3D Cartesian coordinates and evaluate phase
+      const px = rCandidate * ux
+      const py = rCandidate * uy
+      const pz = rCandidate * uz
+
+      const radialVal = evaluateRadialWavefunction(n, l, rCandidate, zeff)
+      const psi = radialVal * yVal
+      const prad = rCandidate * rCandidate * radialVal * radialVal
+      const y2 = yVal * yVal
+      const density = Math.min(1.0, (prad / maxPrad) * (y2 / maxY2))
+
       positions[accepted * 3] = px * sceneScale
       positions[accepted * 3 + 1] = py * sceneScale
       positions[accepted * 3 + 2] = pz * sceneScale
 
       phases[accepted] = psi >= 0 ? 1.0 : -1.0
-      densities[accepted] = Math.min(1.0, psi2 / maxPsi2)
+      densities[accepted] = density
       accepted++
     }
-  }
+  } else {
+    // Slicing across a plane (cross-section)
+    // Envelope: max |psi|^2 <= (max R^2) * maxY2
+    let maxR2 = 0
+    const rScanSteps = 150
+    for (let i = 0; i <= rScanSteps; i++) {
+      const r = (i / rScanSteps) * rCutoff
+      const rVal = evaluateRadialWavefunction(n, l, r, zeff)
+      const r2 = rVal * rVal
+      if (r2 > maxR2) maxR2 = r2
+    }
+    const maxPsi2 = Math.max(1e-7, maxR2 * maxY2)
+    const sliceThickness = 0.18
 
-  // Fill any remaining points with valid coordinates if loop hit maximum iterations
-  while (accepted < count) {
-    const fallbackAngle = (accepted / count) * Math.PI * 2
-    const fallbackR = (n * n * 0.5) / Math.sqrt(zeff)
-    positions[accepted * 3] = Math.cos(fallbackAngle) * fallbackR
-    positions[accepted * 3 + 1] = Math.sin(fallbackAngle) * fallbackR
-    positions[accepted * 3 + 2] = 0
-    phases[accepted] = 1.0
-    densities[accepted] = 0.5
-    accepted++
+    while (accepted < count && iterations < maxIterations) {
+      iterations++
+
+      let px = (random() * 2.0 - 1.0) * rCutoff
+      let py = (random() * 2.0 - 1.0) * rCutoff
+      let pz = (random() * 2.0 - 1.0) * rCutoff
+
+      if (slicePlane === 'xy') {
+        pz = (random() * 2.0 - 1.0) * sliceThickness
+      } else if (slicePlane === 'xz') {
+        py = (random() * 2.0 - 1.0) * sliceThickness
+      } else if (slicePlane === 'yz') {
+        px = (random() * 2.0 - 1.0) * sliceThickness
+      }
+
+      const psi = evaluateOrbitalWavefunction(n, orientation, px, py, pz, zeff)
+      const psi2 = psi * psi
+
+      if (random() * maxPsi2 <= psi2) {
+        positions[accepted * 3] = px * sceneScale
+        positions[accepted * 3 + 1] = py * sceneScale
+        positions[accepted * 3 + 2] = pz * sceneScale
+
+        phases[accepted] = psi >= 0 ? 1.0 : -1.0
+        densities[accepted] = Math.min(1.0, psi2 / maxPsi2)
+        accepted++
+      }
+    }
   }
 
   return {
@@ -623,6 +872,6 @@ export function sampleOrbitalField(
     phases,
     densities,
     extent: boxExtent,
-    pointCount: count,
+    pointCount: accepted,
   }
 }
