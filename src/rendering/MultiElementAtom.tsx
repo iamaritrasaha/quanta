@@ -6,6 +6,7 @@ import { electronPaths, groundModel, jumpProgress, shellRadius, type ModelShell 
 import { useQuantaStore } from '../state/quantaStore'
 import { useReducedMotion } from './useReducedMotion'
 import { PhotonWavePacket } from './PhotonWavePacket'
+import { OrbitalCloud } from './OrbitalCloud'
 
 // Deterministic schematic radial density. These points are not a many-electron wavefunction.
 function cloudPositions(shells: ModelShell[], seed: number): Float32Array {
@@ -26,6 +27,7 @@ function cloudPositions(shells: ModelShell[], seed: number): Float32Array {
 export function MultiElementAtom({ element }: { element: Element }) {
   const model = useQuantaStore((s) => s.sharedElement)
   const mode = useQuantaStore((s) => s.mode)
+  const orbitalSelection = useQuantaStore((s) => s.orbitalSelection)
   const reducedMotion = useReducedMotion()
   const size = useThree((s) => s.size)
   const instances = useRef<THREE.InstancedMesh>(null!)
@@ -101,14 +103,27 @@ export function MultiElementAtom({ element }: { element: Element }) {
           </mesh>
         </group>
         <group visible={quantum}>
-          <points name="shell-density" ref={sourceCloud} frustumCulled={false}>
-            <bufferGeometry><bufferAttribute attach="attributes-position" args={[fromCloud, 3]} /></bufferGeometry>
-            <pointsMaterial color={color} size={0.045} transparent opacity={0.48} depthWrite={false} blending={THREE.AdditiveBlending} />
-          </points>
-          <points ref={targetCloud} frustumCulled={false}>
-            <bufferGeometry><bufferAttribute attach="attributes-position" args={[toCloud, 3]} /></bufferGeometry>
-            <pointsMaterial color={color} size={0.045} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
-          </points>
+          {orbitalSelection.displayType === 'totalShell' ? (
+            <>
+              <points name="shell-density" ref={sourceCloud} frustumCulled={false}>
+                <bufferGeometry><bufferAttribute attach="attributes-position" args={[fromCloud, 3]} /></bufferGeometry>
+                <pointsMaterial color={color} size={0.045} transparent opacity={0.48} depthWrite={false} blending={THREE.AdditiveBlending} />
+              </points>
+              <points ref={targetCloud} frustumCulled={false}>
+                <bufferGeometry><bufferAttribute attach="attributes-position" args={[toCloud, 3]} /></bufferGeometry>
+                <pointsMaterial color={color} size={0.045} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
+              </points>
+            </>
+          ) : (
+            <OrbitalCloud
+              elementNumber={element.number}
+              n={orbitalSelection.n}
+              family={orbitalSelection.family}
+              orientation={orbitalSelection.orientation}
+              slicePlane={orbitalSelection.slicePlane}
+              viewMode={orbitalSelection.viewMode}
+            />
+          )}
         </group>
         <mesh>
           <sphereGeometry args={[0.32 + Math.min(element.number, 118) * 0.001, 28, 24]} />

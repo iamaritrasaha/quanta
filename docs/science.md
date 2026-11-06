@@ -295,7 +295,59 @@ Reference persistent-line wavelengths remain architecturally separate from level
 
 ---
 
-## Multi-Element Scope (Z = 6–118)
+## Multi-Element Scope & V4 Universal Scientific Architecture (Z = 6–118)
+
+Carbon through Oganesson are powered by QUANTA V4's **Universal Scientific Architecture**, elevating every element to the presentation, educational depth, and mathematical rigor established by Hydrogen.
+
+### 1. Multi-Electron Hamiltonian Formulation
+For any neutral atom with atomic number $Z$, the non-relativistic many-electron Hamiltonian in the fixed-nucleus approximation is:
+
+$\hat{H} = \sum_{i=1}^Z \left(-\frac{\hbar^2}{2m_e}\nabla_i^2 - \frac{Ze^2}{4\pi\varepsilon_0 r_i}\right) + \sum_{i < j}^Z \frac{e^2}{4\pi\varepsilon_0 r_{ij}}$
+
+The inter-electronic Coulomb repulsion terms $\frac{e^2}{4\pi\varepsilon_0 r_{ij}}$ couple all $Z$ spatial coordinates, rendering the Schrödinger equation analytically non-separable. Multi-electron atoms cannot be solved by single-electron Bohr or Rydberg formulas without approximation.
+
+### 2. Slater's Rules & Effective Nuclear Charge ($Z_{\text{eff}}$)
+To bridge exact many-body theory with pedagogical visualization, QUANTA V4 integrates an exact implementation of **John C. Slater's rules** (Phys. Rev. 36, 57, 1930). Slater's model approximates the complex inter-electronic repulsion as a net spherically symmetric screening field $\sigma$:
+
+$Z_{\text{eff}} = Z - \sigma$
+
+Electrons are partitioned into standard Slater groups:
+$[1\text{s}], [2\text{s}, 2\text{p}], [3\text{s}, 3\text{p}], [3\text{d}], [4\text{s}, 4\text{p}], [4\text{d}], [4\text{f}], [5\text{s}, 5\text{p}], \dots$
+
+- **For an outer $(\text{n}\text{s}, \text{n}\text{p})$ electron**:
+  - Other electrons in the same $(\text{n}\text{s}, \text{n}\text{p})$ group contribute $0.35$ each (except $[1\text{s}]$, which contributes $0.30$).
+  - Electrons in $(n-1)$ shells contribute $0.85$ each.
+  - Electrons in $(n-2)$ and deeper shells contribute $1.00$ each.
+- **For an $(\text{n}\text{d})$ or $(\text{n}\text{f})$ electron**:
+  - Other electrons in the same group contribute $0.35$ each.
+  - All electrons in groups to the left contribute $1.00$ each.
+
+The resulting effective one-electron potential:
+$V_{\text{eff}}(r) \approx -\frac{Z_{\text{eff}}\,e^2}{4\pi\varepsilon_0 r}$
+governs the valence electron binding estimates presented in QUANTA's Equation Inspector across all 118 elements.
+
+### 3. Scientific Model Tier Classification
+To maintain absolute scientific honesty without manufacturing unmeasured physics:
+- **Tier A (Exact Analytic)**: Hydrogen ($Z=1$) — exact Schrödinger wavefunctions $|\psi_{nlm}(r,\theta,\phi)|^2$.
+- **Tier B (Dedicated Multi-Electron)**: Helium through Boron ($Z=2–5$) — dedicated Hamiltonians, spin-exchange splitting ($S=0$ vs. $S=1$), and specialized subshell visualizers.
+- **Tier C (Universal Semi-Empirical & Slater Screening)**: Carbon through Hassium ($Z=6–108$) — Slater screening analysis, full subshell breakdowns ($s, p, d, f$), NIST ASD tabulated level ladders, and derived vacuum/air spectroscopy.
+- **Tier D (Synthetic / Unmeasured Optical Spectra)**: Meitnerium through Oganesson ($Z=109–118$) — theoretical electronic structures, predicted ground states, and explicit educational notices detailing the absence of laboratory-confirmed neutral bound transitions.
+
+### 4. Spectroscopy & Dispersion Conventions
+Transition energies $\Delta E$ and vacuum wavenumbers $\Delta\tilde{\nu}$ follow exact conservation:
+$\Delta E = E_{\text{upper}} - E_{\text{lower}}, \quad \lambda_{\text{vac}} = \frac{10^7}{\Delta\tilde{\nu}\text{ (cm}^{-1}\text{)}}$
+$\Delta E\text{ (eV)} = \Delta\tilde{\nu}\text{ (cm}^{-1}\text{)} \times 1.239841984\times 10^{-4}$
+
+For transitions in the visible and near-ultraviolet range ($\lambda \ge 200\text{ nm}$), refractive index correction is applied using standard dry air dispersion ($15^\circ\text{C}, 101.325\text{ kPa}$):
+$\lambda_{\text{air}} = \frac{\lambda_{\text{vac}}}{n_{\text{air}}(\lambda)}$
+
+### 5. Heavy-Element Relativistic Considerations
+For heavy elements ($Z \ge 55$, notably Gold $Z=79$, Mercury $Z=80$, and Actinoids), relativistic mass increase of inner electrons ($v/c \approx Z/137$) causes:
+1. **Direct Relativistic Contraction**: $s_{1/2}$ and $p_{1/2}$ orbitals contract radially and are stabilized energetically.
+2. **Indirect Relativistic Expansion**: Enhanced core screening causes outer $d$ and $f$ orbitals to expand radially.
+3. **Spin-Orbit Splitting**: Large $\mathbf{L}\cdot\mathbf{S}$ coupling breaks $LS$ term coupling into $jj$-coupling manifolds. In Gold ($Z=79$), the contraction of $6\text{s}$ and expansion of $5\text{d}$ narrows the $5\text{d} \to 6\text{s}$ transition gap into the blue optical spectrum ($\approx 2.3\text{ eV}$), absorbing blue-violet light and producing Gold's signature yellow metallic luster. In Oganesson ($Z=118$), extreme spin-orbit splitting destabilizes the $7\text{p}_{3/2}$ subshell, theoretically smearing the valence electron density into a uniform gas.
+
+## Multi-Element Interactive Implementation
 
 Carbon through Oganesson use the shared interactive instrument, following the state selection and photon flow of Hydrogen. The published ground-state configuration supplies the initial principal-shell counts. NIST configurations can also be selected when their omitted closed core can be restored while conserving the atomic electron count. Unmapped configurations remain reference records and cannot be selected in the model.
 

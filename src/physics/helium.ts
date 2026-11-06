@@ -835,7 +835,29 @@ export function heliumOrbitalDensity(
     return coreDensity + valenceDensity
   }
 
-  // 4. Excited 1s3d state (one 1s core electron + 3d valence electron)
+  // 4. Excited 1s3s state
+  if (configuration.startsWith('1s3s')) {
+    const coreDensity = Math.exp(-2 * 2.0 * r)
+    const rho = (2 * 1.0 * r) / 3
+    const radial3s = (27 - 18 * rho + 2 * rho * rho) * Math.exp(-rho / 2)
+    const valenceDensity = radial3s * radial3s * 0.0006
+    if (component === 'core') return coreDensity * 2.0
+    if (component === 'valence') return valenceDensity * 2.0
+    return coreDensity + valenceDensity
+  }
+
+  // 5. Excited 1s3p state
+  if (configuration.startsWith('1s3p')) {
+    const coreDensity = Math.exp(-2 * 2.0 * r)
+    const rho = (2 * 1.0 * r) / 3
+    const radial3p = (6 - rho) * rho * Math.exp(-rho / 2)
+    const valenceDensity = z * z * (radial3p * radial3p) * 0.0008
+    if (component === 'core') return coreDensity * 2.0
+    if (component === 'valence') return valenceDensity * 2.0
+    return coreDensity + valenceDensity
+  }
+
+  // 6. Excited 1s3d state (one 1s core electron + 3d valence electron)
   if (configuration.startsWith('1s3d')) {
     const coreDensity = Math.exp(-2 * 2.0 * r)
     const angular3d = 3 * z * z - r2

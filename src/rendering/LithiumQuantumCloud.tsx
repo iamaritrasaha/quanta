@@ -47,6 +47,9 @@ export function LithiumQuantumCloud() {
       '1s2_3d_total': sampleLithiumDensity('1s2_3d', sampleCount, 'total', 801),
       '1s2_3d_core': sampleLithiumDensity('1s2_3d', Math.floor(sampleCount * 0.55), 'core', 802),
       '1s2_3d_valence': sampleLithiumDensity('1s2_3d', Math.floor(sampleCount * 0.45), 'valence', 803),
+      '1s2_4f_total': sampleLithiumDensity('1s2_4f', sampleCount, 'total', 901),
+      '1s2_4f_core': sampleLithiumDensity('1s2_4f', Math.floor(sampleCount * 0.55), 'core', 902),
+      '1s2_4f_valence': sampleLithiumDensity('1s2_4f', Math.floor(sampleCount * 0.45), 'valence', 903),
     }
   }, [sampleCount])
 
@@ -68,7 +71,8 @@ export function LithiumQuantumCloud() {
   const getBufferKey = (levelId: string) => {
     if (levelId.includes('2p')) return '1s2_2p'
     if (levelId.includes('3s')) return '1s2_3s'
-    if (levelId.includes('3d') || levelId.includes('4d') || levelId.includes('4f')) return '1s2_3d'
+    if (levelId.includes('4f')) return '1s2_4f'
+    if (levelId.includes('3d') || levelId.includes('4d')) return '1s2_3d'
     if (levelId.includes('3p') || levelId.includes('4p')) return '1s2_2p'
     if (levelId.includes('4s')) return '1s2_3s'
     return '1s2_2s'

@@ -3,6 +3,7 @@ import { getElementByKey } from '../data/elements'
 import { groundModel, modelSeparation, type ElementModelState } from '../physics/elementModel'
 import { create } from 'zustand'
 import { ORBITALS, type UiOrbitalKey } from '../physics/quantum'
+import type { OrbitalFamily, RealOrientationKey } from '../physics/orbitals'
 import { safeHydrogenTransition, type HydrogenTransition } from '../physics/hydrogen'
 import {
   findHeliumTransition,
@@ -151,6 +152,24 @@ export interface ElementJump {
   duration: number
 }
 
+export interface UniversalOrbitalState {
+  n: number
+  family: OrbitalFamily
+  orientation: RealOrientationKey
+  slicePlane: 'none' | 'xy' | 'xz' | 'yz'
+  viewMode: 'phase' | 'density'
+  displayType: 'orbital' | 'totalShell'
+}
+
+export const defaultOrbitalSelection: UniversalOrbitalState = {
+  n: 1,
+  family: 's',
+  orientation: 's',
+  slicePlane: 'none',
+  viewMode: 'phase',
+  displayType: 'orbital',
+}
+
 export interface SharedElementState {
   selected: ElementModelState | null
   target: ElementModelState | null
@@ -180,6 +199,10 @@ interface QuantaState {
   startElementTransition: (target: ElementModelState) => boolean
   advanceElementTransition: (seconds: number) => void
   cancelElementTransition: () => void
+
+  // Universal Orbital State
+  orbitalSelection: UniversalOrbitalState
+  setOrbitalSelection: (selection: Partial<UniversalOrbitalState>) => void
 
   // Legacy/Direct Accessors for Hydrogen (Preserves regression benchmark)
   level: number
@@ -335,6 +358,41 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
   beryllium: { ...defaultBerylliumState },
   boron: { ...defaultBoronState },
   sharedElement: { selected: null, target: null, activeTransition: null },
+  orbitalSelection: { ...defaultOrbitalSelection },
+  setOrbitalSelection: (selection) => {
+    const current = get()
+    const next = { ...current.orbitalSelection, ...selection }
+
+    let legacyOrbital: UiOrbitalKey | null = null
+    if (next.n === 1 && next.family === 's') legacyOrbital = '1s'
+    else if (next.n === 2 && next.family === 's') legacyOrbital = '2s'
+    else if (next.n === 2 && next.family === 'p' && next.orientation === 'pz') legacyOrbital = '2p'
+
+    const isHydrogen = current.activeElement === 'hydrogen'
+    set((state) => ({
+      orbitalSelection: next,
+      ...(isHydrogen && selection.n !== undefined
+        ? {
+            level: next.n,
+            orbital: legacyOrbital,
+            hydrogen: {
+              ...state.hydrogen,
+              level: next.n,
+              orbital: legacyOrbital,
+            },
+          }
+        : {}),
+      ...(isHydrogen && (selection.family !== undefined || selection.orientation !== undefined)
+        ? {
+            orbital: legacyOrbital,
+            hydrogen: {
+              ...state.hydrogen,
+              orbital: legacyOrbital,
+            },
+          }
+        : {}),
+    }))
+  },
 
   selectElementState: (selected) => {
     if (selected.symbol !== getElementByKey(get().activeElement)?.symbol || get().sharedElement.activeTransition) return
@@ -493,6 +551,8 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
 
   setOrbital: (orbital) => {
     const principalN = mapOrbitalToLevel(orbital) ?? 1
+    const family = orbital === '2p' ? 'p' : 's'
+    const orientation = orbital === '2p' ? 'pz' : 's'
     set((state) => ({
       orbital,
       level: principalN,
@@ -500,6 +560,12 @@ export const useQuantaStore = create<QuantaState>((set, get) => ({
         ...state.hydrogen,
         orbital,
         level: principalN,
+      },
+      orbitalSelection: {
+        ...state.orbitalSelection,
+        n: principalN,
+        family,
+        orientation,
       },
     }))
   },

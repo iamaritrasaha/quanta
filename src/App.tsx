@@ -82,7 +82,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
                   ? '⁹Be · 4p⁺ 5n⁰ 4e⁻ · 9.0121831(5) u'
                   : isBoron
                   ? '¹¹B · 5p⁺ 6n⁰ 5e⁻ · [10.806, 10.821] u'
-                  : `Neutral atom · ${selectedElement?.category ?? 'Element'}`}
+                  : `Neutral atom · ${selectedElement?.number ?? ''}p⁺ ${selectedElement?.number ?? ''}e⁻ · ~${selectedProperties?.atomicMassU ? `${selectedProperties.atomicMassU} u` : ''} · ${selectedElement?.category ?? 'Element'}`}
               </span>
             </div>
           </div>
