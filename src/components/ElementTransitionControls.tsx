@@ -2,15 +2,23 @@ import { defaultTarget, getElementStates } from '../data/elementStates'
 import { groundModel, modelSeparation } from '../physics/elementModel'
 import { useQuantaStore } from '../state/quantaStore'
 import { useMemo } from 'react'
+import { StateCombobox } from './common/StateCombobox'
+import { formatElementStateOption } from './common/stateComboboxHelpers'
 
 export function ElementTransitionControls({ symbol }: { symbol: string }) {
   const states = useMemo(() => getElementStates(symbol), [symbol])
+  const stateOptions = useMemo(
+    () => states.map((s, i) => formatElementStateOption(s, i === 0)),
+    [states]
+  )
+
   const model = useQuantaStore((s) => s.sharedElement)
   const select = useQuantaStore((s) => s.selectElementState)
   const setTarget = useQuantaStore((s) => s.setElementTarget)
   const start = useQuantaStore((s) => s.startElementTransition)
   const cancel = useQuantaStore((s) => s.cancelElementTransition)
   const playing = useQuantaStore((s) => s.playing)
+
   const initial = model.selected ?? states[0]
   const target = model.target ?? defaultTarget(states)
   const separation = modelSeparation(initial, target)
@@ -31,17 +39,35 @@ export function ElementTransitionControls({ symbol }: { symbol: string }) {
       </div>
       <div className="level-select-grid">
         <div className="select-field">
-          <label htmlFor="element-initial-state">INITIAL STATE</label>
-          <select id="element-initial-state" value={initial.id} disabled={Boolean(jump)} onChange={(e) => select(states.find((s) => s.id === e.target.value)!)}>
-            {states.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-          </select>
+          <label id="element-initial-state-label" htmlFor="element-initial-state-trigger">INITIAL STATE</label>
+          <StateCombobox
+            id="element-initial-state"
+            labelId="element-initial-state-label"
+            ariaLabel="Initial quantum state"
+            value={initial.id}
+            disabled={Boolean(jump)}
+            onChange={(val) => {
+              const matched = states.find((s) => s.id === val)
+              if (matched) select(matched)
+            }}
+            options={stateOptions}
+          />
         </div>
         <div className="select-divider">→</div>
         <div className="select-field">
-          <label htmlFor="element-target-state">FINAL STATE</label>
-          <select id="element-target-state" value={target.id} disabled={Boolean(jump)} onChange={(e) => setTarget(states.find((s) => s.id === e.target.value)!)}>
-            {states.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-          </select>
+          <label id="element-target-state-label" htmlFor="element-target-state-trigger">FINAL STATE</label>
+          <StateCombobox
+            id="element-target-state"
+            labelId="element-target-state-label"
+            ariaLabel="Final quantum state"
+            value={target.id}
+            disabled={Boolean(jump)}
+            onChange={(val) => {
+              const matched = states.find((s) => s.id === val)
+              if (matched) setTarget(matched)
+            }}
+            options={stateOptions}
+          />
         </div>
       </div>
       <div className="preset-buttons-row">

@@ -1,6 +1,52 @@
 import { useMemo } from 'react'
 import { useQuantaStore } from '../state/quantaStore'
 import { safeHydrogenTransition } from '../physics/hydrogen'
+import { StateCombobox, type ComboboxOption } from './common/StateCombobox'
+
+const HYDROGEN_LEVEL_OPTIONS: ComboboxOption[] = [
+  {
+    value: '1',
+    label: 'n = 1 (Ground State)',
+    subLabel: 'E = -13.606 eV · 1s Bohr ground state',
+    badge: 'GROUND',
+    badgeVariant: 'ground',
+  },
+  {
+    value: '2',
+    label: 'n = 2 (First Excited)',
+    subLabel: 'E = -3.401 eV · 2s, 2p states · Lyman / Balmer',
+    badge: 'BALMER',
+    badgeVariant: 'nist',
+  },
+  {
+    value: '3',
+    label: 'n = 3 (Second Excited)',
+    subLabel: 'E = -1.512 eV · 3s, 3p, 3d states · Paschen series',
+    badge: 'PASCHEN',
+    badgeVariant: 'nist',
+  },
+  {
+    value: '4',
+    label: 'n = 4 (Third Excited)',
+    subLabel: 'E = -0.850 eV · 4s, 4p, 4d, 4f states · Brackett',
+    badge: 'BRACKETT',
+    badgeVariant: 'default',
+  },
+  {
+    value: '5',
+    label: 'n = 5 (Fourth Excited)',
+    subLabel: 'E = -0.544 eV · Pfund series',
+    badge: 'PFUND',
+    badgeVariant: 'default',
+  },
+  {
+    value: '6',
+    label: 'n = 6 (Fifth Excited)',
+    subLabel: 'E = -0.378 eV · Humphreys series',
+    badge: 'HUMPHREYS',
+    badgeVariant: 'default',
+  },
+]
 
 export function TransitionControls() {
   const initialLevel = useQuantaStore((s) => s.initialLevel)
@@ -56,37 +102,33 @@ export function TransitionControls() {
       {/* Level Selectors */}
       <div className="level-select-grid">
         <div className="select-field">
-          <label htmlFor="initial-level-select">INITIAL STATE (nᵢ)</label>
-          <select
+          <label id="initial-level-select-label" htmlFor="initial-level-select-trigger">INITIAL STATE (nᵢ)</label>
+          <StateCombobox
             id="initial-level-select"
-            value={initialLevel}
+            labelId="initial-level-select-label"
+            ariaLabel="Initial quantum level"
+            value={String(initialLevel)}
             disabled={isTransitioning}
-            onChange={(e) => setInitialLevel(Number(e.target.value))}
-          >
-            {[1, 2, 3, 4, 5, 6].map((n) => (
-              <option key={n} value={n}>
-                n = {n}
-              </option>
-            ))}
-          </select>
+            searchable={false}
+            onChange={(val) => setInitialLevel(Number(val))}
+            options={HYDROGEN_LEVEL_OPTIONS}
+          />
         </div>
 
         <div className="select-divider">→</div>
 
         <div className="select-field">
-          <label htmlFor="target-level-select">FINAL STATE (n𝒻)</label>
-          <select
+          <label id="target-level-select-label" htmlFor="target-level-select-trigger">FINAL STATE (n𝒻)</label>
+          <StateCombobox
             id="target-level-select"
-            value={targetLevel}
+            labelId="target-level-select-label"
+            ariaLabel="Final quantum level"
+            value={String(targetLevel)}
             disabled={isTransitioning}
-            onChange={(e) => setTargetLevel(Number(e.target.value))}
-          >
-            {[1, 2, 3, 4, 5, 6].map((n) => (
-              <option key={n} value={n}>
-                n = {n}
-              </option>
-            ))}
-          </select>
+            searchable={false}
+            onChange={(val) => setTargetLevel(Number(val))}
+            options={HYDROGEN_LEVEL_OPTIONS}
+          />
         </div>
       </div>
 
