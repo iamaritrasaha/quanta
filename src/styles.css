@@ -35,6 +35,7 @@
   --glass-blur: blur(20px) saturate(115%);
 
   /* Border Radii */
+  --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
