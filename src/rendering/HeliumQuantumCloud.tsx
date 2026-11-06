@@ -42,6 +42,12 @@ export function HeliumQuantumCloud() {
       '1s3d_total': sampleHeliumDensity('1s3d', sampleCount, 'total', 404),
       '1s3d_core': sampleHeliumDensity('1s3d', Math.floor(sampleCount / 2), 'core', 405),
       '1s3d_valence': sampleHeliumDensity('1s3d', Math.floor(sampleCount / 2), 'valence', 406),
+      '1s3s_total': sampleHeliumDensity('1s3s', sampleCount, 'total', 407),
+      '1s3s_core': sampleHeliumDensity('1s3s', Math.floor(sampleCount / 2), 'core', 408),
+      '1s3s_valence': sampleHeliumDensity('1s3s', Math.floor(sampleCount / 2), 'valence', 409),
+      '1s3p_total': sampleHeliumDensity('1s3p', sampleCount, 'total', 410),
+      '1s3p_core': sampleHeliumDensity('1s3p', Math.floor(sampleCount / 2), 'core', 411),
+      '1s3p_valence': sampleHeliumDensity('1s3p', Math.floor(sampleCount / 2), 'valence', 412),
     }
   }, [sampleCount])
 
@@ -65,8 +71,8 @@ export function HeliumQuantumCloud() {
     if (levelId.startsWith('1s2s')) return '1s2s'
     if (levelId.startsWith('1s2p')) return '1s2p'
     if (levelId.startsWith('1s3d')) return '1s3d'
-    if (levelId.startsWith('1s3p')) return '1s2p'
-    if (levelId.startsWith('1s3s')) return '1s2s'
+    if (levelId.startsWith('1s3p')) return '1s3p'
+    if (levelId.startsWith('1s3s')) return '1s3s'
     return '1s2'
   }
 

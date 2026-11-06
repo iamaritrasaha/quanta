@@ -7,6 +7,7 @@ import { PhotonWavePacket } from './PhotonWavePacket'
 import { getQuantumInteractionPosition } from './transitionCoordinates'
 import { useDisposableGeometry } from './useDisposableGeometry'
 import { useReducedMotion } from './useReducedMotion'
+import { OrbitalCloud } from './OrbitalCloud'
 
 const ORBITAL_COLORS: Record<UiOrbitalKey, string> = {
   '1s': '#93c5fd', // Ethereal silver-sky
@@ -19,6 +20,7 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
   const speed = useQuantaStore((s) => s.animationSpeed)
   const mode = useQuantaStore((s) => s.mode)
   const activeTransition = useQuantaStore((s) => s.activeTransition)
+  const orbitalSelection = useQuantaStore((s) => s.orbitalSelection)
 
   const isQuantum = mode === 'quantum'
   const modelBlendRef = useRef(isQuantum ? 1.0 : 0.0)
@@ -39,6 +41,15 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
     }
   }, [sampleCount])
 
+  // Determine if a higher-shell or custom orbital orientation/slice is selected
+  const isHighShellOrCustom =
+    orbital === null ||
+    orbitalSelection.n >= 3 ||
+    orbitalSelection.family !== (orbital === '2p' ? 'p' : 's') ||
+    orbitalSelection.orientation !== (orbital === '2p' ? 'pz' : 's') ||
+    orbitalSelection.slicePlane !== 'none' ||
+    orbitalSelection.viewMode === 'density'
+
   // Track orbital changes for smooth state crossfade
   useEffect(() => {
     if (orbital !== currentOrbital) {
@@ -54,25 +65,26 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
   const quantumLightRef = useRef<THREE.PointLight>(null!)
 
   const currentGeom = useMemo(() => {
-    if (!currentOrbital) return null
+    if (!currentOrbital || isHighShellOrCustom) return null
     const geom = new THREE.BufferGeometry()
     geom.setAttribute('position', new THREE.BufferAttribute(orbitalBuffers[currentOrbital], 3))
     return geom
-  }, [currentOrbital, orbitalBuffers])
+  }, [currentOrbital, orbitalBuffers, isHighShellOrCustom])
 
   const prevGeom = useMemo(() => {
-    if (!prevOrbital) return null
+    if (!prevOrbital || isHighShellOrCustom) return null
     const geom = new THREE.BufferGeometry()
     geom.setAttribute('position', new THREE.BufferAttribute(orbitalBuffers[prevOrbital], 3))
     return geom
-  }, [prevOrbital, orbitalBuffers])
+  }, [prevOrbital, orbitalBuffers, isHighShellOrCustom])
 
   useDisposableGeometry(currentGeom)
   useDisposableGeometry(prevGeom)
 
   useFrame((_, delta) => {
     // Smoothly damp model transition blend
-    const targetBlend = isQuantum && orbital !== null ? 1.0 : 0.0
+    const hasVisualTarget = orbital !== null || isHighShellOrCustom
+    const targetBlend = isQuantum && hasVisualTarget ? 1.0 : 0.0
     modelBlendRef.current = THREE.MathUtils.damp(
       modelBlendRef.current,
       targetBlend,
@@ -105,7 +117,7 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
     if (currentPointsRef.current) {
       const mat = currentPointsRef.current.material as THREE.PointsMaterial
       mat.opacity = currentAlpha
-      currentPointsRef.current.visible = currentAlpha > 0.005 && currentOrbital !== null
+      currentPointsRef.current.visible = currentAlpha > 0.005 && currentOrbital !== null && !isHighShellOrCustom
 
       // Subtle quantum phase fluctuation and breathing
       if (playing && !reducedMotion && currentOrbital !== null) {
@@ -118,12 +130,12 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
     if (prevPointsRef.current && prevGeom) {
       const mat = prevPointsRef.current.material as THREE.PointsMaterial
       mat.opacity = prevAlpha
-      prevPointsRef.current.visible = prevAlpha > 0.005
+      prevPointsRef.current.visible = prevAlpha > 0.005 && !isHighShellOrCustom
     }
 
     if (quantumLightRef.current) {
       quantumLightRef.current.intensity =
-        (2.5 + transitionFieldBrighten * 4.0) * quantumOpacity * (currentOrbital !== null ? 1 : 0)
+        (2.5 + transitionFieldBrighten * 4.0) * quantumOpacity * (hasVisualTarget ? 1 : 0)
     }
 
     if (groupRef.current) {
@@ -142,8 +154,20 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
 
   return (
     <group ref={groupRef} visible={false}>
-      {/* Current Orbital State Cloud */}
-      {currentGeom && (
+      {/* High-Shell / Custom Orbital Representation */}
+      {isHighShellOrCustom && (
+        <OrbitalCloud
+          elementNumber={1}
+          n={orbitalSelection.n}
+          family={orbitalSelection.family}
+          orientation={orbitalSelection.orientation}
+          slicePlane={orbitalSelection.slicePlane}
+          viewMode={orbitalSelection.viewMode}
+        />
+      )}
+
+      {/* Classic 1s, 2s, 2p Orbital Cloud */}
+      {currentGeom && !isHighShellOrCustom && (
         <points ref={currentPointsRef}>
           <primitive object={currentGeom} attach="geometry" />
           <pointsMaterial
@@ -158,7 +182,7 @@ export function QuantumCloud({ orbital }: { orbital: UiOrbitalKey | null }) {
       )}
 
       {/* Previous Orbital State Cloud during crossfade */}
-      {prevGeom && (
+      {prevGeom && !isHighShellOrCustom && (
         <points ref={prevPointsRef}>
           <primitive object={prevGeom} attach="geometry" />
           <pointsMaterial

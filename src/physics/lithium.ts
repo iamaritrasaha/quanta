@@ -747,10 +747,19 @@ export function lithiumOrbitalDensity(
     const zVal = 1.0
     const angular = 3 * z * z - r2
     valenceDensity = angular * angular * Math.exp((-2 * zVal * r) / 3) * 0.005
-  } else if (configuration.includes('4d') || configuration.includes('4f')) {
+  } else if (configuration.includes('4d')) {
     const zVal = 1.0
     const angular = 3 * z * z - r2
-    valenceDensity = angular * angular * Math.exp((-zVal * r) / 2) * 0.002
+    const rho = (zVal * r) / 2
+    const radial = rho * rho * (1 - rho / 12) * Math.exp(-rho / 2)
+    valenceDensity = angular * angular * (radial * radial) * 0.0005
+  } else if (configuration.includes('4f')) {
+    // True 4f angular function Y_30 proportional to z(5z² - 3r²)
+    const zVal = 1.0
+    const rho = (zVal * r) / 2
+    const angularF = z * (5 * z * z - 3 * r2)
+    const radialF = Math.pow(rho, 3) * Math.exp(-rho / 2)
+    valenceDensity = ((angularF * angularF) / (r2 * r2 * r2 || 1)) * (radialF * radialF) * 0.00008
   } else {
     // Default to ground 2s
     const zVal = LITHIUM_VALENCE_2S_ZEFF

@@ -767,11 +767,11 @@ function singleElectronValenceDensity(label: ValenceSubshell, x: number, y: numb
       return z * z * (radial * radial) * 0.000002
     }
     case '4f': {
-      // Approximate high-l directional visualization: reuses the cloverleaf angular
-      // factor at a longer radial decay length. Not individually Slater-derived.
+      // True 4f angular function Y_30 proportional to z(5z² - 3r²)
       const rho = (zVal * r) / 2
-      const angular = 3 * z * z - r2
-      return angular * angular * Math.exp(-rho) * 0.0009
+      const angularF = z * (5 * z * z - 3 * r2)
+      const radialF = Math.pow(rho, 3) * Math.exp(-rho / 2)
+      return ((angularF * angularF) / (r2 * r2 * r2 || 1)) * (radialF * radialF) * 0.00008
     }
   }
 }

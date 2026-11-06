@@ -2,141 +2,175 @@
 
 **Matter, visualized.**
 
-An interactive atomic physics instrument for exploring all 118 elements: atomic structure, electron configurations, photon transitions, energy levels, and spectroscopy.
+An interactive atomic physics observatory and scientific instrument exploring all 118 chemical elements: atomic structure, electron configurations, quantum mechanics, photon transitions, Grotrian energy diagrams, and continuous spectroscopy.
 
-**[Open QUANTA](https://iamaritrasaha.github.io/quanta/)**
+**[Launch QUANTA Observatory](https://iamaritrasaha.github.io/quanta/)**
 
-## Element Coverage
+---
 
-All 118 periodic-table tiles open an instrument. The scientific models differ by element:
+## QUANTA V4 — Complete Atomic Exploration
 
-| Elements | Structure and quantum view | Energy levels and spectra |
-| --- | --- | --- |
-| Hydrogen | Conceptual Bohr orbits for n = 1–6; analytical 1s, 2s, and 2p probability densities | Hydrogen energy relations and Rydberg series calculations |
-| Helium–Boron | Dedicated shell models and approximate reduced electron densities | Curated neutral-atom levels and spectral lines, with air/vacuum labels |
-| Carbon–Oganesson | Shared interactive shell models and schematic radial occupancy clouds | Bundled NIST neutral-atom levels where available; vacuum wavelengths derived from selected level differences |
+QUANTA V4 systematically eliminates all qualitative differences across all 118 elements, bringing every single element to the visual, mathematical, and interactive standard established by Hydrogen.
 
-The shared instrument includes element properties for Carbon through Oganesson and up to 20 retained bound-level records per element. In the bundled NIST snapshot, 103 of those 113 elements have at least one bound level, and 85 have at least two. Missing reference spectra are not filled with invented values.
+Every element provides six rich, dedicated exploration modes powered by rigorous physical models:
 
-## Explore an Atom
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                          QUANTA OBSERVATORY                            │
+│           Interactive 18-Group Periodic Table & Element HUD            │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   118 ATOMIC SCIENTIFIC INSTRUMENTS                    │
+├─────────────────┬──────────────────────────────────────────────────────┤
+│ 1. Overview     │ Identity, discovery, physical properties & contrasts │
+│ 2. Shell Model  │ Interactive 3D shell structure & core/valence counts │
+│ 3. Quantum      │ Subshell breakdown, Slater's Z_eff & Hund's rules    │
+│ 4. Energy Levels│ Visual Grotrian energy ladder & ionization limits    │
+│ 5. Spectra      │ Multi-band spectral strip, landmark lines & air disp.│
+│ 6. Equations    │ 4-stage KaTeX mathematical derivations & Hamiltonian │
+└─────────────────┴──────────────────────────────────────────────────────┘
+```
 
-1. Select an element from the periodic table.
-2. Switch between **Overview**, **Bohr/Shell Model**, **Quantum**, **Energy Levels**, **Spectra**, and **Equations**.
-3. Choose an initial state, final state, or reference transition in the available controls.
-4. Select **ABSORB PHOTON** to excite the atom or **EMIT PHOTON** to relax it. Watch the photon packet and the displayed electronic state change.
+### Scientific Model Tiers
+To preserve physical honesty, QUANTA categorizes atomic systems into four clear model tiers:
 
-### Scene Controls
+| Tier | Scope | Description & Physical Realism |
+| :--- | :--- | :--- |
+| **Tier A — Analytical Hydrogenic** | $\text{H}$ ($Z=1$) | Exact analytical wavefunctions $\psi_{n\ell m}(r,\theta,\phi)$ and Rydberg energy eigenvalues $E_n = -13.6\text{ eV}/n^2$. |
+| **Tier B — Dedicated Multi-Electron** | $\text{He}\text{–}\text{B}$ ($Z=2\text{–}5$) | Multi-electron states with Hartree-Fock/effective-charge screening, singlet/triplet manifolds, and fine structure. |
+| **Tier C — Empirical / Slater Radial** | $\text{C}\text{–}\text{Hs}$ ($Z=6\text{–}108$) | Empirical NIST ASD level ladders, calculated Slater screening constants ($Z_{\text{eff}} = Z - \sigma$), and radial occupancy clouds. |
+| **Tier D — Theoretical / Superheavy** | $\text{Mt}\text{–}\text{Og}$ ($Z=109\text{–}118$) | Relativistic Dirac-Fock predictions and $j\text{-}j$ spin-orbit coupling. Missing optical spectra are honestly flagged rather than fabricated. |
+
+---
+
+## Typography Standard
+
+QUANTA uses a modern, open-source typography standard:
+
+- **Google Sans** (`@fontsource/google-sans`): Navigation, element names, mode tabs, card titles, scientific narratives, and UI text.
+- **JetBrains Mono** (`@fontsource/jetbrains-mono`): Tabular atomic numbers, electron configurations, spectroscopic term symbols, energy values, wavelengths, frequencies, and code.
+- **KaTeX Font Stack**: Mathematical formulas, Greek symbols, and quantum mechanical derivations preserved without distortion.
+
+---
+
+## The Six Exploration Modes
+
+1. **Overview:** Rich scientific dossier with IUPAC category, discovery history, etymology, distinctive physical behavior callout (e.g. relativistic contraction in Au, aufbau anomalies in Cu/Cr), and tabular physical properties.
+2. **Bohr / Shell Model:** 3D interactive shell visualization with principal quantum shells ($K$ through $Q$, $n=1\text{–}7$), clear core versus valence distinctions, and pedagogical notices.
+3. **Quantum:** Complete, interactive 3D atomic orbital explorer covering all $s, p, d, f$ subshells ($n=1\text{–}7$) across all 16 real basis orientations ($p_x/p_y/p_z$, 5 $d$, 7 $f$). Features signed wavefunction phase coloring ($\psi > 0$ Sky Blue vs $\psi < 0$ Coral Amber), internal cross-section slicing (XY, XZ, YZ), interactive SVG radial probability density plots $P(r) = r^2|R(r)|^2$ with peak radius and node markers, ground-state occupancy badges, and live Slater $Z_{\text{eff}}$ screening calculators.
+4. **Energy Levels:** Visual SVG Grotrian energy ladder calibrated in $\text{eV}$ and $\text{cm}^{-1}$, continuum threshold ($E_{\text{ion}}$), visual scale breaks, and selectable bound stationary states.
+5. **Spectra:** Continuous spectral strip covering Vacuum UV ($<200\text{ nm}$), Near UV, Visible ($380\text{–}750\text{ nm}$), and Near IR ($>750\text{ nm}$). Displays landmark spectral lines, vacuum wavelengths, and air wavelengths computed via the **Edlén dispersion formula** ($\lambda \ge 200\text{ nm}$).
+6. **Equations:** 4-stage pedagogical mathematical derivation stepper:
+   - **Stage 01:** Physical Concept
+   - **Stage 02:** Mathematical Formulation ($Z$-electron Hamiltonian, Slater relations)
+   - **Stage 03:** Element & State Parameter Substitution
+   - **Stage 04:** Calculated Results ($Z_{\text{eff}}$, valence binding energy, transition $\Delta E$)
+
+---
+
+## Scene & Transition Controls
 
 | Control | Action |
-| --- | --- |
-| Mouse drag / one-finger drag | Rotate the atom |
-| Mouse wheel / two-finger pinch | Zoom the camera |
-| **PLAY / PAUSE** | Resume or freeze electron motion and an active photon transition |
-| **0.5× / 1× / 2×** | Change animation speed, including during a transition |
-| **RESET VIEW** | Restore the default camera position |
-| **RESET ATOM** | Restore the selected element's ground state |
-| **CANCEL TRANSITION** | Stop a running transition and return to its initial electronic state |
+| :--- | :--- |
+| **Mouse Drag / Touch Drag** | Orbit and rotate the 3D atom scene |
+| **Mouse Wheel / Pinch** | Smoothly zoom the camera |
+| **PLAY / PAUSE** | Freeze or resume electron motion and active photon transitions |
+| **0.5× / 1× / 2×** | Adjust animation playback speed |
+| **RESET VIEW** | Restore the default camera orientation |
+| **RESET ATOM** | Restore the atom to its ground-state configuration |
+| **ABSORB / EMIT PHOTON** | Trigger quantum excitation or relaxation with animated photon wave packet |
+| **CANCEL TRANSITION** | Abort an in-flight photon transition and revert to initial state |
 
-Reduced-motion preferences suppress decorative idle motion while preserving deliberate camera gestures and user-triggered transitions. On smaller screens, scroll the mode tabs horizontally and scroll the scientific controls to reach additional content.
+---
 
-### Carbon–Oganesson Controls
+## Documentation & Audits
 
-- **Initial state** previews a configuration; **Final state** chooses the destination for the next jump.
-- **EXCITE**, **RELAX**, and **REVERSE** prepare a state pair. The photon action starts the animation.
-- After a completed jump, the previous state becomes the next target, allowing the reverse transition.
-- Select a mapped row in **Energy Levels** to display that state's shell configuration. Reference records that cannot be mapped unambiguously remain disabled.
-- In **Spectra**, choose lower and upper reference levels to calculate their vacuum wavelength. **ANIMATE ABSORPTION / EMISSION** connects a mapped pair to the same atom model.
-- Each element also has two explicitly labelled **schematic shell promotions**. These illustrate moving one outer electron to a higher principal shell and have no assigned measured energy or wavelength.
+- **[Quantum Orbital Models](docs/science/orbital-models.md):** Mathematical formulation of real spherical harmonics, generalized Laguerre polynomials, radial probability densities, and Slater $Z_{\text{eff}}$ models.
+- **[Orbital Explorer Specification](docs/design/orbital-explorer.md):** Visual specification, phase color palette, optical glass styling, slice planes, and accessibility.
+- **[Quantum Orbitals Final Audit](docs/audits/quantum-orbitals-final.md):** Verification report and defect resolution summary for DEF-Q01 through DEF-Q05.
+- **[Scientific Models](docs/science.md):** Many-electron Hamiltonians, Slater screening rules, relativistic effects, and quantum mechanics derivations.
+- **[Reference Data](docs/reference-data.md):** Provenance, NIST ASD and PubChem snapshots, Edlén atmospheric dispersion, and data integrity guidelines.
+- **[Design Specification V4](docs/design/atomic-explorer-v4.md):** The Hydrogen benchmark standard, typography migration, and universal component architecture.
+- **[Atomic Coverage Audit V4](docs/audits/atomic-coverage-v4.md):** Forensic audit matrix covering all 118 elements across all 6 modes.
+- **[Final Implementation Audit](docs/audits/quanta-v4-final.md):** Comprehensive test results, visual audits, and verification sign-off.
 
-## Scientific Model Notes
+---
 
-- **Hydrogen:** The exposed 1s, 2s, and 2p clouds sample analytical hydrogenic probability densities. Higher Bohr states remain selectable; unsupported quantum views preserve the state and explain the visualization limit.
-- **Many-electron atoms:** Electrons do not follow fixed classical paths. Shell rings and moving point markers are teaching representations. Helium–Boron use approximate density models; Carbon–Oganesson clouds illustrate radial shell occupancy and are not calculated many-electron wavefunctions.
-- **Reference configurations:** Published configurations determine shell counts. Selectable NIST configurations restore omitted closed core subshells only when the mapping conserves the atom's electron count. Fine-structure states can differ in energy while retaining the same principal-shell counts.
-- **Derived wavelengths:** For a reference-level separation Δṽ in cm⁻¹, λᵥₐc in nm = 10⁷ / Δṽ. Arbitrary shared-instrument pairs are not asserted to be allowed transitions, observed lines, intensities, or transition probabilities.
-- **Visual scale:** Shell radii, nucleus sizes, photon color, and wave-packet spacing are illustrative. Animation timing is expanded for inspection.
-- **Sources:** Element properties come from the bundled PubChem periodic-table snapshot; reference levels come from NIST ASD. Source estimates and missing fields remain identified. A cited Lawrencium configuration correction is documented separately.
+## Local Development & Testing
 
-See [Scientific Models](docs/science.md) and [Reference Data](docs/reference-data.md) for formulas, approximations, source links, coverage, and snapshot dates.
-
-## Local Development
-
-Use a current **Node.js 22 LTS or 24 LTS** release and npm. A modern browser with WebGL is required for the 3D views. No application API keys or environment variables are required; reference data is bundled locally.
+Requires **Node.js 22 LTS or 24 LTS**.
 
 ```bash
+# Clone the repository
 git clone https://github.com/iamaritrasaha/quanta.git
 cd quanta
-npm ci
+
+# Install dependencies
+npm install
+
+# Start local development server
 npm run dev
 ```
 
-Open the local URL printed by Vite. Direct element links use hash routes, for example `#/element/hydrogen`, `#/element/carbon`, and `#/element/oganesson`.
-
-### Verification and Production Preview
+### Verification & Testing Suite
 
 ```bash
-npm test          # Physics, data, routing helpers, state isolation, and transition lifecycle tests
-npm run build     # TypeScript checks and production bundle
-npm run preview   # Serve the production build locally
-```
+# Run unit tests (394 tests across 17 suites)
+npm test
 
-Run the browser regression suite against the production build:
-
-```bash
-npx playwright install chromium   # Install the test browser once
+# Production build and TypeScript type check
 npm run build
+
+# Run Playwright browser integration suite
 npm run test:browser
 ```
 
-Browser tests cover all 118 routes, all 113 shared transition controllers, Hydrogen–Boron playback, reference and schematic transitions, camera gestures, mobile layouts, and touch input. Failed browser checks retain screenshots and traces in `test-results/`. For a prepared environment with an existing Chromium binary, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its absolute path.
+*(Note for Windows PowerShell users: use `npm.cmd` and `npx.cmd` if PowerShell script execution policies restrict `.ps1` files).*
 
-For interactive unit-test development, use `npm run test:watch`.
+Direct element links use hash routes, e.g. `#/element/hydrogen`, `#/element/carbon`, `#/element/gold`, `#/element/oganesson`.
 
-Tests include electron conservation for all published configurations, shared-element absorption/emission/reset lifecycles, and dedicated-instrument pause/resume and speed changes.
-
-For a browser regression check:
-
-1. Open Hydrogen, Helium, Lithium, Beryllium, Boron, and representative shared instruments such as Carbon, Iron, Cerium, Lawrencium, and Oganesson.
-2. Check all six modes, drag rotation, wheel/pinch zoom, and camera reset.
-3. Complete absorption and emission; pause mid-transition, change speed, resume, cancel, and reset the atom.
-4. Check that selected states, shell counts, energy labels, and the current-state header agree. Missing reference energies must not produce a wavelength.
-5. Repeat at mobile widths, check touch gestures and reachable controls, and inspect the browser console and failed asset requests.
+---
 
 ## Project Structure
 
 ```text
 src/
-  App.tsx              Hash routes and the existing instrument workspace
-  components/          Element panels, controls, and periodic table
-    science/           Reusable scientific display components
-  data/                Element identities, bundled reference snapshots, and state mapping
-  physics/             Energy relations, density models, and transition calculations
-  rendering/           Three.js scenes, electron models, clouds, and photon packets
-  state/               Shared Zustand store and element state lifecycles
-  styles.css           Instrument styling and responsive layouts
-tests/browser/         Production-browser interaction regressions
-playwright.config.ts   Browser test configuration
-docs/                  Scientific model and source documentation
-.github/workflows/     Pull-request checks and GitHub Pages deployment
+  App.tsx                      Observatory periodic table and instrument routing
+  components/                  UI components, periodic table, inspector HUD
+    observatory/               Observatory grid, search, HUD, and mobile cards
+    science/                   Universal scientific instrument components
+      UniversalOverview.tsx
+      UniversalShellControls.tsx
+      UniversalQuantumControls.tsx
+      UniversalLevelDiagram.tsx
+      UniversalSpectrumVisualizer.tsx
+      UniversalEquationInspector.tsx
+  data/                        Periodic table dataset, element profiles, NIST levels
+    elementProfiles.ts         Curated scientific dossiers for all 118 elements
+    elements.ts                IUPAC element properties & categories
+    nistLevels.json            Bundled NIST ASD bound-level records
+  physics/                     Physical formulas, Slater screening, dispersion
+    slater.ts                  Slater screening constant and Z_eff calculator
+  rendering/                   Three.js canvas, electron orbits, photon packets
+  state/                       Zustand state store and transition controllers
+  styles.css                   Design system tokens, typography, glass UI
+tests/browser/                 Playwright browser regression suite
+docs/                          Scientific documentation, design specs, and audit reports
 ```
 
-The application uses React 19, TypeScript, Zustand, Three.js, React Three Fiber, Drei, KaTeX, Vite, Vitest, and Playwright. It remains a static client application with no runtime reference-data service. The 3D scene and shared reference instrument load lazily.
-
-## GitHub Pages Deployment
-
-Pull requests targeting `main` install dependencies, run unit tests, build the site, and run the Chromium browser regression suite in GitHub Actions. Pushes to `main` run tests, build the site, and deploy the resulting `dist/` directory to GitHub Pages.
-
-Vite uses relative asset paths (`base: './'`), supporting the `/quanta/` project path. Hash routes allow direct element links without server-side rewrite rules. See the repository's [Actions](https://github.com/iamaritrasaha/quanta/actions) for verification and deployment status.
+---
 
 ## Author
 
-**Aritra Saha**<br />
-Founder & Product Builder, Foresight Labs
+**Aritra Saha**  
+Founder & Product Builder, Foresight Labs  
+GitHub: [@iamaritrasaha](https://github.com/iamaritrasaha)
 
-QUANTA is an original interactive scientific visualization project exploring atomic structure from historical Bohr models to quantum-mechanical probability descriptions.
+QUANTA is an original interactive scientific visualization project exploring atomic structure from historical Bohr models to modern quantum-mechanical probability descriptions.
 
-GitHub: [iamaritrasaha](https://github.com/iamaritrasaha)
+---
 
-## Copyright
+## Copyright & License
 
 Copyright © 2026 Aritra Saha. All rights reserved.
