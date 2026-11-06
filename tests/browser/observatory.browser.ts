@@ -10,7 +10,7 @@ test.beforeAll(() => {
   }
 })
 
-test.describe('QUANTA OBSERVATORY — Periodic Table V3', () => {
+test.describe('QUANTA OBSERVATORY: Periodic Table V3', () => {
   test('observatory loads with 118 element tiles, group headers 1–18, and period indicators', async ({
     page,
   }) => {

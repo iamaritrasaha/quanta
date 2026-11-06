@@ -248,7 +248,7 @@ function Explorer({ onBackToTable }: { onBackToTable: () => void }) {
       {/* Global Explorer Footer */}
       <footer className="explorer-bottom-footer glass-surface">
         <div className="footer-left">
-          <span className="footer-brand">QUANTA — Matter, visualized.</span>
+          <span className="footer-brand">QUANTA: Matter, visualized.</span>
           <span className="footer-meta">
             Created by{' '}
             <a

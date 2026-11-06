@@ -10,7 +10,7 @@ import {
 } from './orbitals'
 import { useQuantaStore } from '../state/quantaStore'
 
-describe('QUANTA V4 — Orbital Wavefunction Rigor & Metadata', () => {
+describe('QUANTA V4: Orbital Wavefunction Rigor & Metadata', () => {
   it('confirms all 16 orientations exist across s (1), p (3), d (5), and f (7)', () => {
     expect(FAMILY_ORIENTATIONS.s).toHaveLength(1)
     expect(FAMILY_ORIENTATIONS.p).toHaveLength(3)

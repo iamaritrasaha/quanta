@@ -1,4 +1,4 @@
-# QUANTA V4 — Quantum Atomic Orbital Mathematical Formulations & Models
+# QUANTA V4: Quantum Atomic Orbital Mathematical Formulations & Models
 
 ## 1. Central-Field Wavefunction Factorization
 

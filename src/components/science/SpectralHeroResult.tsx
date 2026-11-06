@@ -87,7 +87,7 @@ export function SpectralHeroResult({
           {colorDescription ? `${colorDescription}.` : ''}
           {isTrueColor !== undefined && !isTrueColor && (
             <span className="false-color-note">
-              {' (False-color visualization — radiation lies outside the human visible spectrum).'}
+              {' (False-color visualization: radiation lies outside the human visible spectrum).'}
             </span>
           )}
         </p>

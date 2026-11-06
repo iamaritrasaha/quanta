@@ -7,7 +7,7 @@ import {
   getSlaterGroupRank,
 } from './slater'
 
-describe('Slater Screening Engine — Rigorous Numerical Validation', () => {
+describe('Slater Screening Engine: Rigorous Numerical Validation', () => {
   it('parses noble-gas core configurations correctly', () => {
     const carbon = parseConfiguration('[He]2s2 2p2')
     expect(carbon).toEqual([

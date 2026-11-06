@@ -96,7 +96,7 @@ export function BoronQuantumControls() {
               Ground-state spin-orbital occupancy (one valid choice of the single 2p electron's
               magnetic quantum number): <code>1s↑ 1s↓ 2s↑ 2s↓ 2p(n=2, l=1, mₗ=−1, mₛ=+½)</code>. Unlike
               Beryllium's filled, spherically-symmetric 2s², Boron's fifth electron occupies an{' '}
-              <strong>open p subshell</strong> — the ground-state density carries a genuine directional
+              <strong>open p subshell</strong>; the ground-state density carries a genuine directional
               lobe, not a spherically-symmetric shape.
             </p>
             <div className="spin-formula-box">
@@ -106,7 +106,7 @@ export function BoronQuantumControls() {
         ) : (
           <p className="info-desc">
             In this excited configuration, the valence electron(s) occupy a different subshell than the
-            ground 2p. <strong>TERM STRUCTURE IS NOT FULLY ENCODED BY A SINGLE 3D ORBITAL SHAPE</strong> —
+            ground 2p. <strong>TERM STRUCTURE IS NOT FULLY ENCODED BY A SINGLE 3D ORBITAL SHAPE</strong>:
             the diagrams shown here visualize a reduced one-electron density, not the exact many-electron
             wavefunction.
           </p>

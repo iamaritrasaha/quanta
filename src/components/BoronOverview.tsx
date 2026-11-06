@@ -18,7 +18,7 @@ export function BoronOverview() {
         <h3 className="card-title">Boron (B · 5)</h3>
         <p className="card-desc">
           QUANTA's <strong>first atom with an open p subshell in the ground state</strong>. Boron is{' '}
-          <em>not</em> "Beryllium plus another orbiting dot" — its single 2p valence electron gives the
+          <em>not</em> "Beryllium plus another orbiting dot"; its single 2p valence electron gives the
           ground configuration nonzero orbital angular momentum (L = 1) and odd parity, producing genuine
           fine-structure splitting in the ground term itself.
         </p>
@@ -91,7 +91,7 @@ export function BoronOverview() {
 
         <div className="overview-disclaimer">
           <span>
-            DEFAULT ISOTOPE VISUALIZATION · ¹¹B: Not every Boron atom is ¹¹B — normal terrestrial material
+            DEFAULT ISOTOPE VISUALIZATION · ¹¹B: Not every Boron atom is ¹¹B; normal terrestrial material
             is a mixture of ¹⁰B and ¹¹B across the disclosed CIAAW composition ranges above. Isotope shift
             and hyperfine splitting are not resolved in V1. The reference level-table ionization limit
             above and the current NIST ASD ionization energy are drawn from different dataset provenances

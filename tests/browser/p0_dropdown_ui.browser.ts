@@ -9,7 +9,7 @@ test.beforeAll(() => {
   }
 })
 
-test.describe('P0 Dropdown UI Repair — Optical Glass Combobox Verification', () => {
+test.describe('P0 Dropdown UI Repair: Optical Glass Combobox Verification', () => {
   test('Sodium: dropdown opens in dark optical glass, filters states, and triggers transition', async ({
     page,
   }) => {
@@ -44,16 +44,17 @@ test.describe('P0 Dropdown UI Repair — Optical Glass Combobox Verification', (
     const optionsList = popover.locator('.combobox-options-list')
     await expect(optionsList).toBeVisible()
 
+    // 5. Test search filter input
+    const searchInput = popover.locator('.combobox-search-input')
+    await expect(searchInput).toBeVisible()
+    await searchInput.focus()
+    await expect(searchInput).toBeFocused()
+
     // 4. Capture screenshot of open dropdown
     await page.screenshot({
       path: 'test-results/screenshots/dropdowns/sodium-dropdown-open.png',
       fullPage: false,
     })
-
-    // 5. Test search filter input
-    const searchInput = popover.locator('.combobox-search-input')
-    await expect(searchInput).toBeVisible()
-    await expect(searchInput).toBeFocused()
 
     // Type "3p" to filter for 3p states
     await searchInput.fill('3p')

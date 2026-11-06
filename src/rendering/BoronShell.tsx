@@ -23,12 +23,12 @@ function getBoronShellRadius(n: number): number {
 
 /**
  * PEDAGOGICAL occupancy mapping. Boron's THREE n=2-and-above electrons are tracked as: a
- * 2s "anchor" PAIR (va1, va2 — always rendered at n=2, matching the filled 2s² subshell) plus
- * ONE electron that actually moves in curated transitions (vb — the open-subshell 2p electron
+ * 2s "anchor" PAIR (va1, va2; always rendered at n=2, matching the filled 2s² subshell) plus
+ * ONE electron that actually moves in curated transitions (vb: the open-subshell 2p electron
  * in the ground state, promoted to 3s/3p/3d/4s/4p/4f in excited configurations). vb is rendered
  * VISUALLY DISTINCT from the 2s pair (different color/halo), not a third identical dot, so the
  * open p subshell reads as qualitatively different from Beryllium's closed 2s² valence pair.
- * Shell radius is indexed only by principal n (not l) — the same limitation already accepted
+ * Shell radius is indexed only by principal n (not l), the same limitation already accepted
  * for Hydrogen/Helium/Lithium/Beryllium shell rendering. Subshell (l) occupancy is communicated
  * textually in BoronShellControls, not by 3D geometry.
  */
@@ -308,7 +308,7 @@ export function BoronShell() {
           <pointLight color="#a78bfa" intensity={2.0} distance={3.0} />
         </group>
 
-        {/* Open-Subshell 2p / Transitioning Valence Electron — VISUALLY DISTINCT amber-gold marker,
+        {/* Open-Subshell 2p / Transitioning Valence Electron: VISUALLY DISTINCT amber-gold marker,
             not a third identical violet dot, to signal the open p subshell */}
         <group ref={vbGroupRef}>
           <mesh ref={vbCoreRef}>

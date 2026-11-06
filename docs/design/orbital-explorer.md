@@ -1,4 +1,4 @@
-# QUANTA V4 — Universal Atomic Orbital Explorer UI/UX & Visual Specification
+# QUANTA V4: Universal Atomic Orbital Explorer UI/UX & Visual Specification
 
 ## 1. Design Overview
 

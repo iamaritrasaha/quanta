@@ -76,7 +76,7 @@ export function UniversalOverview({ element }: UniversalOverviewProps) {
           <div className="data-row">
             <span className="data-key">Ground Electronic Configuration</span>
             <strong className="data-val mono-config">
-              {properties?.electronConfiguration ?? '—'}
+              {properties?.electronConfiguration ?? 'Not available'}
             </strong>
           </div>
           <div className="data-row">
@@ -103,7 +103,7 @@ export function UniversalOverview({ element }: UniversalOverviewProps) {
           </div>
           <div className="data-row">
             <span className="data-key">Shell Distribution (K → Q)</span>
-            <strong className="data-val">{shellStr ? `${shellStr} e⁻` : '—'}</strong>
+            <strong className="data-val">{shellStr ? `${shellStr} e⁻` : 'Not available'}</strong>
           </div>
           <div className="data-row">
             <span className="data-key">

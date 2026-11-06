@@ -64,7 +64,7 @@ export interface ElectronQuantumState {
 
 /**
  * Standard Refractive Index of Dry Air at 15°C, 101.325 kPa (NIST ASD standard convention / Peck & Reeder 1972).
- * Shared conversion contract with Lithium/Beryllium — reused rather than re-derived per element.
+ * Shared conversion contract with Lithium/Beryllium: reused rather than re-derived per element.
  */
 export function vacuumWavenumberToAirWavelengthNm(wavenumberCm1: number): number {
   if (wavenumberCm1 <= 0) return 0
@@ -84,12 +84,12 @@ export function vacuumWavenumberToAirWavelengthNm(wavenumberCm1: number): number
  * Primary Source: NIST ASD Level Database (Kramida et al., 2024).
  *
  * Boron is QUANTA's FIRST element with an OPEN p SUBSHELL in the ground state
- * (1s²2s²2p, ground term ²P°₁/₂ — nonzero orbital angular momentum L=1, odd parity).
+ * (1s²2s²2p, ground term ²P°₁/₂; nonzero orbital angular momentum L=1, odd parity).
  * Boron is NOT "Beryllium plus another orbiting dot": the ground state already carries
  * directional p-character and genuine fine-structure splitting in the ground term itself.
  *
  * The 2s²4f level is reported by the source compilation as a single grouped-J value
- * spanning both fine-structure components (²F°₅/₂,₇/₂) — individual splitting is not
+ * spanning both fine-structure components (²F°₅/₂,₇/₂); individual splitting is not
  * resolved in this curated set, mirroring the grouped-J convention used for Beryllium's
  * 2s3d ³D manifold.
  */
@@ -302,7 +302,7 @@ export const BORON_LEVELS: BoronLevel[] = [
     series: 'F',
     wavenumberCm1: 60031.085,
     energyEv: cm1ToEv(60031.085),
-    source: 'NIST ASD Reference Data (single reported value spanning J=5/2, 7/2 — individual fine-structure splitting not resolved in this compilation)',
+    source: 'NIST ASD Reference Data (single reported value spanning J=5/2, 7/2; individual fine-structure splitting not resolved in this compilation)',
   },
 ]
 
@@ -316,7 +316,7 @@ export const BORON_LEVELS: BoronLevel[] = [
  * - derivedAirWavelengthNm (derived vacuum wavelength converted via standard refractive index of air)
  */
 export const BORON_TRANSITIONS: BoronTransition[] = [
-  // A1. UV Ground-State Multiplet: 249.6769 nm (Air) — ²P°₁/₂ → ²S₁/₂
+  // A1. UV Ground-State Multiplet: 249.6769 nm (Air) · ²P°₁/₂ → ²S₁/₂
   {
     id: '249.68nm',
     lowerLevelId: '2p_2P1_2',
@@ -342,7 +342,7 @@ export const BORON_TRANSITIONS: BoronTransition[] = [
     source: 'NIST ASD Reference Data / NIST Persistent Lines (Air wavelength)',
   },
 
-  // A2. UV Ground-State Multiplet (hero line): 249.7722 nm (Air) — ²P°₃/₂ → ²S₁/₂
+  // A2. UV Ground-State Multiplet (hero line): 249.7722 nm (Air) · ²P°₃/₂ → ²S₁/₂
   {
     id: '249.77nm',
     lowerLevelId: '2p_2P3_2',
@@ -368,7 +368,7 @@ export const BORON_TRANSITIONS: BoronTransition[] = [
     source: 'NIST ASD Reference Data / NIST Persistent Lines (Air wavelength)',
   },
 
-  // B1. Deep-UV Ground → 3d: 182.5894 nm (Vacuum) — ²P°₁/₂ → ²D₃/₂
+  // B1. Deep-UV Ground → 3d: 182.5894 nm (Vacuum) · ²P°₁/₂ → ²D₃/₂
   {
     id: '182.59nm',
     lowerLevelId: '2p_2P1_2',
@@ -393,7 +393,7 @@ export const BORON_TRANSITIONS: BoronTransition[] = [
     source: 'NIST ASD Reference Data (Vacuum wavelength)',
   },
 
-  // B2. Deep-UV Ground → 3d: 182.6400 nm (Vacuum) — ²P°₃/₂ → ²D₅/₂
+  // B2. Deep-UV Ground → 3d: 182.6400 nm (Vacuum) · ²P°₃/₂ → ²D₅/₂
   {
     id: '182.64nm',
     lowerLevelId: '2p_2P3_2',
@@ -418,7 +418,7 @@ export const BORON_TRANSITIONS: BoronTransition[] = [
     source: 'NIST ASD Reference Data (Vacuum wavelength)',
   },
 
-  // C1. UV Ground → 2s2p² ²D: 208.8889 nm (Air) — ²P°₁/₂ → ²D₃/₂
+  // C1. UV Ground → 2s2p² ²D: 208.8889 nm (Air) · ²P°₁/₂ → ²D₃/₂
   {
     id: '208.89nm',
     lowerLevelId: '2p_2P1_2',
@@ -443,7 +443,7 @@ export const BORON_TRANSITIONS: BoronTransition[] = [
     source: 'NIST ASD Reference Data (Air wavelength)',
   },
 
-  // C2. UV Ground → 2s2p² ²D: 208.9570 nm (Air) — ²P°₃/₂ → ²D₅/₂
+  // C2. UV Ground → 2s2p² ²D: 208.9570 nm (Air) · ²P°₃/₂ → ²D₅/₂
   {
     id: '208.96nm',
     lowerLevelId: '2p_2P3_2',
@@ -468,7 +468,7 @@ export const BORON_TRANSITIONS: BoronTransition[] = [
     source: 'NIST ASD Reference Data (Air wavelength)',
   },
 
-  // D1. Near-IR Excited-State Pair: 1166.0028 nm (Air) — ²S₁/₂ ↔ ²P°₃/₂
+  // D1. Near-IR Excited-State Pair: 1166.0028 nm (Air) · ²S₁/₂ ↔ ²P°₃/₂
   {
     id: '1166.00nm',
     lowerLevelId: '3s_2S1_2',
@@ -493,7 +493,7 @@ export const BORON_TRANSITIONS: BoronTransition[] = [
     source: 'NIST ASD Reference Data (Air wavelength)',
   },
 
-  // D2. Near-IR Excited-State Pair: 1166.2452 nm (Air) — ²S₁/₂ ↔ ²P°₁/₂
+  // D2. Near-IR Excited-State Pair: 1166.2452 nm (Air) · ²S₁/₂ ↔ ²P°₁/₂
   {
     id: '1166.25nm',
     lowerLevelId: '3s_2S1_2',
@@ -780,7 +780,7 @@ function singleElectronValenceDensity(label: ValenceSubshell, x: number, y: numb
  * Computes the approximate reduced one-electron density ρ(r) for Boron.
  * ρ(r) = ρ_core(1s²) + Σ (single-electron valence contributions for the 3 valence electrons).
  * Ground state: ρ(r) ≈ 2×(1s) + 2×(2s) + 1×(2p), where the 2p contribution carries real
- * directional p-like angular dependence — the key visual difference from Beryllium's
+ * directional p-like angular dependence, the key visual difference from Beryllium's
  * spherically-symmetric ground density.
  * atomic units: r in Bohr radii a₀.
  */

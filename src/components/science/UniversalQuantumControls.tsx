@@ -178,7 +178,7 @@ export function UniversalQuantumControls({ element }: UniversalQuantumControlsPr
                       key={orientKey}
                       className={`orient-pill-btn ${isActive ? 'active' : ''}`}
                       onClick={() => handleOrientationChange(orientKey)}
-                      title={`${info.formula} — ${info.angularNodesDesc}`}
+                      title={`${info.formula} · ${info.angularNodesDesc}`}
                     >
                       <span className="orient-label">{info.label}</span>
                     </button>

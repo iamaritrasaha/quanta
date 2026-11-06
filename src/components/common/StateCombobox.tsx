@@ -69,7 +69,6 @@ export function StateCombobox({
 
   const listRef = useRef<(HTMLDivElement | null)[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const hasFocusedRef = useRef(false)
   const listboxId = useId()
   const actualTriggerId = triggerId ?? `${id}-trigger`
 
@@ -153,18 +152,15 @@ export function StateCombobox({
     listRef.current = listRef.current.slice(0, filteredOptions.length)
   }, [filteredOptions])
 
-  // Auto-focus search input when combobox opens and is positioned
+  // Auto-focus search input when combobox opens
   useEffect(() => {
-    if (!isOpen) {
-      hasFocusedRef.current = false
-    } else if (isSearchable && isPositioned && !hasFocusedRef.current) {
-      hasFocusedRef.current = true
+    if (isOpen && isSearchable) {
       const t = setTimeout(() => {
         searchInputRef.current?.focus()
-      }, 50)
+      }, 30)
       return () => clearTimeout(t)
     }
-  }, [isOpen, isSearchable, isPositioned])
+  }, [isOpen, isSearchable])
 
   // Select an option
   const handleSelect = useCallback(
@@ -416,7 +412,6 @@ export function StateCombobox({
           <FloatingFocusManager
             context={context}
             modal={false}
-            disabled={!isPositioned}
             initialFocus={isSearchable ? searchInputRef : refs.floating}
             returnFocus={true}
           >
@@ -458,6 +453,7 @@ export function StateCombobox({
                     </svg>
                     <input
                       ref={searchInputRef}
+                      autoFocus
                       type="text"
                       role="combobox"
                       aria-autocomplete="list"

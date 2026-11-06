@@ -127,7 +127,7 @@ export function PhotonWavePacket({
       return
     }
 
-    // High frequency internal wave phase oscillation (decorative squiggle only —
+    // High frequency internal wave phase oscillation (decorative squiggle only;
     // packet position/opacity below is driven by `progress` and still updates,
     // preserving transition direction and state under reduced motion)
     if (playing && !reducedMotion) {

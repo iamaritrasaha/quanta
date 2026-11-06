@@ -16,7 +16,7 @@ export function BerylliumOverview() {
         <h3 className="card-title">Beryllium (Be · 4)</h3>
         <p className="card-desc">
           The first QUANTA atom with <strong>two interacting valence electrons</strong> above a compact
-          1s² core. Beryllium is <em>not</em> "Lithium plus another electron" — its defining conceptual
+          1s² core. Beryllium is <em>not</em> "Lithium plus another electron"; its defining conceptual
           jump is a closed 1s² core plus a filled 2s² valence subshell, which enables singlet/triplet
           spin coupling, exchange splitting, and metastable excited states.
         </p>

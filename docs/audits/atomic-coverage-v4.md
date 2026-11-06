@@ -1,4 +1,4 @@
-# QUANTA V4 — Comprehensive Atomic Coverage Audit Matrix (All 118 Elements)
+# QUANTA V4: Comprehensive Atomic Coverage Audit Matrix (All 118 Elements)
 
 ## Executive Summary
 
@@ -21,10 +21,10 @@ Each of the 118 elements is evaluated across six essential educational and scien
 
 ## Scientific Model Tier Classification
 
-- **Tier A (Exact Analytic)**: Hydrogen ($Z=1$) — exact Schrödinger wavefunctions $|\psi_{nlm}|^2$ and analytical Rydberg eigenvalues.
-- **Tier B (Dedicated Multi-Electron)**: Helium ($Z=2$) through Boron ($Z=5$) — specialized two-to-five electron Hamiltonians, spin-exchange splitting (Singlet/Triplet), and dedicated subshell clouds.
-- **Tier C (Universal Semi-Empirical & Slater Screening)**: Carbon ($Z=6$) through Hassium ($Z=108$) — multi-electron non-relativistic Hamiltonians, Slater screening calculations ($Z_{\text{eff}} = Z - \sigma$), NIST ASD tabulated levels and derived spectroscopy.
-- **Tier D (Synthetic / Unmeasured Optical Spectrum)**: Meitnerium ($Z=109$) through Oganesson ($Z=118$) — theoretical electronic structures, predicted ground terms, and explicit educational notices detailing the experimental limits of current laboratory spectroscopy without fabricated measurements.
+- **Tier A (Exact Analytic)**: Hydrogen ($Z=1$) · exact Schrödinger wavefunctions $|\psi_{nlm}|^2$ and analytical Rydberg eigenvalues.
+- **Tier B (Dedicated Multi-Electron)**: Helium ($Z=2$) through Boron ($Z=5$) · specialized two-to-five electron Hamiltonians, spin-exchange splitting (Singlet/Triplet), and dedicated subshell clouds.
+- **Tier C (Universal Semi-Empirical & Slater Screening)**: Carbon ($Z=6$) through Hassium ($Z=108$) · multi-electron non-relativistic Hamiltonians, Slater screening calculations ($Z_{\text{eff}} = Z - \sigma$), NIST ASD tabulated levels and derived spectroscopy.
+- **Tier D (Synthetic / Unmeasured Optical Spectrum)**: Meitnerium ($Z=109$) through Oganesson ($Z=118$) · theoretical electronic structures, predicted ground terms, and explicit educational notices detailing the experimental limits of current laboratory spectroscopy without fabricated measurements.
 
 ---
 

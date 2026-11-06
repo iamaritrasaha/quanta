@@ -1,6 +1,6 @@
-# QUANTA V4 — Final Audit & Implementation Report: Complete Atomic Exploration
+# QUANTA V4 · Final Audit & Implementation Report: Complete Atomic Exploration
 
-**Project:** QUANTA — Matter, visualized  
+**Project:** QUANTA: Matter, visualized  
 **Branch:** `feat/quanta-complete-atomic-exploration-v4`  
 **Date:** November 2026  
 **Auditor / Engineer:** Senior Scientific Software Engineer, Computational Physicist & Frontend Architect  

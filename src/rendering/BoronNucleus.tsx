@@ -9,12 +9,12 @@ interface BoronNucleusProps {
 }
 
 /**
- * ¹¹B Nucleus Model (5 protons + 6 neutrons) — DEFAULT ISOTOPE VISUALIZATION.
+ * ¹¹B Nucleus Model (5 protons + 6 neutrons): DEFAULT ISOTOPE VISUALIZATION.
  * Not every Boron atom is ¹¹B: normal terrestrial material also contains ¹⁰B; isotope
  * shift/hyperfine splitting are not resolved in V1 (see BoronOverview disclosure).
  * Clustered compact 11-nucleon cluster, extending the SAME restrained warm-white proton /
  * cool-silver neutron optical convention and modest-scale nuclear layout established by
- * Hydrogen/Helium/Lithium/Beryllium — kept visually compact rather than magnified further
+ * Hydrogen/Helium/Lithium/Beryllium: kept visually compact rather than magnified further
  * simply because two more nucleons are present.
  */
 export function BoronNucleus({ opacity = 1.0 }: BoronNucleusProps) {

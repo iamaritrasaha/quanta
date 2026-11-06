@@ -352,7 +352,7 @@ export function PeriodicTable({ onSelectElement }: PeriodicTableProps) {
       {/* Global Masthead Footer */}
       <footer className="welcome-global-footer">
         <div className="welcome-footer-left">
-          <span className="welcome-footer-brand">QUANTA — Matter, visualized.</span>
+          <span className="welcome-footer-brand">QUANTA: Matter, visualized.</span>
           <span className="welcome-footer-meta">
             Created by{' '}
             <a

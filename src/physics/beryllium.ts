@@ -63,7 +63,7 @@ export interface ElectronQuantumState {
 
 /**
  * Standard Refractive Index of Dry Air at 15°C, 101.325 kPa (NIST ASD standard convention / Peck & Reeder 1972).
- * Shared conversion contract with Lithium — reused rather than re-derived per element.
+ * Shared conversion contract with Lithium: reused rather than re-derived per element.
  */
 export function vacuumWavenumberToAirWavelengthNm(wavenumberCm1: number): number {
   if (wavenumberCm1 <= 0) return 0
@@ -161,7 +161,7 @@ export const BERYLLIUM_LEVELS: BerylliumLevel[] = [
     wavenumberCm1: 21980.1561,
     energyEv: cm1ToEv(21980.1561),
     isMultipletCentroid: true,
-    source: 'DERIVED (statistical centroid [1×J0 + 3×J1 + 5×J2] / 9 = 21980.1561 cm⁻¹) — this is the metastable manifold, E1 spin-forbidden from the ¹S₀ ground state',
+    source: 'DERIVED (statistical centroid [1×J0 + 3×J1 + 5×J2] / 9 = 21980.1561 cm⁻¹); this is the metastable manifold, E1 spin-forbidden from the ¹S₀ ground state',
   },
 
   // 2s2p ¹P° resonance singlet
@@ -359,7 +359,7 @@ export const BERYLLIUM_LEVELS: BerylliumLevel[] = [
     parity: 'even',
     wavenumberCm1: 62053.72,
     energyEv: cm1ToEv(62053.72),
-    source: 'NIST ASD Reference Data (single reported value spanning J=1,2,3 — individual fine-structure splitting not resolved in this compilation)',
+    source: 'NIST ASD Reference Data (single reported value spanning J=1,2,3; individual fine-structure splitting not resolved in this compilation)',
   },
 
   // 2s3d ¹D₂
@@ -389,7 +389,7 @@ export const BERYLLIUM_LEVELS: BerylliumLevel[] = [
  * - derivedAirWavelengthNm (derived vacuum wavelength converted via standard refractive index of air)
  */
 export const BERYLLIUM_TRANSITIONS: BerylliumTransition[] = [
-  // 1. Ground-State Resonance: 234.8610 nm (Air) — hero transition
+  // 1. Ground-State Resonance: 234.8610 nm (Air) · hero transition
   {
     id: '234.9nm',
     lowerLevelId: '2s2_1S0',
