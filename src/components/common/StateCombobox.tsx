@@ -69,6 +69,7 @@ export function StateCombobox({
 
   const listRef = useRef<(HTMLDivElement | null)[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const hasFocusedRef = useRef(false)
   const listboxId = useId()
   const actualTriggerId = triggerId ?? `${id}-trigger`
 
@@ -105,7 +106,7 @@ export function StateCombobox({
   }, [options, searchQuery])
 
   // Floating UI configuration with collision-aware positioning & dynamic viewport clamping
-  const { refs, floatingStyles, context } = useFloating({
+  const { refs, floatingStyles, context, isPositioned } = useFloating({
     open: isOpen,
     onOpenChange: (open) => {
       if (disabled) return
@@ -152,15 +153,18 @@ export function StateCombobox({
     listRef.current = listRef.current.slice(0, filteredOptions.length)
   }, [filteredOptions])
 
-  // Auto-focus search input when combobox opens
+  // Auto-focus search input when combobox opens and is positioned
   useEffect(() => {
-    if (isOpen && isSearchable) {
+    if (!isOpen) {
+      hasFocusedRef.current = false
+    } else if (isSearchable && isPositioned && !hasFocusedRef.current) {
+      hasFocusedRef.current = true
       const t = setTimeout(() => {
         searchInputRef.current?.focus()
-      }, 30)
+      }, 50)
       return () => clearTimeout(t)
     }
-  }, [isOpen, isSearchable])
+  }, [isOpen, isSearchable, isPositioned])
 
   // Select an option
   const handleSelect = useCallback(
@@ -412,12 +416,16 @@ export function StateCombobox({
           <FloatingFocusManager
             context={context}
             modal={false}
+            disabled={!isPositioned}
             initialFocus={isSearchable ? searchInputRef : refs.floating}
             returnFocus={true}
           >
             <div
               ref={refs.setFloating}
-              style={floatingStyles}
+              style={{
+                ...floatingStyles,
+                visibility: isPositioned ? 'visible' : 'hidden',
+              }}
               className="quanta-combobox-popover glass-combobox"
               aria-label={ariaLabel ?? placeholder}
               {...getFloatingProps()}
