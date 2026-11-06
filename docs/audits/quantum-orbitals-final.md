@@ -1,4 +1,4 @@
-# QUANTA V4 — Quantum Orbital Engine Final Audit & Verification Report
+# QUANTA V4: Quantum Orbital Engine Final Audit & Verification Report
 
 ## Executive Summary
 

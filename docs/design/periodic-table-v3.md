@@ -1,4 +1,4 @@
-# QUANTA V3 — Design Specification: QUANTA OBSERVATORY
+# QUANTA V3 · Design Specification: QUANTA OBSERVATORY
 
 **System:** QUANTA Periodic Table V3  
 **Status:** Approved for Implementation  
@@ -11,7 +11,7 @@
 
 QUANTA is an interactive scientific instrument for atomic physics. The periodic table serves as the primary gateway into the quantum realm of all 118 chemical elements. 
 
-The redesign evolves the initial welcome screen from a passive grid of buttons into the **QUANTA OBSERVATORY**—a high-density, interactive scientific workspace that combines the clarity of reference tables (Ptable, RSC, PubChem) with the refined, dark optical-scientific aesthetic of QUANTA.
+The redesign evolves the initial welcome screen from a passive grid of buttons into the **QUANTA OBSERVATORY**, a high-density, interactive scientific workspace that combines the clarity of reference tables (Ptable, RSC, PubChem) with the refined, dark optical-scientific aesthetic of QUANTA.
 
 ### 1.1 Aesthetic Pillars
 1. **Deep Graphite Canvas**: Backgrounds utilize ultra-dark charcoal tones (`#07080c`, `#0c0e14`, `#12151d`), eliminating glare and maximizing visual contrast for optical highlights.

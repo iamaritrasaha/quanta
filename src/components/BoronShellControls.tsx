@@ -50,7 +50,7 @@ export function BoronShellControls() {
             <strong className="q-val">
               {occupies2p ? (config === '2s2p²' ? '↑↑ Occupied ×2' : '↑ Occupied ×1') : 'Empty (excited)'}
             </strong>
-            <span className="q-sub">OPEN subshell in the ground state — n=2 shell also incomplete</span>
+            <span className="q-sub">OPEN subshell in the ground state · n=2 shell also incomplete</span>
           </div>
           <div className="q-num-box">
             <span className="q-label">3s/3p/3d/4s/4p/4f (Valence)</span>
@@ -65,7 +65,7 @@ export function BoronShellControls() {
             <strong>Shell occupancy visualization:</strong> electron markers and paths are pedagogical, not
             exact trajectories. The closed <strong>1s² core</strong> and filled <strong>2s² pair</strong>{' '}
             occupy the inner region. Boron's <strong>single 2p valence electron</strong> is rendered as
-            visually distinct from the 2s pair — its marker and orbit are tagged as the OPEN p-subshell
+            visually distinct from the 2s pair; its marker and orbit are tagged as the OPEN p-subshell
             electron, not a third identical dot, and the readout above distinguishes n=2 SHELL occupancy
             (4 of 8 possible slots filled) from 2s/2p SUBSHELL occupancy (2s filled, 2p open).
           </p>

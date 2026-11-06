@@ -1,4 +1,4 @@
-# QUANTA V4 — Forensic Audit of Quantum Orbital Rendering
+# QUANTA V4: Forensic Audit of Quantum Orbital Rendering
 
 **Audit Date:** November 2026  
 **Auditor:** Senior Computational Physicist & Frontend Architect  
@@ -11,11 +11,11 @@
 A comprehensive forensic audit of QUANTA's quantum visualization layer (`src/physics/quantum.ts`, `src/rendering/QuantumCloud.tsx`, `src/rendering/MultiElementAtom.tsx`, `src/rendering/*QuantumCloud.tsx`, `src/components/QuantumControls.tsx`, `src/components/science/UniversalQuantumControls.tsx`) was conducted to evaluate the visual fidelity, mathematical rigor, and architectural completeness of atomic orbital representations.
 
 The audit confirmed five critical structural defects that severely limit the educational depth and physical authenticity of QUANTA's quantum mode:
-1. **DEF-Q01 — Isotropic Spherical Clouds in Carbon–Oganesson ($Z=6\text{–}118$):** Multi-element quantum mode generates 3D point swarms using a purely radial Gaussian distribution with random spherical angles, completely lacking subshell angular dependence ($s, p, d, f$). Users cannot inspect directional $p$ lobes, cloverleaf $d$ orbitals, or complex $f$ manifolds.
-2. **DEF-Q02 — Severely Restricted Hydrogen Selector:** Despite Hydrogen serving as the visual benchmark, the UI restricts orbital selection exclusively to $1s$, $2s$, and $2p_z$. All states with $n \ge 3$ ($3s, 3p, 3d, 4s\dots 4f$) are blocked with an "unsupported quantum visualization" card, even though Hydrogen's exact analytical solutions are well-known.
-3. **DEF-Q03 — Erroneous Lithium 4f to 3d Fallback Mapping:** In `src/physics/lithium.ts` (line 750) and `src/rendering/LithiumQuantumCloud.tsx` (line 71), selecting $4f$ states routes directly to a $3d$ density buffer using the angular function $3z^2 - r^2$, falsely presenting a $d$-orbital cloverleaf as an $f$-orbital.
-4. **DEF-Q04 — Angular Fallback Substitutions in Helium, Beryllium, and Boron:** In `src/physics/boron.ts` (line 773), the $4f$ valence state explicitly reuses the $3d$ angular factor ($3z^2 - r^2$). In `HeliumQuantumCloud.tsx`, $1s3p$ is mapped to $1s2p$ and $1s3s$ to $1s2s$. In `BerylliumQuantumCloud.tsx`, higher excitations ($2s4s, 2s4d$) fall back to the ground state $2s^2$.
-5. **DEF-Q05 — Lack of Phase, Node, and Cross-Section Disclosures:** No visualization in the codebase distinguishes between positive and negative wavefunction phases ($\psi > 0$ vs $\psi < 0$), nodal planes/cones are not highlighted or explained, and no radial probability plots $P(r) = r^2|R(r)|^2$ or cross-sectional views exist.
+1. **DEF-Q01 · Isotropic Spherical Clouds in Carbon–Oganesson ($Z=6\text{–}118$):** Multi-element quantum mode generates 3D point swarms using a purely radial Gaussian distribution with random spherical angles, completely lacking subshell angular dependence ($s, p, d, f$). Users cannot inspect directional $p$ lobes, cloverleaf $d$ orbitals, or complex $f$ manifolds.
+2. **DEF-Q02 · Severely Restricted Hydrogen Selector:** Despite Hydrogen serving as the visual benchmark, the UI restricts orbital selection exclusively to $1s$, $2s$, and $2p_z$. All states with $n \ge 3$ ($3s, 3p, 3d, 4s\dots 4f$) are blocked with an "unsupported quantum visualization" card, even though Hydrogen's exact analytical solutions are well-known.
+3. **DEF-Q03 · Erroneous Lithium 4f to 3d Fallback Mapping:** In `src/physics/lithium.ts` (line 750) and `src/rendering/LithiumQuantumCloud.tsx` (line 71), selecting $4f$ states routes directly to a $3d$ density buffer using the angular function $3z^2 - r^2$, falsely presenting a $d$-orbital cloverleaf as an $f$-orbital.
+4. **DEF-Q04 · Angular Fallback Substitutions in Helium, Beryllium, and Boron:** In `src/physics/boron.ts` (line 773), the $4f$ valence state explicitly reuses the $3d$ angular factor ($3z^2 - r^2$). In `HeliumQuantumCloud.tsx`, $1s3p$ is mapped to $1s2p$ and $1s3s$ to $1s2s$. In `BerylliumQuantumCloud.tsx`, higher excitations ($2s4s, 2s4d$) fall back to the ground state $2s^2$.
+5. **DEF-Q05 · Lack of Phase, Node, and Cross-Section Disclosures:** No visualization in the codebase distinguishes between positive and negative wavefunction phases ($\psi > 0$ vs $\psi < 0$), nodal planes/cones are not highlighted or explained, and no radial probability plots $P(r) = r^2|R(r)|^2$ or cross-sectional views exist.
 
 ---
 

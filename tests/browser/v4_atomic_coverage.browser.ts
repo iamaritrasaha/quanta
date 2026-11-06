@@ -48,7 +48,7 @@ const REPRESENTATIVE_ELEMENTS = [
   { number: 118, symbol: 'Og', name: 'Oganesson' },
 ]
 
-test.describe('QUANTA V4 — Comprehensive Atomic Exploration (Hydrogen Standard Across Waves)', () => {
+test.describe('QUANTA V4: Comprehensive Atomic Exploration (Hydrogen Standard Across Waves)', () => {
   test('Typography verification: Google Sans for UI and JetBrains Mono for Technical Readouts', async ({
     page,
   }) => {

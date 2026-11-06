@@ -10,7 +10,7 @@ test.beforeAll(() => {
   }
 })
 
-test.describe('QUANTA V4 — Universal Atomic Orbital Engine (Browser Verification)', () => {
+test.describe('QUANTA V4: Universal Atomic Orbital Engine (Browser Verification)', () => {
   test('Hydrogen Quantum Explorer: 1s, 2p, 3d, 4f with Phase Coloring & Radial Curves', async ({ page }) => {
     await page.goto('/#/element/hydrogen')
     await expect(page.locator('.element-name-heading')).toContainText('Hydrogen')

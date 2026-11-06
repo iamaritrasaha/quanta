@@ -11,7 +11,7 @@ function getInitial(): boolean {
 /**
  * Tracks the OS/browser `prefers-reduced-motion` preference and stays in sync
  * with live changes. CSS media queries alone do not affect motion driven
- * imperatively inside R3F `useFrame` loops — consult this hook once per
+ * imperatively inside R3F `useFrame` loops; consult this hook once per
  * component (not per frame) and gate continuous decorative motion with it.
  */
 export function useReducedMotion(): boolean {

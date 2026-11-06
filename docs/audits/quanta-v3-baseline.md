@@ -1,6 +1,6 @@
-# QUANTA V3 — Forensic Baseline Audit
+# QUANTA V3: Forensic Baseline Audit
 
-**Project:** QUANTA — Matter, visualized.  
+**Project:** QUANTA: Matter, visualized.  
 **Auditor:** Senior Frontend & Scientific Visualization Pair Programmer  
 **Date:** 2026-11-06  
 **Branch:** `design/quanta-periodic-table-v3` (branched from `main` @ `6526eff`)  
@@ -17,7 +17,7 @@
 
 QUANTA is an interactive atomic physics visualization instrument built with React 19, TypeScript, Three.js, React Three Fiber, Zustand, KaTeX, and Vite. It covers all 118 chemical elements, with dedicated 3D quantum wave mechanics instruments for Hydrogen through Boron (Z = 1–5), and a shared scientific instrument for Carbon through Oganesson (Z = 6–118) powered by local snapshots of NIST ASD and PubChem reference data.
 
-The application possesses a robust, mathematically sound physics engine and comprehensive unit/browser test coverage. However, the initial screen—the **Periodic Table**—is rudimentary compared to the sophisticated 3D atomic explorer. It functions essentially as a static grid of 118 buttons with minimal styling, no group/period labels, no search, no family filtering, no element inspection, an artificial 550ms click delay, and CSS/scientific categorization defects.
+The application possesses a robust, mathematically sound physics engine and comprehensive unit/browser test coverage. However, the initial screen (the **Periodic Table**) is rudimentary compared to the sophisticated 3D atomic explorer. It functions essentially as a static grid of 118 buttons with minimal styling, no group/period labels, no search, no family filtering, no element inspection, an artificial 550ms click delay, and CSS/scientific categorization defects.
 
 This audit records the baseline state, identifies confirmed defects versus subjective enhancement opportunities, and outlines the plan for the **QUANTA OBSERVATORY (V3)** redesign.
 

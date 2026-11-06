@@ -48,7 +48,7 @@ export function BerylliumShellControls() {
             <strong className="q-val">
               {currentLevel.configuration.includes('2p') ? (currentLevel.configuration === '2p²' ? '↑↑ Occupied ×2' : '↑ Occupied') : 'Empty'}
             </strong>
-            <span className="q-sub">Empty in the ground state — n=2 shell is NOT complete</span>
+            <span className="q-sub">Empty in the ground state · n=2 shell is NOT complete</span>
           </div>
           <div className="q-num-box">
             <span className="q-label">3s/3p/3d (Valence)</span>
@@ -65,7 +65,7 @@ export function BerylliumShellControls() {
             <strong>Shell occupancy visualization:</strong> electron markers and paths are pedagogical, not
             exact trajectories. The closed <strong>1s² core</strong> occupies the inner K shell. Beryllium's
             <strong> two valence electrons</strong> are tracked independently in the outer shell(s); their
-            radius reflects principal quantum number n only — configurations sharing n (e.g. 2s2p vs 2p²)
+            radius reflects principal quantum number n only; configurations sharing n (e.g. 2s2p vs 2p²)
             are visually similar in this model but remain scientifically distinct, as shown by the
             subshell occupancy readout above.
           </p>

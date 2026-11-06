@@ -1,4 +1,4 @@
-# Reference Data — QUANTA V4
+# Reference Data: QUANTA V4
 
 QUANTA bundles all physical, spectroscopic, and periodic reference values locally. These snapshots and analytical models are used across the Observatory and all 118 atomic instruments without triggering network requests in the application.
 

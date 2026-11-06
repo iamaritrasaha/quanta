@@ -8,7 +8,7 @@ An interactive atomic physics observatory and scientific instrument exploring al
 
 ---
 
-## QUANTA V4 — Complete Atomic Exploration
+## QUANTA V4: Complete Atomic Exploration
 
 QUANTA V4 systematically eliminates all qualitative differences across all 118 elements, bringing every single element to the visual, mathematical, and interactive standard established by Hydrogen.
 
@@ -37,10 +37,10 @@ To preserve physical honesty, QUANTA categorizes atomic systems into four clear 
 
 | Tier | Scope | Description & Physical Realism |
 | :--- | :--- | :--- |
-| **Tier A — Analytical Hydrogenic** | $\text{H}$ ($Z=1$) | Exact analytical wavefunctions $\psi_{n\ell m}(r,\theta,\phi)$ and Rydberg energy eigenvalues $E_n = -13.6\text{ eV}/n^2$. |
-| **Tier B — Dedicated Multi-Electron** | $\text{He}\text{–}\text{B}$ ($Z=2\text{–}5$) | Dedicated multi-electron states with parameterized effective-charge screening (calibrated against empirical ionization energies and published numerical Hartree-Fock charge densities), singlet/triplet manifolds, and fine structure. |
-| **Tier C — Empirical / Slater Radial** | $\text{C}\text{–}\text{Hs}$ ($Z=6\text{–}108$) | Empirical NIST ASD level ladders, calculated subshell-targeted Slater screening constants ($Z_{\text{eff}} = Z - \sigma$), exact analytical Laguerre radial functions with numerical peak and node evaluation, and real spherical harmonic angular representations. |
-| **Tier D — Theoretical / Superheavy** | $\text{Mt}\text{–}\text{Og}$ ($Z=109\text{–}118$) | Published relativistic Dirac-Fock predictions (e.g. Fricke, Schwerdtfeger, and NIST theoretical literature) and $j\text{-}j$ spin-orbit coupling disclosures. Missing optical spectra are honestly flagged rather than fabricated. |
+| **Tier A: Analytical Hydrogenic** | $\text{H}$ ($Z=1$) | Exact analytical wavefunctions $\psi_{n\ell m}(r,\theta,\phi)$ and Rydberg energy eigenvalues $E_n = -13.6\text{ eV}/n^2$. |
+| **Tier B: Dedicated Multi-Electron** | $\text{He}\text{–}\text{B}$ ($Z=2\text{–}5$) | Dedicated multi-electron states with parameterized effective-charge screening (calibrated against empirical ionization energies and published numerical Hartree-Fock charge densities), singlet/triplet manifolds, and fine structure. |
+| **Tier C: Empirical / Slater Radial** | $\text{C}\text{–}\text{Hs}$ ($Z=6\text{–}108$) | Empirical NIST ASD level ladders, calculated subshell-targeted Slater screening constants ($Z_{\text{eff}} = Z - \sigma$), exact analytical Laguerre radial functions with numerical peak and node evaluation, and real spherical harmonic angular representations. |
+| **Tier D: Theoretical / Superheavy** | $\text{Mt}\text{–}\text{Og}$ ($Z=109\text{–}118$) | Published relativistic Dirac-Fock predictions (e.g. Fricke, Schwerdtfeger, and NIST theoretical literature) and $j\text{-}j$ spin-orbit coupling disclosures. Missing optical spectra are honestly flagged rather than fabricated. |
 
 ---
 

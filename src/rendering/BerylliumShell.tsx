@@ -24,7 +24,7 @@ function getBerylliumShellRadius(n: number): number {
  * PEDAGOGICAL occupancy mapping. Beryllium's TWO valence electrons are tracked
  * independently: valenceNs[0] is the "anchor" valence electron (stays 2s-like across
  * every curated level), valenceNs[1] is the electron actually excited in curated transitions.
- * Shell radius is indexed only by principal n (not l) — the same limitation already
+ * Shell radius is indexed only by principal n (not l), the same limitation already
  * accepted for Hydrogen/Helium/Lithium shell rendering. Subshell (l) occupancy is
  * communicated textually in BerylliumShellControls, not by 3D geometry.
  */

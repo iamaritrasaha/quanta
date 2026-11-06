@@ -193,13 +193,13 @@ $$\rho(\mathbf{r}) = 3 \int |\Psi(\mathbf{r}, \mathbf{r}_2, \mathbf{r}_3)|^2 d^3
 
 ## Beryllium Scope (Z = 4)
 
-Beryllium introduces QUANTA's first atom with **two mutually interacting valence electrons**. It is not "Lithium plus one more electron": the defining conceptual jump is a closed **1s² core** plus a **filled 2s² valence subshell** — the n = 2 shell is nonetheless incomplete because the 2p subshell remains entirely empty. Two valence electrons enable singlet/triplet spin coupling, exchange splitting, and metastable excited states, none of which exist for Lithium's single valence electron.
+Beryllium introduces QUANTA's first atom with **two mutually interacting valence electrons**. It is not "Lithium plus one more electron": the defining conceptual jump is a closed **1s² core** plus a **filled 2s² valence subshell**; the n = 2 shell is nonetheless incomplete because the 2p subshell remains entirely empty. Two valence electrons enable singlet/triplet spin coupling, exchange splitting, and metastable excited states, none of which exist for Lithium's single valence electron.
 
 ### 1. Nuclear Architecture & Isotopy
-- **Default/Normal Isotope**: $^9\text{Be}$ ($4\text{p}^+, 5\text{n}^0$). Beryllium is essentially **monoisotopic** — normal terrestrial material is $^9\text{Be}$ with amount fraction 1; no isotope interval is modeled.
+- **Default/Normal Isotope**: $^9\text{Be}$ ($4\text{p}^+, 5\text{n}^0$). Beryllium is essentially **monoisotopic**; normal terrestrial material is $^9\text{Be}$ with amount fraction 1; no isotope interval is modeled.
 - **Standard Atomic Weight [CIAAW]**: $A_r(\text{Be}) = 9.0121831(5)$.
 - Trace cosmogenic $^{10}\text{Be}$ is a radionuclide; it is **not resolved in V1** and does not affect the standard atomic-weight visualization.
-- **Nuclear Model**: Clustered 9-nucleon cluster (4 protons, 5 neutrons), same restrained pedagogical convention as H/He/Li. PEDAGOGICAL NUCLEAR REPRESENTATION — nucleon locations are illustrative, not a literal geometry claim.
+- **Nuclear Model**: Clustered 9-nucleon cluster (4 protons, 5 neutrons), same restrained pedagogical convention as H/He/Li. PEDAGOGICAL NUCLEAR REPRESENTATION: nucleon locations are illustrative, not a literal geometry claim.
 
 ### 2. The Four-Electron Hamiltonian
 In the fixed-nucleus, non-relativistic approximation ($Z=4$):
@@ -210,11 +210,11 @@ Four electron-nucleus attraction terms and **six** unique electron-electron pair
 
 ### 3. Ground Configuration, Pauli Principle, and the Incomplete n=2 Shell
 - **Ground Configuration**: $1\text{s}^2 2\text{s}^2$. **Ground Term**: $^1\text{S}_0$.
-- Spin-orbital occupancy: $1\text{s}\uparrow, 1\text{s}\downarrow, 2\text{s}\uparrow, 2\text{s}\downarrow$ — no two electrons share a complete set of one-electron quantum numbers.
+- Spin-orbital occupancy: $1\text{s}\uparrow, 1\text{s}\downarrow, 2\text{s}\uparrow, 2\text{s}\downarrow$ (no two electrons share a complete set of one-electron quantum numbers).
 - The 2s subshell is **filled**, but the n = 2 **shell** is not complete: the 2p subshell is empty in the ground state.
 
 ### 4. Singlet/Triplet Physics & Exchange
-The low $2\text{s}2\text{p}$ manifold splits into $^3\text{P}^\circ$ (triplet) and $^1\text{P}^\circ$ (singlet). The antisymmetric spatial triplet wavefunction vanishes as the two valence electrons approach each other (exchange hole), reducing Coulomb repulsion — so **triplet 2s2p lies substantially below singlet 2s2p** ($21978$–$21981\ \text{cm}^{-1}$ vs. $42565.35\ \text{cm}^{-1}$). The $2\text{s}2\text{p}\ ^3\text{P}^\circ$ manifold is **E1 SPIN-FORBIDDEN / METASTABLE** relative to the $^1\text{S}_0$ ground state under ordinary electric-dipole selection rules ($\Delta S \ne 0$) — not strictly impossible; real weak channels can exist beyond the simplified E1 picture.
+The low $2\text{s}2\text{p}$ manifold splits into $^3\text{P}^\circ$ (triplet) and $^1\text{P}^\circ$ (singlet). The antisymmetric spatial triplet wavefunction vanishes as the two valence electrons approach each other (exchange hole), reducing Coulomb repulsion, so **triplet 2s2p lies substantially below singlet 2s2p** ($21978$–$21981\ \text{cm}^{-1}$ vs. $42565.35\ \text{cm}^{-1}$). The $2\text{s}2\text{p}\ ^3\text{P}^\circ$ manifold is **E1 SPIN-FORBIDDEN / METASTABLE** relative to the $^1\text{S}_0$ ground state under ordinary electric-dipole selection rules ($\Delta S \ne 0$); this is not strictly impossible, as real weak channels can exist beyond the simplified E1 picture.
 
 ### 5. Simplified E1 Selection Rules
 QUANTA applies a simplified LS-coupling teaching validator: parity must change, $\Delta J = 0, \pm 1$ (excluding $J{=}0\to J{=}0$), and $\Delta S = 0$ for an ordinary spin-allowed transition. $^1\text{S}_0 \to {}^1\text{P}^\circ_1$ is E1 allowed; $^1\text{S}_0 \leftrightarrow {}^3\text{P}^\circ$ is spin-forbidden.
@@ -229,15 +229,15 @@ Excited-subshell (2p, 3s, 3p, 3d) parameters are approximate VISUAL MODEL PARAME
 ### 7. Energy Levels & Ionization Provenance
 Curated Be I levels (2s2p, 2s3s, 2p², 2s3p, 2s3d singlet/triplet manifolds) are organized into SINGLET SYSTEM and TRIPLET SYSTEM columns, reusing the shared Energy architecture established for Helium. QUANTA keeps two ionization-related quantities explicitly separate:
 - **Current NIST ASD ionization energy**: $9.322699(7)\ \text{eV}$.
-- **Reference NIST Handbook level-table limit** (Be II $^2\text{S}_{1/2}$): $75192.64\ \text{cm}^{-1}$ — a different dataset/era, not silently equated with the ASD value.
+- **Reference NIST Handbook level-table limit** (Be II $^2\text{S}_{1/2}$): $75192.64\ \text{cm}^{-1}$ (a different dataset/era, not silently equated with the ASD value).
 
 ### 8. Spectroscopy & Air/Vacuum Handling
 Five curated Be I lines, reusing the shared spectroscopy components:
-1. **$234.8610\ \text{nm}$ (Air) Ground-State Resonance**: $2\text{s}^2\ ^1\text{S}_0 \leftrightarrow 2\text{s}2\text{p}\ ^1\text{P}^\circ_1$ — false-color UV hero transition.
+1. **$234.8610\ \text{nm}$ (Air) Ground-State Resonance**: $2\text{s}^2\ ^1\text{S}_0 \leftrightarrow 2\text{s}2\text{p}\ ^1\text{P}^\circ_1$ (false-color UV hero transition).
 2. **$166.1478\ \text{nm}$ (Vacuum) Far-UV**: $2\text{s}^2\ ^1\text{S}_0 \leftrightarrow 2\text{s}3\text{p}\ ^1\text{P}^\circ_1$.
 3. **$332.1340\ \text{nm}$ (Air) Triplet UV**: $2\text{s}2\text{p}\ ^3\text{P}^\circ_2 \leftrightarrow 2\text{s}3\text{s}\ ^3\text{S}_1$.
-4. **$457.2664\ \text{nm}$ (Air) Blue Singlet**: $2\text{s}2\text{p}\ ^1\text{P}^\circ_1 \leftrightarrow 2\text{s}3\text{d}\ ^1\text{D}_2$ — approximate display color, not "true color".
-5. **$825.4070\ \text{nm}$ (Air) Near-IR**: $2\text{s}2\text{p}\ ^1\text{P}^\circ_1 \leftrightarrow 2\text{s}3\text{s}\ ^1\text{S}_0$ — false-color NIR.
+4. **$457.2664\ \text{nm}$ (Air) Blue Singlet**: $2\text{s}2\text{p}\ ^1\text{P}^\circ_1 \leftrightarrow 2\text{s}3\text{d}\ ^1\text{D}_2$ (approximate display color, not "true color").
+5. **$825.4070\ \text{nm}$ (Air) Near-IR**: $2\text{s}2\text{p}\ ^1\text{P}^\circ_1 \leftrightarrow 2\text{s}3\text{s}\ ^1\text{S}_0$ (false-color NIR).
 
 Reference persistent-line wavelengths remain architecturally separate from level-difference-derived vacuum/air wavelengths, following the same contract established for Lithium.
 
@@ -245,10 +245,10 @@ Reference persistent-line wavelengths remain architecturally separate from level
 
 ## Boron Scope (Z = 5)
 
-Boron introduces QUANTA's **first atom with an open p subshell in the ground state**. It is not "Beryllium plus another orbiting dot": the defining conceptual jump is that the fifth electron occupies a genuinely open 2p subshell above the closed 1s² core and filled 2s² pair, giving the ground configuration nonzero orbital angular momentum ($L=1$) and odd parity — properties no earlier QUANTA element's ground state has.
+Boron introduces QUANTA's **first atom with an open p subshell in the ground state**. It is not "Beryllium plus another orbiting dot": the defining conceptual jump is that the fifth electron occupies a genuinely open 2p subshell above the closed 1s² core and filled 2s² pair, giving the ground configuration nonzero orbital angular momentum ($L=1$) and odd parity, properties no earlier QUANTA element's ground state has.
 
 ### 1. Nuclear Architecture & Isotopy
-- **Default Isotope Visualization**: $^{11}\text{B}$ ($5\text{p}^+, 6\text{n}^0$), the dominant natural isotope. Explicitly disclosed: not every Boron atom is $^{11}\text{B}$ — normal terrestrial material also contains $^{10}\text{B}$.
+- **Default Isotope Visualization**: $^{11}\text{B}$ ($5\text{p}^+, 6\text{n}^0$), the dominant natural isotope. Explicitly disclosed: not every Boron atom is $^{11}\text{B}$; normal terrestrial material also contains $^{10}\text{B}$.
 - **Standard Atomic Weight [CIAAW]**: $A_r(\text{B}) \in [10.806, 10.821]$ (interval, not a single point value).
 - **Normal-Material Isotopic Composition [CIAAW]**: $^{10}\text{B}$: $18.9\%$–$20.4\%$; $^{11}\text{B}$: $79.6\%$–$81.1\%$ (ranges, not point values).
 - Isotope shift and hyperfine splitting are **not resolved in V1**.
@@ -259,21 +259,21 @@ In the fixed-nucleus, non-relativistic approximation ($Z=5$):
 
 $$\hat{H} = \sum_{i=1}^{5}\left(-\frac{\hbar^2}{2m_e}\nabla_i^2 - \frac{5e^2}{4\pi\varepsilon_0 r_i}\right) + \sum_{1\le i<j\le 5}\frac{e^2}{4\pi\varepsilon_0 r_{ij}}$$
 
-Five electron-nucleus attraction terms and **ten** unique electron-electron pair-repulsion terms ($C(5,2)=10$: $r_{12}, r_{13}, r_{14}, r_{15}, r_{23}, r_{24}, r_{25}, r_{34}, r_{35}, r_{45}$) prevent analytic separation. Neutral B I energies never follow $E_n = -13.6\,Z^2/n^2$ — that Hydrogenic formula only applies to single-electron systems.
+Five electron-nucleus attraction terms and **ten** unique electron-electron pair-repulsion terms ($C(5,2)=10$: $r_{12}, r_{13}, r_{14}, r_{15}, r_{23}, r_{24}, r_{25}, r_{34}, r_{35}, r_{45}$) prevent analytic separation. Neutral B I energies never follow $E_n = -13.6\,Z^2/n^2$; that Hydrogenic formula only applies to single-electron systems.
 
 ### 3. Ground Configuration, Pauli Principle, and the Open 2p Subshell
 - **Ground Configuration**: $1\text{s}^2 2\text{s}^2 2\text{p}$. **Ground Term**: $^2\text{P}^\circ_{1/2}$, with fine-structure partner $^2\text{P}^\circ_{3/2}$.
-- One valid ground spin-orbital occupancy (not the only valid choice of the single 2p electron's $m_\ell$): $1\text{s}\uparrow, 1\text{s}\downarrow, 2\text{s}\uparrow, 2\text{s}\downarrow, 2\text{p}(n{=}2,\ell{=}1,m_\ell{=}-1,m_s{=}+\tfrac12)$ — no two electrons share a complete set of one-electron quantum numbers.
-- The 2s subshell is filled, but the 2p subshell is **open** (1 of 6 possible slots occupied) — this open subshell is the source of the ground term's nonzero $L$ and odd parity.
+- One valid ground spin-orbital occupancy (not the only valid choice of the single 2p electron's $m_\ell$): $1\text{s}\uparrow, 1\text{s}\downarrow, 2\text{s}\uparrow, 2\text{s}\downarrow, 2\text{p}(n{=}2,\ell{=}1,m_\ell{=}-1,m_s{=}+\tfrac12)$ (no two electrons share a complete set of one-electron quantum numbers).
+- The 2s subshell is filled, but the 2p subshell is **open** (1 of 6 possible slots occupied); this open subshell is the source of the ground term's nonzero $L$ and odd parity.
 
 ### 4. Ground Fine Structure
-Spin-orbit coupling of the single 2p electron splits the ground term into $^2\text{P}^\circ_{1/2}$ (lower, $0.0000\ \text{cm}^{-1}$) and $^2\text{P}^\circ_{3/2}$ (higher, $15.287\ \text{cm}^{-1}$) — a genuine fine-structure splitting present already in the ground state, unlike Beryllium's closed-shell $^1\text{S}_0$ ground term, which has no fine structure at all.
+Spin-orbit coupling of the single 2p electron splits the ground term into $^2\text{P}^\circ_{1/2}$ (lower, $0.0000\ \text{cm}^{-1}$) and $^2\text{P}^\circ_{3/2}$ (higher, $15.287\ \text{cm}^{-1}$), a genuine fine-structure splitting present already in the ground state, unlike Beryllium's closed-shell $^1\text{S}_0$ ground term, which has no fine structure at all.
 
 ### 5. Simplified E1 Selection Rules
 QUANTA applies the same simplified LS-coupling teaching validator used for Helium/Beryllium: parity must change, $\Delta J = 0, \pm1$ (excluding $J{=}0\to J{=}0$), and $\Delta S = 0$ for an ordinary spin-allowed transition. $^2\text{P}^\circ_{1/2} \to {}^2\text{S}_{1/2}$ is E1 allowed. Levels reported with a grouped J string (e.g. the $2\text{s}^2 4\text{f}\ ^2\text{F}^\circ_{5/2,7/2}$ level) are evaluated as `indeterminate`.
 
 ### 6. Reduced One-Electron Density & Visual Model
-The full five-electron wavefunction depends on 15 spatial coordinates and cannot be shown as one 3D object. QUANTA renders a REDUCED ONE-ELECTRON DENSITY, ground state: $\rho(\mathbf{r}) \approx 2\rho_{1\text{s}}(\mathbf{r}) + 2\rho_{2\text{s}}(\mathbf{r}) + \rho_{2\text{p}}(\mathbf{r})$, where the 2p contribution carries **real single-lobe directional angular dependence** (proportional to $z^2$, reusing the p-orbital angular-factor pattern established for Lithium's 2p density term) — the key visual difference from Beryllium's spherically-symmetric ground density. Effective charges are derived via **Slater's Rules** for the ground configuration:
+The full five-electron wavefunction depends on 15 spatial coordinates and cannot be shown as one 3D object. QUANTA renders a REDUCED ONE-ELECTRON DENSITY, ground state: $\rho(\mathbf{r}) \approx 2\rho_{1\text{s}}(\mathbf{r}) + 2\rho_{2\text{s}}(\mathbf{r}) + \rho_{2\text{p}}(\mathbf{r})$, where the 2p contribution carries **real single-lobe directional angular dependence** (proportional to $z^2$, reusing the p-orbital angular-factor pattern established for Lithium's 2p density term), the key visual difference from Beryllium's spherically-symmetric ground density. Effective charges are derived via **Slater's Rules** for the ground configuration:
 
 $$Z_{\text{eff}}(1\text{s}) = 5 - 0.30 = 4.70,\qquad Z_{\text{eff}}(2\text{s}) = Z_{\text{eff}}(2\text{p}) = 5 - (0.35 + 2\times 0.85) = 2.95$$
 
@@ -282,14 +282,14 @@ Excited-subshell (3s, 3p, 3d, 4s, 4p, 4f) parameters are approximate VISUAL MODE
 ### 7. Energy Levels & Ionization Provenance
 Curated B I levels (ground doublet, 3s, 2s2p² ²D doublet, 3p, 3d, 4s, 4p, grouped 4f) are organized into ²S/²P°/²D/²F° series columns, reusing the shared Energy architecture established for Lithium. QUANTA keeps two ionization-related quantities explicitly separate:
 - **Current NIST ASD ionization energy**: $8.298019(3)\ \text{eV}$.
-- **Reference NIST Handbook level-table limit** (B II $^1\text{S}_0$): $66928.04\ \text{cm}^{-1}$ — a different dataset/era, not silently equated with the ASD value.
+- **Reference NIST Handbook level-table limit** (B II $^1\text{S}_0$): $66928.04\ \text{cm}^{-1}$ (a different dataset/era, not silently equated with the ASD value).
 
 ### 8. Spectroscopy & Air/Vacuum Handling
 Eight curated B I lines across four groups, reusing the shared spectroscopy components:
-1. **~$249.7\ \text{nm}$ (Air) UV Ground-State Multiplet** (hero group): $2\text{s}^2 2\text{p}\ ^2\text{P}^\circ_{1/2,3/2} \leftrightarrow 2\text{s}^2 3\text{s}\ ^2\text{S}_{1/2}$ — two false-color UV lines.
+1. **~$249.7\ \text{nm}$ (Air) UV Ground-State Multiplet** (hero group): $2\text{s}^2 2\text{p}\ ^2\text{P}^\circ_{1/2,3/2} \leftrightarrow 2\text{s}^2 3\text{s}\ ^2\text{S}_{1/2}$ (two false-color UV lines).
 2. **$182.5894 / 182.6400\ \text{nm}$ (Vacuum) Deep-UV**: ground $\leftrightarrow$ $2\text{s}^2 3\text{d}\ ^2\text{D}$ pair.
 3. **$208.8889 / 208.9570\ \text{nm}$ (Air) UV**: ground $\leftrightarrow$ $2\text{s}2\text{p}^2\ ^2\text{D}$ pair.
-4. **$1166.0028 / 1166.2452\ \text{nm}$ (Air) Near-Infrared**: $2\text{s}^2 3\text{s}\ ^2\text{S}_{1/2} \leftrightarrow 2\text{s}^2 3\text{p}\ ^2\text{P}^\circ$ pair — classified NIR/non-visible, false-color.
+4. **$1166.0028 / 1166.2452\ \text{nm}$ (Air) Near-Infrared**: $2\text{s}^2 3\text{s}\ ^2\text{S}_{1/2} \leftrightarrow 2\text{s}^2 3\text{p}\ ^2\text{P}^\circ$ pair (classified NIR/non-visible, false-color).
 
 Reference persistent-line wavelengths remain architecturally separate from level-difference-derived vacuum/air wavelengths, and are never overwritten by derived values, following the same contract established for Lithium and Beryllium.
 
@@ -328,10 +328,10 @@ governs the valence electron binding estimates presented in QUANTA's Equation In
 
 ### 3. Scientific Model Tier Classification
 To maintain absolute scientific honesty without manufacturing unmeasured physics:
-- **Tier A (Exact Analytic)**: Hydrogen ($Z=1$) — exact Schrödinger wavefunctions $|\psi_{nlm}(r,\theta,\phi)|^2$.
-- **Tier B (Dedicated Multi-Electron)**: Helium through Boron ($Z=2–5$) — dedicated Hamiltonians, spin-exchange splitting ($S=0$ vs. $S=1$), and specialized subshell visualizers.
-- **Tier C (Universal Semi-Empirical & Slater Screening)**: Carbon through Hassium ($Z=6–108$) — Slater screening analysis, full subshell breakdowns ($s, p, d, f$), NIST ASD tabulated level ladders, and derived vacuum/air spectroscopy.
-- **Tier D (Synthetic / Unmeasured Optical Spectra)**: Meitnerium through Oganesson ($Z=109–118$) — theoretical electronic structures, predicted ground states, and explicit educational notices detailing the absence of laboratory-confirmed neutral bound transitions.
+- **Tier A (Exact Analytic)**: Hydrogen ($Z=1$) · exact Schrödinger wavefunctions $|\psi_{nlm}(r,\theta,\phi)|^2$.
+- **Tier B (Dedicated Multi-Electron)**: Helium through Boron ($Z=2–5$) · dedicated Hamiltonians, spin-exchange splitting ($S=0$ vs. $S=1$), and specialized subshell visualizers.
+- **Tier C (Universal Semi-Empirical & Slater Screening)**: Carbon through Hassium ($Z=6–108$) · Slater screening analysis, full subshell breakdowns ($s, p, d, f$), NIST ASD tabulated level ladders, and derived vacuum/air spectroscopy.
+- **Tier D (Synthetic / Unmeasured Optical Spectra)**: Meitnerium through Oganesson ($Z=109–118$) · theoretical electronic structures, predicted ground states, and explicit educational notices detailing the absence of laboratory-confirmed neutral bound transitions.
 
 ### 4. Spectroscopy & Dispersion Conventions
 Transition energies $\Delta E$ and vacuum wavenumbers $\Delta\tilde{\nu}$ follow exact conservation:

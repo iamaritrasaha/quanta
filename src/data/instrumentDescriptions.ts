@@ -23,7 +23,7 @@ const hydrogenModeDescriptions: ModeDescriptions = {
   },
   quantum: {
     title: 'SCHRÖDINGER EIGENFUNCTIONS',
-    subtitle: 'Exact wave function probability distributions |ψ(r,θ,φ)|² — not classical electron orbits',
+    subtitle: 'Exact wave function probability distributions |ψ(r,θ,φ)|² · not classical electron orbits',
     badge: 'MODERN QUANTUM MECHANICS',
   },
   energy: {
@@ -51,7 +51,7 @@ const heliumModeDescriptions: ModeDescriptions = {
   },
   bohr: {
     title: 'SHELL OCCUPANCY MODEL',
-    subtitle: 'Paired electrons in quantized energy shells — illustrative point markers',
+    subtitle: 'Paired electrons in quantized energy shells · illustrative point markers',
     badge: 'PEDAGOGICAL ELECTRON-SHELL REPRESENTATION',
   },
   quantum: {

@@ -141,7 +141,7 @@ export function BerylliumEquationInspector() {
             <span className="stage-label">01 / CONCEPT</span>
             <p className="stage-text">
               Neutral Beryllium (Z = 4) is a four-electron interacting quantum system. A closed <strong>1s² core</strong> screens
-              the Z=4 nuclear charge, above which a <strong>filled 2s² valence subshell</strong> sits — the 2p subshell remains
+              the Z=4 nuclear charge, above which a <strong>filled 2s² valence subshell</strong> sits; the 2p subshell remains
               entirely empty, so the n=2 shell is NOT complete. This is the first QUANTA atom with two mutually interacting
               valence electrons, enabling singlet/triplet spin coupling and exchange splitting.
             </p>
@@ -170,7 +170,7 @@ export function BerylliumEquationInspector() {
             <p className="stage-subtext">
               No two electrons share a complete set of one-electron quantum numbers (n, l, mₗ, mₛ). The 2s2p excited manifold
               splits into <Equation>{`{}^3\\text{P}^\\circ`}</Equation> (triplet, lower) and <Equation>{`{}^1\\text{P}^\\circ`}</Equation> (singlet,
-              higher) via exchange — the antisymmetric spatial triplet state reduces electron-electron repulsion, so{' '}
+              higher) via exchange: the antisymmetric spatial triplet state reduces electron-electron repulsion, so{' '}
               <strong>triplet 2s2p lies substantially below singlet 2s2p</strong>. The 2s2p ³P° manifold is{' '}
               <strong>E1 SPIN-FORBIDDEN / METASTABLE</strong> relative to the ¹S₀ ground state (ΔS ≠ 0), not strictly impossible.
             </p>

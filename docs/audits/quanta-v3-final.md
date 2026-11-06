@@ -1,6 +1,6 @@
-# QUANTA V3 Observatory — Final Audit & Implementation Report
+# QUANTA V3 Observatory: Final Audit & Implementation Report
 
-**Project:** QUANTA — Matter, visualized  
+**Project:** QUANTA: Matter, visualized  
 **Branch:** `design/quanta-periodic-table-v3`  
 **Date:** November 2026  
 **Auditor / Engineer:** Senior Frontend & Scientific Visualization Engineer  

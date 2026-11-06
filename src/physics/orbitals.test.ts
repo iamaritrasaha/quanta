@@ -22,7 +22,7 @@ import {
   type OrbitalFamily,
 } from './orbitals'
 
-describe('QUANTA V4 — Quantum Orbital Physics Engine', () => {
+describe('QUANTA V4: Quantum Orbital Physics Engine', () => {
   describe('1. Orbital Basis & Orientation Completeness', () => {
     it('defines exactly 16 distinct real orbital basis functions across s, p, d, f', () => {
       const allKeys = Object.keys(ORBITAL_ORIENTATIONS)

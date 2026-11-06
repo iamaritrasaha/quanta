@@ -110,7 +110,7 @@ export function SpectrumVisualizer() {
           description={
             transition.isTrueColor
               ? 'Wavelength-derived display color (approximate human vision representation).'
-              : 'False-color visualization — radiation lies outside the human visible spectrum.'
+              : 'False-color visualization: radiation lies outside the human visible spectrum.'
           }
           isTrueColor={transition.isTrueColor}
         />

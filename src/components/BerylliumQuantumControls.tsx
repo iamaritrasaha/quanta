@@ -93,7 +93,7 @@ export function BerylliumQuantumControls() {
           <div className="info-math-detail">
             <p className="info-desc">
               Ground-state spin-orbital occupancy: <code>1s↑ 1s↓ 2s↑ 2s↓</code>. The 2s subshell is completely
-              filled, but the n = 2 <em>shell</em> is not complete — the 2p subshell remains entirely empty.
+              filled, but the n = 2 <em>shell</em> is not complete; the 2p subshell remains entirely empty.
             </p>
             <div className="spin-formula-box">
               <Equation block>{`\\chi_{\\text{singlet}} = \\frac{|\\uparrow\\downarrow\\rangle - |\\downarrow\\uparrow\\rangle}{\\sqrt{2}}`}</Equation>
@@ -103,7 +103,7 @@ export function BerylliumQuantumControls() {
           <p className="info-desc">
             In this excited configuration, one or both valence electrons occupy a higher subshell.
             Triplet couplings (parallel spins) place the exchange-antisymmetric spatial wavefunction below
-            the corresponding singlet in energy — <strong>TERM / SPIN COUPLING IS NOT FULLY ENCODED BY A
+            the corresponding singlet in energy. <strong>TERM / SPIN COUPLING IS NOT FULLY ENCODED BY A
             SINGLE 3D ORBITAL SHAPE.</strong>
           </p>
         )}

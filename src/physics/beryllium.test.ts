@@ -118,7 +118,7 @@ describe('Beryllium Physics Engine (Be, Z = 4)', () => {
     expect(p1.energyEv).toBeLessThan(p2.energyEv)
   })
 
-  it('12. verifies 2s2p ³P° lies below 2s2p ¹P° (triplet below singlet — exchange splitting)', () => {
+  it('12. verifies 2s2p ³P° lies below 2s2p ¹P° (triplet below singlet: exchange splitting)', () => {
     const triplet = getBerylliumLevel('2s2p_3P2')!
     const singlet = getBerylliumLevel('2s2p_1P1')!
     expect(triplet.energyEv).toBeLessThan(singlet.energyEv)

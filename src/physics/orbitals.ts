@@ -1,5 +1,5 @@
 /**
- * QUANTA V4 — Universal Atomic Orbital Engine
+ * QUANTA V4: Universal Atomic Orbital Engine
  *
  * Provides a rigorous, analytical and screened mathematical framework for
  * atomic wavefunctions across all s, p, d, and f orbitals:

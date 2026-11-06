@@ -169,7 +169,7 @@ export function UniversalEquationInspector({ element }: UniversalEquationInspect
               <div className="hero-metric">
                 <span className="hero-metric-label">First Ionization (I₁)</span>
                 <strong className="hero-metric-val" style={{ color: 'var(--accent-optic)' }}>
-                  {properties?.ionizationEnergyEv ? `${properties.ionizationEnergyEv} eV` : '—'}
+                  {properties?.ionizationEnergyEv ? `${properties.ionizationEnergyEv} eV` : 'Not available'}
                 </strong>
                 <span className="hero-metric-sub">Published reference threshold</span>
               </div>

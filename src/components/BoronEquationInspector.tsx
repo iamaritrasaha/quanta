@@ -144,7 +144,7 @@ export function BoronEquationInspector() {
               Neutral Boron (Z = 5) is a five-electron interacting quantum system. A closed{' '}
               <strong>1s² core</strong> and filled <strong>2s² pair</strong> screen the Z=5 nuclear charge,
               above which sits a single valence electron in an <strong>OPEN 2p subshell</strong>. This is
-              QUANTA's <strong>first atom with a nonzero-L, odd-parity ground state</strong> — Boron is NOT
+              QUANTA's <strong>first atom with a nonzero-L, odd-parity ground state</strong>; Boron is NOT
               Hydrogenic, and it is NOT "Beryllium plus another orbiting dot": the open p subshell gives the
               ground term genuine directional character and fine structure (²P°₁/₂, ²P°₃/₂).
             </p>
@@ -160,7 +160,7 @@ export function BoronEquationInspector() {
               <Equation block>{`V_{ee} = \\frac{e^2}{4\\pi\\varepsilon_0} \\left( \\frac{1}{r_{12}} + \\frac{1}{r_{13}} + \\frac{1}{r_{14}} + \\frac{1}{r_{15}} + \\frac{1}{r_{23}} + \\frac{1}{r_{24}} + \\frac{1}{r_{25}} + \\frac{1}{r_{34}} + \\frac{1}{r_{35}} + \\frac{1}{r_{45}} \\right)`}</Equation>
               <p className="vee-desc">
                 Ten mutual pair terms prevent exact analytic separation. Neutral B I energies never follow{' '}
-                <Equation>{`E_n = -13.6\\,Z^2/n^2`}</Equation> — that Hydrogenic formula applies only to
+                <Equation>{`E_n = -13.6\\,Z^2/n^2`}</Equation>; that Hydrogenic formula applies only to
                 single-electron systems and is explicitly wrong for a 5-electron atom.
               </p>
             </div>
@@ -173,11 +173,11 @@ export function BoronEquationInspector() {
             </div>
             <p className="stage-subtext">
               No two electrons share a complete set of one-electron quantum numbers (n, l, mₗ, mₛ). This is
-              ONE valid ground Pauli-consistent occupancy — any mₗ ∈ {'{-1, 0, +1}'} for the single 2p
+              ONE valid ground Pauli-consistent occupancy: any mₗ ∈ {'{-1, 0, +1}'} for the single 2p
               electron is equally valid; QUANTA picks one definite representative for display. Spin-orbit
               coupling of this single p electron splits the ground term into{' '}
               <Equation>{`{}^2\\text{P}^\\circ_{1/2}`}</Equation> (lower) and{' '}
-              <Equation>{`{}^2\\text{P}^\\circ_{3/2}`}</Equation> (higher, +15.287 cm⁻¹) — a genuine
+              <Equation>{`{}^2\\text{P}^\\circ_{3/2}`}</Equation> (higher, +15.287 cm⁻¹), a genuine
               fine-structure splitting present already in the ground state, unlike Beryllium's closed-shell{' '}
               <Equation>{`{}^1\\text{S}_0`}</Equation> ground term.
             </p>
