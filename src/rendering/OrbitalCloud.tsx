@@ -86,6 +86,7 @@ export function OrbitalCloud({
     }
 
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+    geom.setDrawRange(0, sample.pointCount)
     return geom
   }, [sample, viewMode])
 

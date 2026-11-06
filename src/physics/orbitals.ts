@@ -468,7 +468,7 @@ export function findRadialNodes(n: number, l: number, zeff = 1.0): number[] {
 /**
  * Golden section search for unimodal maximum of f on [a, b].
  */
-function goldenSectionMax(
+export function goldenSectionMax(
   f: (r: number) => number,
   a: number,
   b: number,
@@ -554,6 +554,140 @@ export function findRadialMaxima(n: number, l: number, zeff = 1.0): RadialMaxima
     allPeaks,
     nodes,
   }
+}
+
+/**
+ * Computes the maximum radial wavefunction density R_max² = max_{r >= 0} |R_{nl}(r)|²
+ * for the orbital radial factor R_{nl}(r; Z_eff).
+ * For s-orbitals (l = 0), this is evaluated at the origin r = 0 where R(0)² = 4 (Z/n)³.
+ * For l > 0, centrifugal terms force R(0) = 0, and the maximum occurs in the inner lobe,
+ * located via golden-section search between radial nodes.
+ */
+export function getMaxRadialWavefunctionDensity(n: number, l: number, zeff = 1.0): number {
+  const f = (r: number) => {
+    const val = evaluateRadialWavefunction(n, l, r, zeff)
+    return val * val
+  }
+
+  let globalMax = 0
+  if (l === 0) {
+    const val0 = evaluateRadialWavefunction(n, 0, 0, zeff)
+    globalMax = val0 * val0
+  }
+
+  const nodes = findRadialNodes(n, l, zeff)
+  const k = nodes.length
+  const rBound = Math.max(
+    k > 0 ? nodes[k - 1] * 4.0 : 0,
+    (3.5 * n * n) / zeff + (25.0 * n) / zeff
+  )
+
+  if (k === 0) {
+    const peak = goldenSectionMax(f, 1e-5, rBound)
+    if (peak.probability > globalMax) globalMax = peak.probability
+  } else {
+    // First interval: (1e-5, nodes[0])
+    const p0 = goldenSectionMax(f, 1e-5, Math.max(1e-4, nodes[0] - 1e-5))
+    if (p0.probability > globalMax) globalMax = p0.probability
+
+    // Intermediate intervals: (nodes[i-1], nodes[i])
+    for (let i = 1; i < k; i++) {
+      const pi = goldenSectionMax(f, nodes[i - 1] + 1e-5, nodes[i] - 1e-5)
+      if (pi.probability > globalMax) globalMax = pi.probability
+    }
+
+    // Outer interval: (nodes[k-1], rBound)
+    const pOuter = goldenSectionMax(f, nodes[k - 1] + 1e-5, rBound)
+    if (pOuter.probability > globalMax) globalMax = pOuter.probability
+  }
+
+  return Math.max(globalMax, 1e-12)
+}
+
+/**
+ * Computes the global spatial density maximum M_spatial = max_r |ψ_nlm(r)|² = R_max² * Y_max²
+ * across all 3D space for an orbital state.
+ */
+export function getMaxSpatialDensity(
+  n: number,
+  orientation: RealOrientationKey,
+  zeff = 1.0
+): number {
+  const info = ORBITAL_ORIENTATIONS[orientation]
+  const l = FAMILY_TO_L[info.family]
+  const maxR2 = getMaxRadialWavefunctionDensity(n, l, zeff)
+  const maxY2 = getMaxSphericalHarmonicDensity(orientation)
+  return Math.max(1e-12, maxR2 * maxY2)
+}
+
+/**
+ * Computes a validated safe upper bound for rejection sampling in planar cross-sections:
+ *   g(r, phi, u) = r * |ψ(x, y, z)|²
+ * where r is distance in the slice plane, phi is polar angle in the plane, and u in [-delta, delta]
+ * is normal distance. Scans candidate radii (nodes, peaks, intermediate grid) and angles,
+ * applying a 1.25 safety factor to strictly prevent rejection envelope underestimations.
+ */
+export function computeSliceRejectionEnvelope(
+  n: number,
+  orientation: RealOrientationKey,
+  slicePlane: 'xy' | 'xz' | 'yz',
+  zeff: number,
+  rCutoff: number,
+  delta = 0.18
+): number {
+  const l = FAMILY_TO_L[ORBITAL_ORIENTATIONS[orientation].family]
+  const maxima = findRadialMaxima(n, l, zeff)
+
+  const candidateRadii: number[] = [0.05, 0.1, 0.25]
+  for (const p of maxima.allPeaks) {
+    candidateRadii.push(p.radius * 0.5, p.radius * 0.8, p.radius, p.radius * 1.2)
+  }
+  for (const node of maxima.nodes) {
+    candidateRadii.push(node * 0.85, node * 1.15)
+  }
+  const steps = 40
+  for (let i = 1; i <= steps; i++) {
+    candidateRadii.push((i / steps) * rCutoff)
+  }
+
+  const phiSteps = 36
+  const dPhi = (2 * Math.PI) / phiSteps
+  const uVals = [-delta, -delta * 0.5, 0, delta * 0.5, delta]
+
+  let maxG = 0
+  for (const r of candidateRadii) {
+    if (r > rCutoff) continue
+    for (let i = 0; i < phiSteps; i++) {
+      const phi = i * dPhi
+      const c = r * Math.cos(phi)
+      const s = r * Math.sin(phi)
+      for (const u of uVals) {
+        let x = 0
+        let y = 0
+        let z = 0
+        if (slicePlane === 'xy') {
+          x = c
+          y = s
+          z = u
+        } else if (slicePlane === 'xz') {
+          x = c
+          y = u
+          z = s
+        } else {
+          // yz
+          x = u
+          y = c
+          z = s
+        }
+
+        const psi = evaluateOrbitalWavefunction(n, orientation, x, y, z, zeff)
+        const g = r * psi * psi
+        if (g > maxG) maxG = g
+      }
+    }
+  }
+
+  return Math.max(1e-12, maxG * 1.25)
 }
 
 /**
@@ -736,9 +870,10 @@ export function sampleOrbitalField(
     1e-6
   )
   const maxY2 = getMaxSphericalHarmonicDensity(orientation)
+  const maxSpatialDensity = getMaxSpatialDensity(n, orientation, zeff)
 
   // Radial cutoff where wavefunction probability density falls below 1e-5 of max
-  const rCutoff = Math.max(principalPeak * 2.8, principalPeak + (10.0 * n) / zeff, 3.5)
+  const rCutoff = Math.max(principalPeak * 2.2, principalPeak + 12.0 / Math.sqrt(zeff), 3.5)
   const boxExtent = rCutoff * 1.15
 
   const positions = new Float32Array(count * 3)
@@ -811,9 +946,9 @@ export function sampleOrbitalField(
 
       const radialVal = evaluateRadialWavefunction(n, l, rCandidate, zeff)
       const psi = radialVal * yVal
-      const prad = rCandidate * rCandidate * radialVal * radialVal
-      const y2 = yVal * yVal
-      const density = Math.min(1.0, (prad / maxPrad) * (y2 / maxY2))
+      const psi2 = psi * psi
+      // Spatial density normalized to M_spatial = max_r |psi(r)|²
+      const density = Math.min(1.0, psi2 / maxSpatialDensity)
 
       positions[accepted * 3] = px * sceneScale
       positions[accepted * 3 + 1] = py * sceneScale
@@ -825,52 +960,67 @@ export function sampleOrbitalField(
     }
   } else {
     // Slicing across a plane (cross-section)
-    // Envelope: max |psi|^2 <= (max R^2) * maxY2
-    let maxR2 = 0
-    const rScanSteps = 150
-    for (let i = 0; i <= rScanSteps; i++) {
-      const r = (i / rScanSteps) * rCutoff
-      const rVal = evaluateRadialWavefunction(n, l, r, zeff)
-      const r2 = rVal * rVal
-      if (r2 > maxR2) maxR2 = r2
-    }
-    const maxPsi2 = Math.max(1e-7, maxR2 * maxY2)
+    // Physical slab volume element dV = dx dy dz = r dr dphi du
+    // Conditional distribution: g(r, phi, u) = r * |psi(x, y, z)|²
     const sliceThickness = 0.18
+    const mSlice = computeSliceRejectionEnvelope(
+      n,
+      orientation,
+      slicePlane,
+      zeff,
+      rCutoff,
+      sliceThickness
+    )
 
     while (accepted < count && iterations < maxIterations) {
       iterations++
 
-      let px = (random() * 2.0 - 1.0) * rCutoff
-      let py = (random() * 2.0 - 1.0) * rCutoff
-      let pz = (random() * 2.0 - 1.0) * rCutoff
+      const r = random() * rCutoff
+      const phi = random() * 2.0 * Math.PI
+      const u = (random() * 2.0 - 1.0) * sliceThickness
+
+      const c = r * Math.cos(phi)
+      const s = r * Math.sin(phi)
+
+      let px = 0
+      let py = 0
+      let pz = 0
 
       if (slicePlane === 'xy') {
-        pz = (random() * 2.0 - 1.0) * sliceThickness
+        px = c
+        py = s
+        pz = u
       } else if (slicePlane === 'xz') {
-        py = (random() * 2.0 - 1.0) * sliceThickness
-      } else if (slicePlane === 'yz') {
-        px = (random() * 2.0 - 1.0) * sliceThickness
+        px = c
+        py = u
+        pz = s
+      } else {
+        // yz
+        px = u
+        py = c
+        pz = s
       }
 
       const psi = evaluateOrbitalWavefunction(n, orientation, px, py, pz, zeff)
       const psi2 = psi * psi
+      const g = r * psi2
 
-      if (random() * maxPsi2 <= psi2) {
+      if (random() * mSlice <= g) {
         positions[accepted * 3] = px * sceneScale
         positions[accepted * 3 + 1] = py * sceneScale
         positions[accepted * 3 + 2] = pz * sceneScale
 
         phases[accepted] = psi >= 0 ? 1.0 : -1.0
-        densities[accepted] = Math.min(1.0, psi2 / maxPsi2)
+        densities[accepted] = Math.min(1.0, psi2 / maxSpatialDensity)
         accepted++
       }
     }
   }
 
   return {
-    positions,
-    phases,
-    densities,
+    positions: positions.subarray(0, accepted * 3),
+    phases: phases.subarray(0, accepted),
+    densities: densities.subarray(0, accepted),
     extent: boxExtent,
     pointCount: accepted,
   }

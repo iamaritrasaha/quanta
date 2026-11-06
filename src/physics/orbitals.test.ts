@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import * as THREE from 'three'
 import {
   ORBITAL_ORIENTATIONS,
   FAMILY_ORIENTATIONS,
@@ -13,6 +14,10 @@ import {
   getOrbitalZeff,
   findRadialNodes,
   findRadialMaxima,
+  getMaxRadialWavefunctionDensity,
+  getMaxSpatialDensity,
+  computeSliceRejectionEnvelope,
+  goldenSectionMax,
   type RealOrientationKey,
   type OrbitalFamily,
 } from './orbitals'
@@ -554,6 +559,198 @@ describe('QUANTA V4 — Quantum Orbital Physics Engine', () => {
         expect(integral).toBeGreaterThan(0.98)
         expect(integral).toBeLessThan(1.02)
       })
+    })
+  })
+
+  describe('11. Exact Spatial Density vs Radial Probability Separation', () => {
+    it('computes exact analytical values for getMaxRadialWavefunctionDensity', () => {
+      // 1s: R_10(0) = 2 -> R(0)² = 4.0
+      expect(getMaxRadialWavefunctionDensity(1, 0, 1.0)).toBeCloseTo(4.0, 5)
+
+      // 2s: R_20(0) = 2*(1/2)^(3/2) = 1/√2 -> R(0)² = 0.5
+      expect(getMaxRadialWavefunctionDensity(2, 0, 1.0)).toBeCloseTo(0.5, 5)
+
+      // 3s: R_30(0) = 2*(1/3)^(3/2) -> R(0)² = 4/27 ≈ 0.148148
+      expect(getMaxRadialWavefunctionDensity(3, 0, 1.0)).toBeCloseTo(4.0 / 27.0, 5)
+
+      // 4s: R_40(0) = 2*(1/4)^(3/2) -> R(0)² = 4/64 = 0.0625
+      expect(getMaxRadialWavefunctionDensity(4, 0, 1.0)).toBeCloseTo(0.0625, 5)
+
+      // 2p: R_21(r) peak at r = 2.0 a0 -> R(2)² = 1/(6 e²) ≈ 0.022556
+      const expected2p = 1.0 / (6.0 * Math.E * Math.E)
+      expect(getMaxRadialWavefunctionDensity(2, 1, 1.0)).toBeCloseTo(expected2p, 5)
+    })
+
+    it('verifies 1s spatial density is maximal (1.0) at the origin while radial probability P(0) = 0', () => {
+      const maxSpatial1s = getMaxSpatialDensity(1, 's', 1.0)
+      const psiOrigin = evaluateOrbitalWavefunction(1, 's', 0, 0, 0, 1.0)
+      const spatialDensityOrigin = (psiOrigin * psiOrigin) / maxSpatial1s
+
+      // Spatial density must be 1.0 at nucleus (cusp of 1s orbital)
+      expect(spatialDensityOrigin).toBeCloseTo(1.0, 5)
+
+      // Radial probability P(r) = r² |R(r)|² must be exactly 0 at nucleus due to r² volume Jacobian
+      const pradOrigin = evaluateRadialProbability(1, 0, 0, 1.0)
+      expect(pradOrigin).toBe(0.0)
+    })
+
+    it('evaluates spatial density to identically 0 on angular nodal surfaces', () => {
+      const maxSpatial2pz = getMaxSpatialDensity(2, 'pz', 1.0)
+
+      // On xy-plane (z = 0), 2pz wavefunction and spatial density are identically 0
+      for (const [x, y] of [
+        [1.0, 0],
+        [0, 1.0],
+        [2.0, 3.0],
+        [-1.5, 2.5],
+      ]) {
+        const psi = evaluateOrbitalWavefunction(2, 'pz', x, y, 0, 1.0)
+        expect(psi).toBe(0.0)
+        expect((psi * psi) / maxSpatial2pz).toBe(0.0)
+      }
+    })
+
+    it('samples 1s 3D point cloud with non-zero spatial densities near origin', () => {
+      const sample = sampleOrbitalField(1, 's', 2000, 1.0, 999)
+      expect(sample.pointCount).toBe(2000)
+
+      // All densities must be strictly bounded in [0, 1]
+      let maxSampledDensity = 0
+      for (let i = 0; i < sample.pointCount; i++) {
+        const d = sample.densities[i]
+        expect(d).toBeGreaterThanOrEqual(0.0)
+        expect(d).toBeLessThanOrEqual(1.0)
+        if (d > maxSampledDensity) maxSampledDensity = d
+      }
+
+      // 1s point cloud must contain points with high spatial density near nucleus
+      expect(maxSampledDensity).toBeGreaterThan(0.85)
+    })
+  })
+
+  describe('12. Rejection Envelope Safety Across All 16 Orientations & 3 Slice Planes', () => {
+    it('strictly guarantees 0 exceedances across all 48 orbital/slice-plane combinations', () => {
+      const allKeys = Object.keys(ORBITAL_ORIENTATIONS) as RealOrientationKey[]
+      const planes: ('xy' | 'xz' | 'yz')[] = ['xy', 'xz', 'yz']
+      const delta = 0.18
+
+      let totalEvaluated = 0
+      let totalExceeded = 0
+
+      // Pseudo-random generator for reproducible thorough testing
+      let rng = 8888
+      const testRand = () => {
+        rng = (Math.imul(rng, 1664525) + 1013904223) >>> 0
+        return rng / 4294967296
+      }
+
+      for (const key of allKeys) {
+        const info = ORBITAL_ORIENTATIONS[key]
+        const n = info.family === 's' ? 1 : info.family === 'p' ? 2 : info.family === 'd' ? 3 : 4
+        const maxima = findRadialMaxima(n, FAMILY_CAPACITY[info.family] > 2 ? 1 : 0, 1.0)
+        const rCutoff = Math.max(maxima.principalPeak * 2.2, 3.5)
+
+        for (const plane of planes) {
+          const envelope = computeSliceRejectionEnvelope(n, key, plane, 1.0, rCutoff, delta)
+          expect(envelope).toBeGreaterThan(0)
+
+          // Test 1,000 random points inside the slice cylinder
+          for (let i = 0; i < 1000; i++) {
+            totalEvaluated++
+            const r = testRand() * rCutoff
+            const phi = testRand() * 2.0 * Math.PI
+            const u = (testRand() * 2.0 - 1.0) * delta
+
+            let x = 0, y = 0, z = 0
+            if (plane === 'xy') { x = r * Math.cos(phi); y = r * Math.sin(phi); z = u }
+            else if (plane === 'xz') { x = r * Math.cos(phi); y = u; z = r * Math.sin(phi) }
+            else { x = u; y = r * Math.cos(phi); z = r * Math.sin(phi) }
+
+            const psi = evaluateOrbitalWavefunction(n, key, x, y, z, 1.0)
+            const g = r * psi * psi
+            if (g > envelope) {
+              totalExceeded++
+            }
+          }
+        }
+      }
+
+      expect(totalEvaluated).toBe(48000)
+      expect(totalExceeded).toBe(0)
+    })
+  })
+
+  describe('13. Sampling Completion for Difficult Cases & Nodal Slices', () => {
+    it('accepts full sample count for planar nodal slice (2pz on xy)', () => {
+      const sample = sampleOrbitalField(2, 'pz', 2500, 1.0, 42, 'xy')
+      expect(sample.pointCount).toBe(2500)
+      expect(sample.positions.length).toBe(7500)
+      expect(sample.phases.length).toBe(2500)
+      expect(sample.densities.length).toBe(2500)
+
+      // Coordinates along z must be strictly confined to slice
+      for (let i = 0; i < sample.pointCount; i++) {
+        const z = sample.positions[i * 3 + 2]
+        expect(Math.abs(z)).toBeLessThan(0.25)
+      }
+    })
+
+    it('accepts full sample count for multi-nodal slice (4fxyz on xy)', () => {
+      const sample = sampleOrbitalField(4, 'fxyz', 2500, 1.0, 123, 'xy')
+      expect(sample.pointCount).toBe(2500)
+      expect(sample.positions.length).toBe(7500)
+    })
+
+    it('accepts full sample count for high-n orbital states (n=5 s and n=6 pz on xy)', () => {
+      const sample5s = sampleOrbitalField(5, 's', 2000, 1.0, 777, 'xy')
+      expect(sample5s.pointCount).toBe(2000)
+
+      const sample6pz = sampleOrbitalField(6, 'pz', 2000, 1.0, 888, 'xy')
+      expect(sample6pz.pointCount).toBe(2000)
+    })
+  })
+
+  describe('14. Buffer Length Safety & Zero Uninitialized Vertices', () => {
+    it('guarantees positions, phases, and densities arrays are strictly sliced to pointCount', () => {
+      const sample = sampleOrbitalField(3, 'dz2', 1500, 1.0, 314, 'xy')
+
+      expect(sample.positions.length).toBe(sample.pointCount * 3)
+      expect(sample.phases.length).toBe(sample.pointCount)
+      expect(sample.densities.length).toBe(sample.pointCount)
+
+      // Ensure no trailing uninitialized elements (all elements must be finite and non-NaN)
+      for (let i = 0; i < sample.positions.length; i++) {
+        expect(Number.isFinite(sample.positions[i])).toBe(true)
+      }
+      for (let i = 0; i < sample.phases.length; i++) {
+        expect(Math.abs(sample.phases[i])).toBe(1.0)
+      }
+      for (let i = 0; i < sample.densities.length; i++) {
+        expect(sample.densities[i]).toBeGreaterThanOrEqual(0.0)
+        expect(sample.densities[i]).toBeLessThanOrEqual(1.0)
+      }
+    })
+
+    it('creates matching BufferGeometry position and color attributes with identical counts', () => {
+      const sample = sampleOrbitalField(2, 'px', 1200, 1.0, 555, 'xz')
+
+      const geom = new THREE.BufferGeometry()
+      geom.setAttribute('position', new THREE.BufferAttribute(sample.positions, 3))
+
+      const colors = new Float32Array(sample.pointCount * 3)
+      for (let i = 0; i < sample.pointCount; i++) {
+        colors[i * 3] = 0.22
+        colors[i * 3 + 1] = 0.74
+        colors[i * 3 + 2] = 0.97
+      }
+      geom.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+      geom.setDrawRange(0, sample.pointCount)
+
+      // Strict attribute integrity checks
+      expect(geom.attributes.position.count).toBe(sample.pointCount)
+      expect(geom.attributes.color.count).toBe(sample.pointCount)
+      expect(geom.drawRange.count).toBe(sample.pointCount)
+      expect(geom.drawRange.start).toBe(0)
     })
   })
 })
